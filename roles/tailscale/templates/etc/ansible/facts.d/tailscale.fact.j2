@@ -1,0 +1,291 @@
+#!/bin/bash
+# Tailscale Facts Script
+# Collects comprehensive Tailscale status and configuration information for Ansible
+# Includes preferences, status, and configuration for intelligent change detection
+
+set -euo pipefail
+
+# Universal configuration variables from Ansible
+readonly CACHE_DIR="{{ facts_cache_dir | default('/var/cache/ansible-facts') }}"
+readonly CACHE_FILE="${CACHE_DIR}/tailscale_facts.json"
+readonly CACHE_DURATION="{{ facts_tailscale_cache_duration | default(300) }}" # 5 minutes default
+
+# Utility functions
+ensure_cache_dir() {
+    mkdir -p "${CACHE_DIR}" 2>/dev/null || true
+}
+
+is_cache_valid() {
+    [[ -f "${CACHE_FILE}" ]] && [[ $(($(date +%s) - $(stat -c %Y "${CACHE_FILE}" 2>/dev/null || echo 0))) -lt ${CACHE_DURATION} ]]
+}
+
+# Check if Tailscale is installed and get service status
+get_basic_status() {
+    local service_active=false
+    local service_enabled=false
+
+    if ! command -v tailscale >/dev/null 2>&1; then
+        jq -n '{
+            installed: false,
+            running: false,
+            authenticated: false,
+            status: "not_installed",
+            service: { active: false, enabled: false },
+            collection_time: (now | strftime("%Y-%m-%dT%H:%M:%S%z"))
+        }'
+        return 0
+    fi
+
+    if systemctl is-active --quiet tailscaled 2>/dev/null; then
+        service_active=true
+    fi
+
+    if systemctl is-enabled --quiet tailscaled 2>/dev/null; then
+        service_enabled=true
+    fi
+
+    echo "$service_active $service_enabled"
+}
+
+# Get raw Tailscale data
+get_tailscale_data() {
+    local service_active="$1"
+    local status_json="{}"
+    local prefs_json="{}"
+
+    if [[ "$service_active" == "true" ]] && command -v tailscale >/dev/null 2>&1; then
+        # Get status JSON with error handling
+        local temp_status temp_prefs
+        temp_status=$(tailscale status --json 2>/dev/null)
+        temp_prefs=$(tailscale debug prefs 2>/dev/null)
+
+        # Validate and set status JSON
+        if [[ -n "$temp_status" ]] && echo "$temp_status" | jq empty 2>/dev/null; then
+            status_json="$temp_status"
+        fi
+
+        # Validate and set prefs JSON
+        if [[ -n "$temp_prefs" ]] && echo "$temp_prefs" | jq empty 2>/dev/null; then
+            prefs_json="$temp_prefs"
+        fi
+    fi
+
+    # Return as separate lines to avoid space parsing issues
+    cat << EOF
+$status_json
+---SEPARATOR---
+$prefs_json
+EOF
+}
+
+# Process and build comprehensive facts
+build_facts() {
+    local service_active="$1"
+    local service_enabled="$2"
+    local status_json="$3"
+    local prefs_json="$4"
+
+    jq -n \
+        --arg service_active "$service_active" \
+        --arg service_enabled "$service_enabled" \
+        --argjson status "$status_json" \
+        --argjson prefs "$prefs_json" \
+        '{
+            installed: true,
+            running: ($service_active == "true"),
+            authenticated: ($status.BackendState == "Running"),
+            status: {
+                installed: true,
+                running: ($service_active == "true"),
+                backend_state: ($status.BackendState // "service_stopped"),
+                health: ($status.Health // [])
+            },
+            version: ($status.Version // null),
+            service: {
+                active: ($service_active == "true"),
+                enabled: ($service_enabled == "true")
+            },
+            network: {
+                tailnet: ($status.CurrentTailnet.Name // ""),
+                magic_dns_suffix: ($status.CurrentTailnet.MagicDNSSuffix // ""),
+                magic_dns_enabled: ($status.CurrentTailnet.MagicDNSEnabled // false),
+                ipv4: ([$status.Self.TailscaleIPs[]? // empty | select(test("^[0-9.]+$"))] | first // null),
+                ipv6: ([$status.Self.TailscaleIPs[]? // empty | select(test(":"))] | first // null),
+                all_ips: ($status.Self.TailscaleIPs // []),
+                hostname: ($status.Self.HostName // ""),
+                dns_name: ($status.Self.DNSName // ""),
+                online: ($status.Self.Online // false),
+                relay: ($status.Self.Relay // ""),
+                public_addrs: ($status.Self.Addrs // []),
+                peer_api_urls: ($status.Self.PeerAPIURL // [])
+            },
+            self: {
+                id: ($status.Self.ID // ""),
+                public_key: ($status.Self.PublicKey // ""),
+                os: ($status.Self.OS // ""),
+                user_id: ($status.Self.UserID // null),
+                tags: ($status.Self.Tags // []),
+                primary_routes: ($status.Self.PrimaryRoutes // []),
+                allowed_ips: ($status.Self.AllowedIPs // []),
+                exit_node: ($status.Self.ExitNode // false),
+                exit_node_option: ($status.Self.ExitNodeOption // false),
+                capabilities: ($status.Self.Capabilities // []),
+                created: ($status.Self.Created // ""),
+                last_seen: ($status.Self.LastSeen // ""),
+                last_handshake: ($status.Self.LastHandshake // ""),
+                rx_bytes: ($status.Self.RxBytes // 0),
+                tx_bytes: ($status.Self.TxBytes // 0)
+            },
+            preferences: {
+                advertise_routes: ($prefs.AdvertiseRoutes // []),
+                advertise_exit_node: ($prefs.AdvertiseExitNode // false),
+                accept_routes: ($prefs.RouteAll // false),
+                accept_dns: ($prefs.CorpDNS // false),
+                shields_up: ($prefs.ShieldsUp // false),
+                hostname: ($prefs.Hostname // ""),
+                operator: ($prefs.OperatorUser // ""),
+                advertise_tags: ($prefs.AdvertiseTags // [])
+            },
+            settings: {
+                # All current tailscale set option values
+                ssh: ($prefs.RunSSH // false),
+                webclient: ($prefs.RunWebClient // false),
+                "accept-dns": ($prefs.CorpDNS // false),
+                "accept-routes": ($prefs.RouteAll // false),
+                "advertise-routes": (($prefs.AdvertiseRoutes // []) | join(",")),
+                "advertise-exit-node": ($prefs.AdvertiseExitNode // false),
+                "advertise-connector": ($prefs.AppConnector.Advertise // false),
+                "exit-node": ($prefs.ExitNodeID // ""),
+                "exit-node-allow-lan-access": ($prefs.ExitNodeAllowLANAccess // false),
+                "shields-up": ($prefs.ShieldsUp // false),
+                "accept-risk": (($prefs.AcceptedRisks // []) | join(",")),
+                hostname: ($prefs.Hostname // ""),
+                nickname: ($prefs.ProfileName // ""),
+                operator: ($prefs.OperatorUser // ""),
+                "auto-update": ($prefs.AutoUpdate.Check // false),
+                "update-check": ($prefs.AutoUpdate.Apply // false),
+                "report-posture": ($prefs.PostureChecking // false),
+                "netfilter-mode": (
+                    if ($prefs.NetfilterMode // 0) == 0 then "off"
+                    elif ($prefs.NetfilterMode // 0) == 1 then "nodivert"
+                    else "on" end
+                ),
+                "snat-subnet-routes": ($prefs.NoSNAT // false | not),
+                "stateful-filtering": ($prefs.NoStatefulFiltering // true | not),
+                # Legacy compatibility
+                current_exit_node: ($prefs.ExitNodeID // ""),
+                ssh_enabled: ($prefs.RunSSH // false)
+            },
+            peers: {
+                count: ($status.Peer // {} | length),
+                online: ([$status.Peer // {} | .[] | select(.Online == true)] | length),
+                details: (
+                    if ($status.Peer // {} | length) > 0 then [
+                        $status.Peer | to_entries[] | {
+                            id: (.value.ID // ""),
+                            hostname: (.value.HostName // ""),
+                            dns_name: (.value.DNSName // ""),
+                            os: (.value.OS // ""),
+                            tailscale_ips: (.value.TailscaleIPs // []),
+                            online: (.value.Online // false),
+                            exit_node: (.value.ExitNode // false),
+                            exit_node_option: (.value.ExitNodeOption // false),
+                            last_seen: (.value.LastSeen // ""),
+                            last_handshake: (.value.LastHandshake // ""),
+                            relay: (.value.Relay // ""),
+                            rx_bytes: (.value.RxBytes // 0),
+                            tx_bytes: (.value.TxBytes // 0),
+                            tags: (.value.Tags // []),
+                            key_expiry: (.value.KeyExpiry // "")
+                        }
+                    ] else [] end
+                ),
+                exit_nodes: ([$status.Peer // {} | .[]? | select(.ExitNodeOption == true) | .HostName] // [])
+            },
+            users: ($status.User // {}),
+            health: ($status.Health // []),
+            client_version: {
+                running_latest: ($status.ClientVersion.RunningLatest // null)
+            },
+            collection_time: (now | strftime("%Y-%m-%dT%H:%M:%S%z"))
+        }'
+}
+
+# Main collection function
+collect_tailscale_facts() {
+    local status_info
+    status_info=$(get_basic_status)
+
+    # Handle not installed case
+    if [[ "$status_info" == *"not_installed"* ]]; then
+        echo "$status_info"
+        return 0
+    fi
+
+    local service_active service_enabled
+    read -r service_active service_enabled <<< "$status_info"
+
+    # Debug output if DEBUG=1
+    if [[ "${DEBUG:-0}" == "1" ]]; then
+        echo "Service Active: $service_active, Enabled: $service_enabled" >&2
+    fi
+
+    local data
+    data=$(get_tailscale_data "$service_active")
+
+    # Split data using separator
+    local status_json prefs_json
+    status_json=$(echo "$data" | sed -n '1,/---SEPARATOR---/p' | sed '$d')
+    prefs_json=$(echo "$data" | sed -n '/---SEPARATOR---/,$p' | sed '1d')
+
+    # Ensure we have valid JSON with additional validation
+    if [[ -z "$status_json" ]] || ! echo "$status_json" | jq empty 2>/dev/null; then
+        if [[ "${DEBUG:-0}" == "1" ]]; then
+            echo "Invalid or empty status JSON: '$status_json'" >&2
+        fi
+        status_json="{}"
+    fi
+
+    if [[ -z "$prefs_json" ]] || ! echo "$prefs_json" | jq empty 2>/dev/null; then
+        if [[ "${DEBUG:-0}" == "1" ]]; then
+            echo "Invalid or empty prefs JSON: '$prefs_json'" >&2
+        fi
+        prefs_json="{}"
+    fi
+
+    # Debug output if DEBUG=1
+    if [[ "${DEBUG:-0}" == "1" ]]; then
+        echo "Status JSON: $status_json" >&2
+        echo "Prefs JSON: $prefs_json" >&2
+    fi
+
+    build_facts "$service_active" "$service_enabled" "$status_json" "$prefs_json"
+}
+
+# Main execution with caching
+main() {
+    ensure_cache_dir
+
+    # Check cache validity
+    if is_cache_valid; then
+        cat "${CACHE_FILE}"
+        return 0
+    fi
+
+    # Collect fresh facts and cache them
+    local facts_json
+    if facts_json=$(collect_tailscale_facts); then
+        echo "${facts_json}" | tee "${CACHE_FILE}"
+    else
+        # Return error structure
+        jq -n '{
+            installed: false,
+            error: "Failed to collect facts",
+            collection_time: (now | strftime("%Y-%m-%dT%H:%M:%S%z"))
+        }'
+        return 1
+    fi
+}
+
+# Execute main function
+main "$@"

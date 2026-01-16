@@ -1,0 +1,439 @@
+{#
+Grafana Alloy Configuration Macros
+This file contains reusable Jinja2 macros for the Alloy configuration template.
+These macros help to reduce duplication and improve maintainability.
+#}
+
+{#
+   Relabel Config Macro for Prometheus Relabeling
+
+   Implements all possible relabeling parameters according to Alloy River format.
+   See https://grafana.com/docs/alloy/latest/reference/components/prometheus.scrape/
+#}
+{% macro relabel_config(rule) %}
+rule {
+  {% if rule.source_labels | default([]) | length > 0 %}
+  source_labels = {{ rule.source_labels | to_json }}
+  {% endif %}
+
+  {% if rule.target_label | default('') | length > 0 %}
+  target_label = "{{ rule.target_label }}"
+  {% endif %}
+
+  {% if rule.replacement | default('') | length > 0 %}
+  replacement = "{{ rule.replacement }}"
+  {% endif %}
+
+  {% if rule.separator | default('') | length > 0 %}
+  separator = "{{ rule.separator }}"
+  {% endif %}
+
+  {% if rule.regex | default('') | length > 0 %}
+  regex = "{{ rule.regex }}"
+  {% endif %}
+
+  {% if rule.modulus is defined %}
+  modulus = {{ rule.modulus }}
+  {% endif %}
+
+  {% if rule.action | default('') | length > 0 %}
+  action = "{{ rule.action }}"
+  {% endif %}
+
+  {# Additional options based on Alloy documentation #}
+  {% if rule.keep_equal | default(false) %}
+  keep_equal = {{ rule.keep_equal | lower }}
+  {% endif %}
+
+  {% if rule.case_sensitive | default('') | length > 0 %}
+  case_sensitive = {{ rule.case_sensitive | lower }}
+  {% endif %}
+}
+{% endmacro %}
+
+{# Process all relabel configs for a scrape job #}
+{% macro process_relabel_configs(relabel_configs) %}
+{% if relabel_configs | default([]) | length > 0 %}
+{% for rule in relabel_configs %}
+{{ relabel_config(rule) }}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{# Authorization Block for Prometheus Scrape #}
+{% macro authorization_block(auth) %}
+{% if auth.authorization | default({}) | length > 0 %}
+authorization {
+  {% if auth.authorization.type | default('') | length > 0 %}
+  type = "{{ auth.authorization.type }}"
+  {% endif %}
+
+  {% if auth.authorization.credentials | default('') | length > 0 %}
+  credentials = "{{ auth.authorization.credentials }}"
+  {% endif %}
+
+  {% if auth.authorization.credentials_file | default('') | length > 0 %}
+  credentials_file = "{{ auth.authorization.credentials_file }}"
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{# Basic Auth Block for Prometheus Scrape #}
+{% macro basic_auth_block(auth) %}
+{% if auth.basic_auth | default({}) | length > 0 %}
+basic_auth {
+  {% if auth.basic_auth.username | default('') | length > 0 %}
+  username = "{{ auth.basic_auth.username }}"
+  {% endif %}
+
+  {% if auth.basic_auth.password | default('') | length > 0 %}
+  password = "{{ auth.basic_auth.password }}"
+  {% endif %}
+
+  {% if auth.basic_auth.password_file | default('') | length > 0 %}
+  password_file = "{{ auth.basic_auth.password_file }}"
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{# OAuth2 Block for Prometheus Scrape #}
+{% macro oauth2_block(auth) %}
+{% if auth.oauth2 | default({}) | length > 0 %}
+oauth2 {
+  {% if auth.oauth2.client_id | default('') | length > 0 %}
+  client_id = "{{ auth.oauth2.client_id }}"
+  {% endif %}
+
+  {% if auth.oauth2.client_secret | default('') | length > 0 %}
+  client_secret = "{{ auth.oauth2.client_secret }}"
+  {% endif %}
+
+  {% if auth.oauth2.client_secret_file | default('') | length > 0 %}
+  client_secret_file = "{{ auth.oauth2.client_secret_file }}"
+  {% endif %}
+
+  {% if auth.oauth2.token_url | default('') | length > 0 %}
+  token_url = "{{ auth.oauth2.token_url }}"
+  {% endif %}
+
+  {% if auth.oauth2.scopes | default([]) | length > 0 %}
+  scopes = {{ auth.oauth2.scopes | to_json }}
+  {% endif %}
+
+  {% if auth.oauth2.endpoint_params | default({}) | length > 0 %}
+  endpoint_params = {
+    {% for key, value in auth.oauth2.endpoint_params.items() %}
+    "{{ key }}" = "{{ value }}",
+    {% endfor %}
+  }
+  {% endif %}
+
+  {% if auth.oauth2.proxy_url | default('') | length > 0 %}
+  proxy_url = "{{ auth.oauth2.proxy_url }}"
+  {% endif %}
+
+  {% if auth.oauth2.proxy_from_environment | default(false) %}
+  proxy_from_environment = {{ auth.oauth2.proxy_from_environment | lower }}
+  {% endif %}
+
+  {% if auth.oauth2.no_proxy | default('') | length > 0 %}
+  no_proxy = "{{ auth.oauth2.no_proxy }}"
+  {% endif %}
+
+  {# OAuth2 TLS Config #}
+  {% if auth.oauth2.tls_config | default({}) | length > 0 %}
+  {{ tls_config(auth.oauth2.tls_config) }}
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{# Clustering Block for Prometheus Scrape #}
+{% macro clustering_block(cluster) %}
+{% if cluster | default({}) | length > 0 %}
+clustering {
+  {% if cluster.enabled | default(false) %}
+  enabled = {{ cluster.enabled | lower }}
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{#
+   TLS Configuration Macro
+
+   Comprehensive TLS configuration for Alloy components.
+   Implements all TLS options from the Alloy River format.
+   See https://grafana.com/docs/alloy/latest/reference/components/prometheus.scrape/
+#}
+{% macro tls_config(tls) %}
+{% if tls | default({}) | length > 0 %}
+tls_config {
+  {# Certificate Files #}
+  {% if tls.cert_file | default('') | length > 0 %}
+  cert_file = "{{ tls.cert_file }}"
+  {% endif %}
+  {% if tls.key_file | default('') | length > 0 %}
+  key_file = "{{ tls.key_file }}"
+  {% endif %}
+  {% if tls.ca_file | default('') | length > 0 %}
+  ca_file = "{{ tls.ca_file }}"
+  {% endif %}
+
+  {# Certificate Contents #}
+  {% if tls.cert_pem | default('') | length > 0 %}
+  cert_pem = "{{ tls.cert_pem }}"
+  {% endif %}
+  {% if tls.key_pem | default('') | length > 0 %}
+  key_pem = "{{ tls.key_pem }}"
+  {% endif %}
+  {% if tls.ca_pem | default('') | length > 0 %}
+  ca_pem = "{{ tls.ca_pem }}"
+  {% endif %}
+
+  {# TLS Options #}
+  {% if tls.server_name | default('') | length > 0 %}
+  server_name = "{{ tls.server_name }}"
+  {% endif %}
+  {% if tls.min_version | default('') | length > 0 %}
+  min_version = "{{ tls.min_version }}"
+  {% endif %}
+  {% if tls.insecure_skip_verify | default(false) %}
+  insecure_skip_verify = true
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{# Basic Authentication Macro #}
+{% macro basic_auth(auth) %}
+{% if auth | default({}) | length > 0 %}
+basic_auth {
+  username = "{{ auth.username }}"
+  password = "{{ auth.password }}"
+}
+{% endif %}
+{% endmacro %}
+
+{# Authentication Options (Basic Auth, Bearer Token) #}
+{% macro auth_options(config) %}
+{% if config.basic_auth | default({}) | length > 0 %}
+{{ basic_auth(config.basic_auth) }}
+{% endif %}
+{% if config.bearer_token | default('') | length > 0 %}
+bearer_token = "{{ config.bearer_token }}"
+{% endif %}
+{% if config.bearer_token_file | default('') | length > 0 %}
+bearer_token_file = "{{ config.bearer_token_file }}"
+{% endif %}
+{% endmacro %}
+
+{# Headers Configuration #}
+{% macro headers_config(headers) %}
+{% if headers | default({}) | length > 0 %}
+headers = {{ headers | to_json }}
+{% endif %}
+{% endmacro %}
+
+{# Output Configuration for OTel #}
+{% macro output_config(enable_prometheus=false, enable_loki=false, traces_output='') %}
+output {
+  {% if enable_prometheus %}
+  metrics = [prometheus.remote_write.{{ alloy_prometheus_remote_write[0].name | replace("-", "_") }}.receiver]
+  {% endif %}
+  {% if enable_loki %}
+  logs = [loki.write.{{ alloy_loki_clients[0].name | replace("-", "_") }}.receiver]
+  {% endif %}
+  {% if traces_output | length > 0 %}
+  traces = [{{ traces_output }}]
+  {% endif %}
+}
+{% endmacro %}
+
+{# Queue Configuration - Robust against undefined or null values #}
+{% macro queue_config(queue) %}
+{# Ensure queue is defined and is a dictionary with content #}
+{% if queue is defined and queue is not none and queue | length > 0 %}
+queue_config {
+  {# Handle capacity - supports both numeric and string values with units #}
+  {% if queue.capacity is defined and queue.capacity is not none %}
+    {% if queue.capacity | string | length > 0 %}
+      {% if queue.capacity | string | regex_search('[^0-9]') %}
+  capacity = "{{ queue.capacity }}"
+      {% else %}
+  capacity = {{ queue.capacity }}
+      {% endif %}
+    {% endif %}
+  {% endif %}
+
+  {# Handle numeric parameters with safety checks #}
+  {% if queue.max_shards is defined and queue.max_shards is not none and queue.max_shards | default(0) | int > 0 %}
+  max_shards = {{ queue.max_shards }}
+  {% endif %}
+  {% if queue.min_shards is defined and queue.min_shards is not none and queue.min_shards | default(0) | int > 0 %}
+  min_shards = {{ queue.min_shards }}
+  {% endif %}
+  {% if queue.max_samples_per_send is defined and queue.max_samples_per_send is not none and queue.max_samples_per_send | default(0) | int > 0 %}
+  max_samples_per_send = {{ queue.max_samples_per_send }}
+  {% endif %}
+
+  {# Handle duration parameters with safety checks #}
+  {% if queue.batch_send_deadline is defined and queue.batch_send_deadline is not none and queue.batch_send_deadline | default('') | string | length > 0 %}
+  batch_send_deadline = "{{ queue.batch_send_deadline }}"
+  {% endif %}
+  {% if queue.min_backoff is defined and queue.min_backoff is not none and queue.min_backoff | default('') | string | length > 0 %}
+  min_backoff = "{{ queue.min_backoff }}"
+  {% endif %}
+  {% if queue.max_backoff is defined and queue.max_backoff is not none and queue.max_backoff | default('') | string | length > 0 %}
+  max_backoff = "{{ queue.max_backoff }}"
+  {% endif %}
+
+  {# Handle remaining parameters with appropriate safety checks #}
+  {% if queue.backoff_factor is defined and queue.backoff_factor is not none and queue.backoff_factor | default(0) | int > 0 %}
+  backoff_factor = {{ queue.backoff_factor }}
+  {% endif %}
+  {% if queue.timeout is defined and queue.timeout is not none and queue.timeout | default('') | string | length > 0 %}
+  timeout = "{{ queue.timeout }}"
+  {% endif %}
+  {% if queue.drain_timeout is defined and queue.drain_timeout is not none and queue.drain_timeout | default('') | string | length > 0 %}
+  drain_timeout = "{{ queue.drain_timeout }}"
+  {% endif %}
+  {% if queue.retry_on_http_429 is defined and queue.retry_on_http_429 is not none %}
+  retry_on_http_429 = {{ queue.retry_on_http_429 | lower }}
+  {% endif %}
+  {% if queue.sample_age_limit is defined and queue.sample_age_limit is not none and queue.sample_age_limit | default('') | string | length > 0 %}
+  sample_age_limit = "{{ queue.sample_age_limit }}"
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{# Metadata Configuration #}
+{% macro metadata_config(metadata) %}
+{% if metadata | default({}) | length > 0 %}
+metadata_config {
+  {% if metadata.send | default(true) %}
+  send = true
+  {% endif %}
+  {% if metadata.send_interval | default('') | length > 0 %}
+  send_interval = "{{ metadata.send_interval }}"
+  {% endif %}
+}
+{% endif %}
+{% endmacro %}
+
+{# External Labels #}
+{% macro external_labels(labels) %}
+{% if labels | default({}) | length > 0 %}
+external_labels = { {% for key, value in labels.items() %}{{ key }} = "{{ value }}"{% if not loop.last %}, {% endif %}{% endfor %} }
+{% endif %}
+{% endmacro %}
+
+{# Relabeling Rule #}
+{% macro relabel_rule(rule) %}
+rule {
+  {% if rule.source_labels | default([]) | length > 0 %}
+  source_labels = {{ rule.source_labels | to_json }}
+  {% endif %}
+  {% if rule.target_label | default('') | length > 0 %}
+  target_label = "{{ rule.target_label }}"
+  {% endif %}
+  {% if rule.replacement | default('') | length > 0 %}
+  replacement = "{{ rule.replacement }}"
+  {% endif %}
+  {% if rule.regex | default('') | length > 0 %}
+  regex = "{{ rule.regex }}"
+  {% endif %}
+  {% if rule.action | default('') | length > 0 %}
+  action = "{{ rule.action }}"
+  {% endif %}
+}
+{% endmacro %}
+
+{# Retry Configuration has been removed completely - all retry parameters should be in queue_config directly #}
+{% macro retry_config(retry) %}
+{# This macro is kept empty for backward compatibility but should not be used anymore #}
+{% endmacro %}
+
+{# Endpoint Configuration #}
+{% macro endpoint_config(endpoint) %}
+endpoint {
+  url = "{{ endpoint.url }}"
+  {{ auth_options(endpoint) }}
+  {{ headers_config(endpoint.headers) }}
+  {{ tls_config(endpoint.tls_config) }}
+
+  {# Handle queue_config with optional timeout - safer implementation #}
+  {% if endpoint.queue_config | default(alloy_default_queue_config) | length > 0 %}
+  {# Safer approach: create a new dictionary and update it #}
+  {% set updated_queue_config = {} %}
+  {% for key, value in endpoint.queue_config.items() %}
+  {% set _ = updated_queue_config.update({key: value}) %}
+  {% endfor %}
+  {% if endpoint.timeout | default('') | length > 0 %}
+  {% set _ = updated_queue_config.update({'timeout': endpoint.timeout}) %}
+  {% endif %}
+  {{ queue_config(updated_queue_config) }}
+  {% else %}
+  {# If no queue_config but has timeout, create a new one #}
+  {% if endpoint.timeout | default('') | length > 0 %}
+  {% set new_queue_config = {} %}
+  {% set _ = new_queue_config.update({'timeout': endpoint.timeout}) %}
+  {{ queue_config(new_queue_config) }}
+  {% endif %}
+  {% endif %}
+
+  {{ metadata_config(endpoint.metadata_config) }}
+}
+{% endmacro %}
+
+{#
+   Prometheus Relabel Component Macro
+
+   Creates a prometheus.relabel component for more complex relabeling operations.
+   To be used in conjunction with prometheus.scrape components.
+   See https://grafana.com/docs/alloy/latest/reference/components/prometheus.relabel/
+#}
+{% macro prometheus_relabel_component(name, rules, forward_to, max_cache_size=100000) %}
+prometheus.relabel "{{ name }}" {
+  forward_to = [{{ forward_to | replace('-', '_') }}]
+
+  {% if max_cache_size != 100000 %}
+  max_cache_size = {{ max_cache_size }}
+  {% endif %}
+
+  {% for rule in rules %}
+  rule {
+    {% if rule.action | default('') | length > 0 %}
+    action = "{{ rule.action }}"
+    {% endif %}
+
+    {% if rule.source_labels | default([]) | length > 0 %}
+    source_labels = {{ rule.source_labels | to_json }}
+    {% endif %}
+
+    {% if rule.target_label | default('') | length > 0 %}
+    target_label = "{{ rule.target_label }}"
+    {% endif %}
+
+    {% if rule.replacement | default('') | length > 0 %}
+    replacement = "{{ rule.replacement }}"
+    {% endif %}
+
+    {% if rule.separator | default('') | length > 0 %}
+    separator = "{{ rule.separator }}"
+    {% endif %}
+
+    {% if rule.regex | default('') | length > 0 %}
+    regex = "{{ rule.regex }}"
+    {% endif %}
+
+    {% if rule.modulus is defined %}
+    modulus = {{ rule.modulus }}
+    {% endif %}
+  }
+  {% endfor %}
+}
+{% endmacro %}

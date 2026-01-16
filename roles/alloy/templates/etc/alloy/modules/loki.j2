@@ -1,0 +1,152 @@
+{# Loki Configuration Module #}
+{% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options, external_labels, endpoint_config, relabel_rule, queue_config %}
+
+{% if alloy_enable_loki | default(false) %}
+// Loki Log Collection
+{% if alloy_loki_file_sources | default([]) | length > 0 %}
+{% for source in alloy_loki_file_sources %}
+loki.source.file "{{ source.name }}" {
+  targets = [
+    {% for target in source.targets %}
+    {__path__ = "{{ target.path }}"{% if target.labels | default({}) | length > 0 %}, {% for label_key, label_value in target.labels.items() %}{{ label_key }} = "{{ label_value }}"{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}},
+    {% endfor %}
+  ]
+  forward_to = [loki.write.{{ source.write_to | default('default') | replace('-', '_') }}.receiver]
+  {% if source.encoding | default('') | length > 0 %}
+  encoding = "{{ source.encoding }}"
+  {% endif %}
+  {% if source.tail_from_end | default(false) %}
+  tail_from_end = {{ source.tail_from_end | lower }}
+  {% endif %}
+  {% if source.poll_frequency | default('') | length > 0 %}
+  poll_frequency = "{{ source.poll_frequency }}"
+  {% endif %}
+}
+{% endfor %}
+{% else %}
+loki.source.file "system_logs" {
+  targets = [
+    {__path__ = "/var/log/syslog"},
+    {__path__ = "/var/log/auth.log"},
+  ]
+  forward_to = [loki.write.{{ alloy_loki_clients[0].name | replace("-", "_") }}.receiver]
+}
+{% endif %}
+
+{% if alloy_loki_journal_enabled | default(false) %}
+// Systemd Journal Log Collection
+loki.source.journal "journal" {
+  {% if alloy_loki_journal_matches | default('') | length > 0 %}
+  matches = {{ alloy_loki_journal_matches | to_json }}
+  {% endif %}
+  {% if alloy_loki_journal_max_age | default('') | length > 0 %}
+  max_age = "{{ alloy_loki_journal_max_age }}"
+  {% endif %}
+  {% if alloy_loki_journal_relabel_rules | default([]) | length > 0 %}
+  relabel_rules = {{ alloy_loki_journal_relabel_rules | to_json }}
+  {% endif %}
+  forward_to = [loki.write.{{ alloy_loki_journal_write_to | default(alloy_loki_clients[0].name) | replace('-', '_') }}.receiver]
+}
+{% endif %}
+
+{% if alloy_loki_process_configs | default({}) | length > 0 %}
+// Loki process configurations
+{% for process in alloy_loki_process_configs %}
+loki.process "{{ process.name }}" {
+  forward_to = [loki.write.{{ process.write_to | default('default') | replace('-', '_') }}.receiver]
+
+  stage.regex {
+    expression = "{{ process.regex.expression }}"
+    {% if process.regex.source | default('') | length > 0 %}
+    source = "{{ process.regex.source }}"
+    {% endif %}
+  }
+
+  {% if process.labels | default('') | length > 0 %}
+  stage.labels {
+    values = {{ process.labels | to_json }}
+  }
+  {% endif %}
+
+  {% if process.timestamp | default('') | length > 0 %}
+  stage.timestamp {
+    source = "{{ process.timestamp.source }}"
+    format = "{{ process.timestamp.format }}"
+    {% if process.timestamp.location | default('') | length > 0 %}
+    location = "{{ process.timestamp.location }}"
+    {% endif %}
+  }
+  {% endif %}
+
+  {% if process.output | default('') | length > 0 %}
+  stage.output {
+    source = "{{ process.output.source }}"
+  }
+  {% endif %}
+}
+{% endfor %}
+{% endif %}
+
+// Loki write configuration
+{% for loki_client in alloy_loki_clients %}
+loki.write "{{ loki_client.name | replace('-', '_') }}" {
+  {% if loki_client.url | default('') | length > 0 %}
+  endpoint {
+    url = "{{ loki_client.url }}"
+
+    {% if loki_client.basic_auth | default({}) | length > 0 %}
+    basic_auth {
+      {% if loki_client.basic_auth.username | default('') | length > 0 %}
+      {% if loki_client.basic_auth.username.startswith('env:') %}
+      username = sys.env("{{ loki_client.basic_auth.username | replace('env:', '') }}")
+      {% else %}
+      username = "{{ loki_client.basic_auth.username }}"
+      {% endif %}
+      {% endif %}
+
+      {% if loki_client.basic_auth.password | default('') | length > 0 %}
+      {% if loki_client.basic_auth.password.startswith('env:') %}
+      password = sys.env("{{ loki_client.basic_auth.password | replace('env:', '') }}")
+      {% else %}
+      password = "{{ loki_client.basic_auth.password }}"
+      {% endif %}
+      {% endif %}
+    }
+    {% endif %}
+
+    {% if loki_client.bearer_token | default('') | length > 0 %}
+    {% if loki_client.bearer_token.startswith('env:') %}
+    bearer_token = sys.env("{{ loki_client.bearer_token | replace('env:', '') }}")
+    {% else %}
+    bearer_token = "{{ loki_client.bearer_token }}"
+    {% endif %}
+    {% endif %}
+
+    {% if loki_client.bearer_token_file | default('') | length > 0 %}
+    bearer_token_file = "{{ loki_client.bearer_token_file }}"
+    {% endif %}
+
+    {% if loki_client.headers | default({}) | length > 0 %}
+    headers = {
+      {% for header, value in loki_client.headers.items() %}
+      "{{ header }}" = "{{ value }}",
+      {% endfor %}
+    }
+    {% endif %}
+
+    {% if loki_client.tls_config | default({}) | length > 0 %}
+    {{ tls_config(loki_client.tls_config) }}
+    {% endif %}
+
+    {# Handle queue_config safely - only pass to macro if it exists #}
+    {% if loki_client.queue_config is defined and loki_client.queue_config is not none and loki_client.queue_config | default(alloy_default_queue_config) | length > 0 %}
+    {{ queue_config(loki_client.queue_config) }}
+    {% endif %}
+  }
+  {% else %}
+  {{ endpoint_config(loki_client) }}
+  {% endif %}
+  {{ external_labels(loki_client.external_labels | default(alloy_external_labels)) }}
+}
+{% endfor %}
+{% endif %}

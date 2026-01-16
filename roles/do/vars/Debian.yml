@@ -1,0 +1,12 @@
+---
+# OS-specific variables for Debian/Ubuntu systems
+
+do_package_dependencies:
+    - curl
+    - gnupg
+    - software-properties-common
+    - apt-transport-https
+
+# DigitalOcean Repository Konfiguration
+do_gpg_key_url: "https://repos.insights.digitalocean.com/sonar-agent.asc"
+do_repository: "deb https://repos.insights.digitalocean.com/apt main main"

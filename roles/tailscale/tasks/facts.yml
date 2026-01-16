@@ -1,0 +1,30 @@
+---
+# Tailscale Local Facts Tasks
+# Install the facts script that will be automatically gathered
+
+- name: Create facts.d directory
+  ansible.builtin.file:
+      path: /etc/ansible/facts.d
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
+  become: true
+  tags: [tailscale, facts]
+
+- name: Install Tailscale local facts script
+  ansible.builtin.template:
+      src: etc/ansible/facts.d/tailscale.fact.j2
+      dest: /etc/ansible/facts.d/tailscale.fact
+      mode: "0755"
+      owner: root
+      group: root
+  become: true
+  register: _tailscale_facts_installed
+  tags: [tailscale, facts]
+
+- name: Force facts refresh if facts script was just installed
+  ansible.builtin.setup:
+      filter: ansible_local
+  when: _tailscale_facts_installed is changed
+  tags: [tailscale, facts]

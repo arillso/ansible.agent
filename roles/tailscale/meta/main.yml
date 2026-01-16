@@ -1,0 +1,38 @@
+---
+# Ansible Role Metadata for Tailscale
+# Metadata for Tailscale role
+
+galaxy_info:
+    role_name: tailscale
+    namespace: arillso.agent
+    author: Arillso
+    description: Install and configure Tailscale VPN mesh networking
+    company: Arillso
+
+    license: MIT
+
+    min_ansible_version: "2.9"
+
+    platforms:
+        - name: Ubuntu
+          versions:
+              - focal
+              - jammy
+        - name: Debian
+          versions:
+              - bullseye
+              - bookworm
+
+    galaxy_tags:
+        - networking
+        - vpn
+        - tailscale
+        - mesh
+        - wireguard
+        - security
+
+dependencies: []
+
+collections:
+    - ansible.builtin
+    - community.general

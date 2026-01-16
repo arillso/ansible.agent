@@ -1,0 +1,48 @@
+---
+tailscale_package_name: tailscale
+tailscale_package_state: present
+
+tailscale_service_state: started
+tailscale_service_enabled: true
+
+tailscale_config_dir: /etc/tailscale
+tailscale_config_enabled: true
+tailscale_config_file: /etc/tailscale/config.json
+
+tailscale_auth_key: ""
+tailscale_tags: []
+tailscale_reset_authentication: false
+
+tailscale_preferences: {}
+tailscale_service_override: {}
+
+tailscale_server_url: ""
+tailscale_locked: ""
+tailscale_enabled: ""
+tailscale_hostname: ""
+tailscale_operator_user: ""
+
+tailscale_accept_dns: ""
+tailscale_accept_routes: ""
+tailscale_advertise_routes: []
+tailscale_snat_subnet_routes: ""
+
+tailscale_exit_node: ""
+tailscale_exit_node_allow_lan_access: ""
+
+tailscale_ssh_enabled: ""
+tailscale_webclient_enabled: ""
+tailscale_shields_up: ""
+tailscale_posture_checking: ""
+tailscale_advertise_services: []
+
+tailscale_advertise_exit_node: ""
+tailscale_advertise_connector: ""
+
+tailscale_auto_update_check: ""
+tailscale_auto_update_apply: ""
+
+tailscale_netfilter_mode: ""
+tailscale_stateful_filtering: ""
+
+tailscale_static_endpoints: []

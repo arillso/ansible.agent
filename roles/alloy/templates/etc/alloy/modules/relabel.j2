@@ -1,0 +1,20 @@
+{#
+   Prometheus Relabel Module
+
+   Implements prometheus.relabel components for advanced label manipulation.
+   To be used with prometheus.scrape components and other metric sources.
+   See https://grafana.com/docs/alloy/latest/reference/components/prometheus.relabel/
+#}
+{% from 'etc/alloy/macros/alloy_macros.j2' import prometheus_relabel_component %}
+
+{% if alloy_prometheus_relabel_configs | default([]) | length > 0 %}
+// Prometheus relabeling configurations
+{% for relabel_config in alloy_prometheus_relabel_configs %}
+{{ prometheus_relabel_component(
+     relabel_config.name,
+     relabel_config.rules,
+     relabel_config.forward_to | default('prometheus.remote_write.' ~ alloy_prometheus_remote_write[0].name | replace('-', '_') ~ '.receiver'),
+     relabel_config.max_cache_size | default(100000)
+   ) }}
+{% endfor %}
+{% endif %}

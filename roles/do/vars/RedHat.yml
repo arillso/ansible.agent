@@ -1,0 +1,10 @@
+---
+# OS-specific variables for RedHat/CentOS systems
+
+do_package_dependencies:
+    - curl
+    - gnupg2
+
+# DigitalOcean Repository Konfiguration
+do_gpg_key_url: "https://repos.insights.digitalocean.com/sonar-agent.asc"
+do_repository_rpm: "https://repos.insights.digitalocean.com/yum"

@@ -1,0 +1,201 @@
+{# Grafana Remote Configuration Module #}
+
+{% if alloy_enable_remotecfg | default(false) and alloy_remotecfg is defined %}
+// Grafana Alloy remote configuration management
+remotecfg {
+  url = "{{ alloy_remotecfg.url }}"
+
+{% if alloy_remotecfg.basic_auth is defined %}
+  basic_auth {
+{% if alloy_remotecfg.basic_auth.username.startswith('env:') %}
+    username = sys.env("{{ alloy_remotecfg.basic_auth.username | replace('env:', '') }}")
+{% else %}
+    username = "{{ alloy_remotecfg.basic_auth.username }}"
+{% endif %}
+{% if alloy_remotecfg.basic_auth.password is defined %}
+{% if alloy_remotecfg.basic_auth.password.startswith('env:') %}
+    password = sys.env("{{ alloy_remotecfg.basic_auth.password | replace('env:', '') }}")
+{% else %}
+    password = "{{ alloy_remotecfg.basic_auth.password }}"
+{% endif %}
+{% elif alloy_remotecfg.basic_auth.password_file is defined %}
+    password_file = "{{ alloy_remotecfg.basic_auth.password_file }}"
+{% endif %}
+  }
+{% endif %}
+
+{% if alloy_remotecfg.authorization is defined %}
+  authorization {
+{% if alloy_remotecfg.authorization.type is defined %}
+    type = "{{ alloy_remotecfg.authorization.type }}"
+{% endif %}
+{% if alloy_remotecfg.authorization.credentials is defined %}
+    credentials = "{{ alloy_remotecfg.authorization.credentials }}"
+{% elif alloy_remotecfg.authorization.credentials_file is defined %}
+    credentials_file = "{{ alloy_remotecfg.authorization.credentials_file }}"
+{% endif %}
+  }
+{% endif %}
+
+{% if alloy_remotecfg.bearer_token is defined %}
+  bearer_token = "{{ alloy_remotecfg.bearer_token }}"
+{% elif alloy_remotecfg.bearer_token_file is defined %}
+  bearer_token_file = "{{ alloy_remotecfg.bearer_token_file }}"
+{% endif %}
+
+{% if alloy_remotecfg.oauth2 is defined %}
+  oauth2 {
+{% if alloy_remotecfg.oauth2.client_id is defined %}
+    client_id = "{{ alloy_remotecfg.oauth2.client_id }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.client_secret is defined %}
+    client_secret = "{{ alloy_remotecfg.oauth2.client_secret }}"
+{% elif alloy_remotecfg.oauth2.client_secret_file is defined %}
+    client_secret_file = "{{ alloy_remotecfg.oauth2.client_secret_file }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.token_url is defined %}
+    token_url = "{{ alloy_remotecfg.oauth2.token_url }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.scopes is defined %}
+    scopes = [{% for scope in alloy_remotecfg.oauth2.scopes %}"{{ scope }}"{% if not loop.last %}, {% endif %}{% endfor %}]
+{% endif %}
+{% if alloy_remotecfg.oauth2.endpoint_params is defined %}
+    endpoint_params = {
+{% for key, value in alloy_remotecfg.oauth2.endpoint_params.items() %}
+      "{{ key }}" = "{{ value }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+    }
+{% endif %}
+{% if alloy_remotecfg.oauth2.proxy_url is defined %}
+    proxy_url = "{{ alloy_remotecfg.oauth2.proxy_url }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.no_proxy is defined %}
+    no_proxy = "{{ alloy_remotecfg.oauth2.no_proxy }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.proxy_from_environment is defined %}
+    proxy_from_environment = {{ alloy_remotecfg.oauth2.proxy_from_environment | lower }}
+{% endif %}
+{% if alloy_remotecfg.oauth2.proxy_connect_header is defined %}
+    proxy_connect_header = {
+{% for key, values in alloy_remotecfg.oauth2.proxy_connect_header.items() %}
+      "{{ key }}" = [{% for value in values %}"{{ value }}"{% if not loop.last %}, {% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
+{% endfor %}
+    }
+{% endif %}
+
+{% if alloy_remotecfg.oauth2.tls_config is defined %}
+    tls_config {
+{% if alloy_remotecfg.oauth2.tls_config.ca_file is defined %}
+      ca_file = "{{ alloy_remotecfg.oauth2.tls_config.ca_file }}"
+{% elif alloy_remotecfg.oauth2.tls_config.ca_pem is defined %}
+      ca_pem = "{{ alloy_remotecfg.oauth2.tls_config.ca_pem }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.tls_config.cert_file is defined %}
+      cert_file = "{{ alloy_remotecfg.oauth2.tls_config.cert_file }}"
+{% elif alloy_remotecfg.oauth2.tls_config.cert_pem is defined %}
+      cert_pem = "{{ alloy_remotecfg.oauth2.tls_config.cert_pem }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.tls_config.key_file is defined %}
+      key_file = "{{ alloy_remotecfg.oauth2.tls_config.key_file }}"
+{% elif alloy_remotecfg.oauth2.tls_config.key_pem is defined %}
+      key_pem = "{{ alloy_remotecfg.oauth2.tls_config.key_pem }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.tls_config.server_name is defined %}
+      server_name = "{{ alloy_remotecfg.oauth2.tls_config.server_name }}"
+{% endif %}
+{% if alloy_remotecfg.oauth2.tls_config.insecure_skip_verify is defined %}
+      insecure_skip_verify = {{ alloy_remotecfg.oauth2.tls_config.insecure_skip_verify | lower }}
+{% endif %}
+{% if alloy_remotecfg.oauth2.tls_config.min_version is defined %}
+      min_version = "{{ alloy_remotecfg.oauth2.tls_config.min_version }}"
+{% endif %}
+    }
+{% endif %}
+  }
+{% endif %}
+
+{% if alloy_remotecfg.tls_config is defined %}
+  tls_config {
+{% if alloy_remotecfg.tls_config.ca_file is defined %}
+    ca_file = "{{ alloy_remotecfg.tls_config.ca_file }}"
+{% elif alloy_remotecfg.tls_config.ca_pem is defined %}
+    ca_pem = "{{ alloy_remotecfg.tls_config.ca_pem }}"
+{% endif %}
+{% if alloy_remotecfg.tls_config.cert_file is defined %}
+    cert_file = "{{ alloy_remotecfg.tls_config.cert_file }}"
+{% elif alloy_remotecfg.tls_config.cert_pem is defined %}
+    cert_pem = "{{ alloy_remotecfg.tls_config.cert_pem }}"
+{% endif %}
+{% if alloy_remotecfg.tls_config.key_file is defined %}
+    key_file = "{{ alloy_remotecfg.tls_config.key_file }}"
+{% elif alloy_remotecfg.tls_config.key_pem is defined %}
+    key_pem = "{{ alloy_remotecfg.tls_config.key_pem }}"
+{% endif %}
+{% if alloy_remotecfg.tls_config.server_name is defined %}
+    server_name = "{{ alloy_remotecfg.tls_config.server_name }}"
+{% endif %}
+{% if alloy_remotecfg.tls_config.insecure_skip_verify is defined %}
+    insecure_skip_verify = {{ alloy_remotecfg.tls_config.insecure_skip_verify | lower }}
+{% endif %}
+{% if alloy_remotecfg.tls_config.min_version is defined %}
+    min_version = "{{ alloy_remotecfg.tls_config.min_version }}"
+{% endif %}
+  }
+{% endif %}
+
+{% if alloy_remotecfg.http_headers is defined %}
+  http_headers = {
+{% for key, values in alloy_remotecfg.http_headers.items() %}
+    "{{ key }}" = [{% for value in values %}"{{ value }}"{% if not loop.last %}, {% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
+{% endfor %}
+  }
+{% endif %}
+
+{% if alloy_remotecfg.enable_http2 is defined %}
+  enable_http2 = {{ alloy_remotecfg.enable_http2 | lower }}
+{% endif %}
+
+{% if alloy_remotecfg.follow_redirects is defined %}
+  follow_redirects = {{ alloy_remotecfg.follow_redirects | lower }}
+{% endif %}
+
+{% if alloy_remotecfg.proxy_url is defined %}
+  proxy_url = "{{ alloy_remotecfg.proxy_url }}"
+{% endif %}
+
+{% if alloy_remotecfg.no_proxy is defined %}
+  no_proxy = "{{ alloy_remotecfg.no_proxy }}"
+{% endif %}
+
+{% if alloy_remotecfg.proxy_from_environment is defined %}
+  proxy_from_environment = {{ alloy_remotecfg.proxy_from_environment | lower }}
+{% endif %}
+
+{% if alloy_remotecfg.proxy_connect_header is defined %}
+  proxy_connect_header = {
+{% for key, values in alloy_remotecfg.proxy_connect_header.items() %}
+    "{{ key }}" = [{% for value in values %}"{{ value }}"{% if not loop.last %}, {% endif %}{% endfor %}]{% if not loop.last %},{% endif %}
+{% endfor %}
+  }
+{% endif %}
+{% if alloy_remotecfg.poll_frequency is defined %}
+  poll_frequency = "{{ alloy_remotecfg.poll_frequency }}"
+{% endif %}
+
+{% if alloy_remotecfg.id is defined %}
+  id = "{{ alloy_remotecfg.id }}"
+{% endif %}
+
+{% if alloy_remotecfg.name is defined %}
+  name = "{{ alloy_remotecfg.name }}"
+{% endif %}
+
+{% if alloy_remotecfg.attributes is defined and alloy_remotecfg.attributes | length > 0 %}
+  attributes = {
+{% for key, value in alloy_remotecfg.attributes.items() %}
+    "{{ key }}" = "{{ value }}"{% if not loop.last %},{% endif %}
+{% endfor %}
+  }
+{% endif %}
+}
+{% endif %}

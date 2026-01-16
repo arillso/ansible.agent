@@ -1,5 +1,0 @@
----
-- name: Install Grafana Agent
-  ansible.builtin.yum:
-    name: "https://github.com/grafana/agent/releases/download/v{{ grafana_version }}/grafana-agent-{{ grafana_version }}-1.amd64.rpm"
-    disable_gpg_check: true

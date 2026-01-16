@@ -1,0 +1,49 @@
+# Environment file for Grafana Alloy service
+# This file is loaded by systemd and provides environment variables
+
+# Logging
+ALLOY_LOG_LEVEL={{ alloy_log_level }}
+ALLOY_LOG_FORMAT={{ alloy_log_format }}
+
+# Server
+ALLOY_SERVER_HTTP_LISTEN_ADDRESS={{ alloy_server_http_listen_address }}:{{ alloy_port }}
+ALLOY_SERVER_GRPC_LISTEN_ADDRESS={{ alloy_server_grpc_listen_address }}:{{ alloy_grpc_port }}
+
+# Storage
+ALLOY_STORAGE_PATH={{ alloy_storage_path }}
+
+{% if alloy_clustering_enabled %}
+# Clustering
+ALLOY_CLUSTER_NAME={{ alloy_cluster_name }}
+{% if alloy_cluster_advertise_address %}
+ALLOY_CLUSTER_ADVERTISE_ADDRESS={{ alloy_cluster_advertise_address }}
+{% endif %}
+{% endif %}
+
+# Grafana Cloud API credentials - loaded from Ansible variables
+# These must be provided via ansible-vault or CI/CD environment variables
+{% if grafana_cloud_prometheus_token | default('') | length > 0 and grafana_cloud_prometheus_token != 'your-grafana-cloud-prometheus-token' %}
+GRAFANA_CLOUD_PROMETHEUS_TOKEN={{ grafana_cloud_prometheus_token }}
+GRAFANA_CLOUD_PROMETHEUS_USER={{ grafana_cloud_prometheus_user | default('') }}
+{% endif %}
+
+{% if grafana_cloud_loki_token | default('') | length > 0 and grafana_cloud_loki_token != 'your-grafana-cloud-loki-token' %}
+GRAFANA_CLOUD_LOKI_TOKEN={{ grafana_cloud_loki_token }}
+GRAFANA_CLOUD_LOKI_USER={{ grafana_cloud_loki_user | default('') }}
+{% endif %}
+
+# Grafana Remote Configuration credentials
+{% if alloy_enable_remotecfg | default(false) %}
+{% if grafana_cloud_fleet_user | default('') | length > 0 %}
+GRAFANA_CLOUD_FLEET_USER={{ grafana_cloud_fleet_user }}
+{% endif %}
+{% if grafana_cloud_fleet_token | default('') | length > 0 and grafana_cloud_fleet_token != 'your-grafana-cloud-fleet-token' %}
+GRAFANA_CLOUD_FLEET_TOKEN={{ grafana_cloud_fleet_token }}
+{% endif %}
+{% endif %}
+
+# Additional credentials can be added here if needed for remotecfg authentication
+# Examples:
+# VAULT_TOKEN - for Vault-based remote configuration
+# AWS credentials - for S3-based remote configuration (if implemented)
+# SSH keys - for Git-based remote configuration (if implemented)

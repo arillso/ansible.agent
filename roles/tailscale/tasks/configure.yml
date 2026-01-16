@@ -1,0 +1,144 @@
+---
+# Tailscale Configuration Tasks
+# Configure Tailscale with auth key and settings using idempotent module
+
+- name: Ensure Tailscale configuration directory exists
+  ansible.builtin.file:
+      path: "{{ tailscale_config_dir }}"
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
+  become: true
+  tags: [tailscale, config, daemon]
+
+- name: Check if any config options are set
+  ansible.builtin.set_fact:
+      _tailscale_has_config: >-
+          {{
+            (tailscale_server_url | default('') | length > 0) or
+            (tailscale_locked | default('') | length > 0) or
+            (tailscale_enabled | default('') | length > 0) or
+            (tailscale_hostname | default('') | length > 0) or
+            (tailscale_operator_user | default('') | length > 0) or
+            (tailscale_accept_dns | default('') | length > 0) or
+            (tailscale_accept_routes | default('') | length > 0) or
+            (tailscale_advertise_routes | default([]) | length > 0) or
+            (tailscale_advertise_exit_node | default('') | length > 0) or
+            (tailscale_snat_subnet_routes | default('') | length > 0) or
+            (tailscale_exit_node | default('') | length > 0) or
+            (tailscale_exit_node_allow_lan_access | default('') | length > 0) or
+            (tailscale_ssh_enabled | default('') | length > 0) or
+            (tailscale_webclient_enabled | default('') | length > 0) or
+            (tailscale_shields_up | default('') | length > 0) or
+            (tailscale_posture_checking | default('') | length > 0) or
+            (tailscale_advertise_services | default([]) | length > 0) or
+            (tailscale_advertise_connector | default('') | length > 0) or
+            (tailscale_auto_update_check | default('') | length > 0) or
+            (tailscale_auto_update_apply | default('') | length > 0) or
+            (tailscale_netfilter_mode | default('') | length > 0) or
+            (tailscale_stateful_filtering | default('') | length > 0) or
+            (tailscale_static_endpoints | default([]) | length > 0)
+          }}
+  tags: [tailscale, config, daemon]
+
+- name: Configure Tailscale daemon configuration file
+  ansible.builtin.template:
+      src: etc/tailscale/config.json.j2
+      dest: "{{ tailscale_config_file }}"
+      mode: "0644"
+      owner: root
+      group: root
+  become: true
+  when:
+      - tailscale_config_enabled | default(true) | bool
+      - _tailscale_has_config | bool
+  notify: reload tailscale config
+  tags: [tailscale, config, daemon]
+
+- name: Configure systemd service to use daemon config file
+  ansible.builtin.template:
+      src: etc/systemd/system/tailscaled.service.d/config-override.conf.j2
+      dest: /etc/systemd/system/tailscaled.service.d/config-override.conf
+      mode: "0644"
+      owner: root
+      group: root
+  become: true
+  when:
+      - tailscale_config_enabled | default(true) | bool
+      - _tailscale_has_config | bool
+  notify:
+      - reload systemd
+      - restart tailscaled
+  tags: [tailscale, config, daemon, systemd]
+
+- name: Initial authentication with auth key
+  ansible.builtin.command:
+      cmd: >
+          tailscale up
+          --auth-key={{ tailscale_auth_key }}
+          {% if tailscale_tags | default([]) | length > 0 %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
+          --reset
+  become: true
+  when: not ansible_local.tailscale.authenticated | default(false)
+  notify: restart tailscaled
+  no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
+  tags: [tailscale, config, auth]
+
+- name: Create Tailscale systemd override directory
+  ansible.builtin.file:
+      path: /etc/systemd/system/tailscaled.service.d
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
+  become: true
+  when: tailscale_service_override | length > 0
+  tags: [tailscale, config, systemd]
+
+- name: Configure Tailscale systemd service override
+  ansible.builtin.template:
+      src: etc/systemd/system/tailscaled.service.d/override.conf.j2
+      dest: /etc/systemd/system/tailscaled.service.d/override.conf
+      mode: "0644"
+      owner: root
+      group: root
+  become: true
+  when: tailscale_service_override | length > 0
+  notify:
+      - reload systemd
+      - restart tailscaled
+  tags: [tailscale, config, systemd]
+
+# Reset authentication if requested
+- name: Reset Tailscale configuration (logout and re-authenticate)
+  when: tailscale_reset_authentication | default(false) | bool
+  tags: [tailscale, config, reset]
+  block:
+      - name: Logout from Tailscale
+        ansible.builtin.command:
+            cmd: tailscale logout
+        become: true
+
+      - name: Re-authenticate with minimal setup only
+        ansible.builtin.command:
+            cmd: >
+                tailscale up
+                --auth-key={{ tailscale_auth_key }}
+                {% if tailscale_tags %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
+        become: true
+        no_log: true
+
+# Handle custom preferences if defined
+- name: Set custom Tailscale preferences
+  ansible.builtin.command:
+      cmd: "tailscale set --{{ item.key }}={{ item.value }}"
+  become: true
+  register: _tailscale_custom_prefs
+  changed_when: _tailscale_custom_prefs.rc == 0
+  loop: "{{ tailscale_preferences | dict2items }}"
+  when:
+      - tailscale_preferences is defined
+      - tailscale_preferences | length > 0
+      - ansible_local.tailscale.authenticated | default(false)
+  tags: [tailscale, config, preferences]

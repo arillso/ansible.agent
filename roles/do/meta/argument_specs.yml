@@ -1,20 +1,123 @@
 ---
+# Argument specifications for DigitalOcean Agent role
+# This file defines and validates all input parameters for the role
+
 argument_specs:
-  main:
-    short_description: Install DigitalOcean Agent
-    description:
-      - Installs the DigitalOcean Agent on the target system.
-    options:
-      do_packages:
-        type: list
-        elements: dict
-        description:
-          - A list of package names and versions to install for the DigitalOcean Agent.
-          - Default is to use the distribution's package manager to install the latest version of the agent.
-        default: [{ "name": "do-agent" }]
-        required: false
-      do_service_name:
-        type: str
-        description: The name of the service that runs the DigitalOcean Agent. Default is 'do-agent'.
-        default: do-agent
-        required: false
+    main:
+        short_description: "Install and configure DigitalOcean Agent for monitoring and observability"
+        description: |
+            This role installs and configures the DigitalOcean Agent via official package sources
+            for monitoring and observability of DigitalOcean Droplets.
+        author: "Simon Bärlocher"
+        options:
+            do_package_name:
+                type: "str"
+                required: false
+                default: "do-agent"
+                description: "Name of the DigitalOcean Agent package"
+
+            do_version:
+                type: "str"
+                required: false
+                default: "latest"
+                description: "Version of the DigitalOcean Agent package (latest for newest version)"
+
+            do_port:
+                type: "int"
+                required: false
+                default: 9090
+                description: "Port for DigitalOcean Agent server"
+
+            do_health_check_enabled:
+                type: "bool"
+                required: false
+                default: true
+                description: "Enables health check after installation"
+
+            do_log_level:
+                type: "str"
+                required: false
+                default: "info"
+                choices:
+                    - "debug"
+                    - "info"
+                    - "warn"
+                    - "error"
+                description: "Log level for DigitalOcean Agent"
+
+            do_log_format:
+                type: "str"
+                required: false
+                default: "json"
+                choices:
+                    - "json"
+                    - "text"
+                description: "Log format for DigitalOcean Agent"
+
+            do_storage_path:
+                type: "str"
+                required: false
+                default: "/var/lib/do-agent"
+                description: "Storage path for DigitalOcean Agent data"
+
+            do_listen_address:
+                type: "str"
+                required: false
+                default: "0.0.0.0"
+                description: "Listen address for DigitalOcean Agent server"
+
+            do_api_token:
+                type: "str"
+                required: false
+                default: ""
+                description: "DigitalOcean API token for authentication"
+                no_log: true
+
+            do_droplet_id:
+                type: "str"
+                required: false
+                default: ""
+                description: "ID of the DigitalOcean Droplet"
+
+            do_enable_metrics:
+                type: "bool"
+                required: false
+                default: true
+                description: "Enables metrics collection"
+
+            do_enable_logs:
+                type: "bool"
+                required: false
+                default: true
+                description: "Enables log collection"
+
+            do_enable_insights:
+                type: "bool"
+                required: false
+                default: true
+                description: "Enables DigitalOcean Insights"
+
+            do_prometheus_enabled:
+                type: "bool"
+                required: false
+                default: false
+                description: "Enables Prometheus integration"
+
+            do_prometheus_port:
+                type: "int"
+                required: false
+                default: 9091
+                description: "Port for Prometheus metrics endpoint"
+
+            do_tags:
+                type: "list"
+                required: false
+                default: []
+                description: "List of tags for the agent"
+                elements: "str"
+
+            do_labels:
+                type: "dict"
+                required: false
+                default: {}
+                description: "Dictionary of labels for the agent"

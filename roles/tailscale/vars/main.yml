@@ -1,0 +1,106 @@
+---
+# Tailscale configuration for all supported distributions
+# Clean YAML structure without complex Jinja2 templates
+
+tailscale_package_name: tailscale
+tailscale_package_state: present
+
+# Distribution-specific configurations
+tailscale_distributions:
+    Ubuntu:
+        "24.04":
+            codename: noble
+            gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/ubuntu
+        "22.04":
+            codename: jammy
+            gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/ubuntu
+        "20.04":
+            codename: focal
+            gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/ubuntu
+        "18.04":
+            codename: bionic
+            gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/bionic.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/ubuntu
+        default:
+            codename: jammy
+            gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/ubuntu
+
+    Debian:
+        "12":
+            codename: bookworm
+            gpg_key_url: https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/debian
+        "11":
+            codename: bullseye
+            gpg_key_url: https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/debian
+        "10":
+            codename: buster
+            gpg_key_url: https://pkgs.tailscale.com/stable/debian/buster.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/debian
+        default:
+            codename: bookworm
+            gpg_key_url: https://pkgs.tailscale.com/stable/debian/bookworm.noarmor.gpg
+            repo_url: https://pkgs.tailscale.com/stable/debian
+
+    RedHat:
+        default:
+            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+
+    CentOS:
+        default:
+            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+
+    Rocky:
+        default:
+            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+
+    AlmaLinux:
+        default:
+            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+
+    Fedora:
+        default:
+            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+
+    Alpine:
+        default:
+            package_only: true
+
+    Archlinux:
+        default:
+            package_only: true
+
+# Fallback configuration
+tailscale_fallback:
+    codename: jammy
+    gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg
+    repo_url: https://pkgs.tailscale.com/stable/ubuntu
+
+# Determine version key for lookup
+tailscale_version_key: >-
+    {{- ansible_distribution_version if ansible_distribution in ['Ubuntu'] else
+        ansible_distribution_major_version if ansible_distribution in ['Debian'] else
+        'default' -}}
+
+# Get distribution configuration
+tailscale_distro_config: >-
+    {{- tailscale_distributions.get(ansible_distribution, {}).get(tailscale_version_key) or
+        tailscale_distributions.get(ansible_distribution, {}).get('default') or
+        tailscale_fallback -}}
+
+# Final variables used by the role
+tailscale_gpg_key_url: "{{ tailscale_distro_config.gpg_key_url | default('') }}"
+tailscale_gpg_key_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
+tailscale_repo_url: "{{ tailscale_distro_config.repo_url | default('') }}"
+tailscale_repo_codename: "{{ tailscale_distro_config.codename | default(ansible_distribution_release) }}"
+tailscale_package_only: "{{ tailscale_distro_config.package_only | default(false) }}"

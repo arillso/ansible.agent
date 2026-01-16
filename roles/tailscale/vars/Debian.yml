@@ -1,0 +1,7 @@
+---
+# Debian/Ubuntu specific variables for Tailscale
+# OS-specific variables for Debian/Ubuntu systems
+
+tailscale_gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/focal.gpg
+tailscale_gpg_key_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
+tailscale_repo_url: https://pkgs.tailscale.com/stable/ubuntu

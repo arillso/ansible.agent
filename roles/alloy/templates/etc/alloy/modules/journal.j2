@@ -1,0 +1,50 @@
+{# Journal Monitoring Configuration Module #}
+{% from 'etc/alloy/macros/alloy_macros.j2' import relabel_rule %}
+
+{% if alloy_enable_journal_monitoring | default(false) %}
+// Journal log collection with relabeling
+loki.relabel "integrations_node_exporter" {
+  forward_to = [loki.write.{{ alloy_loki_clients[0].name | replace('-', '_') }}.receiver]
+  rule {
+    target_label = "job"
+    replacement  = "integrations/node_exporter"
+  }
+  rule {
+    target_label = "instance"
+    replacement  = "{{ ansible_hostname }}"
+  }
+}
+
+// Journal module for collecting systemd logs
+journal_module "integrations_node_exporter" {
+  forward_to = [loki.relabel.integrations_node_exporter.receiver]
+}
+
+// Journal module declaration
+declare "journal_module" {
+  argument "forward_to" {
+      optional = false
+  }
+
+  loki.source.journal "default" {
+      max_age = "{{ alloy_journal_config.max_age | default('12h0m0s') }}"
+      forward_to = [loki.process.default.receiver]
+      {% if alloy_journal_config.relabel_rules | default([]) | length > 0 %}
+      relabel_rules = loki.relabel.default.rules
+      {% endif %}
+  }
+
+  {% if alloy_journal_config.relabel_rules | default([]) | length > 0 %}
+  loki.relabel "default" {
+      {% for rule in alloy_journal_config.relabel_rules %}
+      {{ relabel_rule(rule) }}
+      {% endfor %}
+      forward_to = []
+  }
+  {% endif %}
+
+  loki.process "default" {
+      forward_to = argument.forward_to.value
+  }
+}
+{% endif %}

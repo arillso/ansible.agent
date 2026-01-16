@@ -1,0 +1,46 @@
+# Tailscale Systemd Service Override Template
+# Template for systemd service override configuration
+
+[Service]
+{% for section, settings in tailscale_service_override.items() %}
+{% if section == 'Environment' and settings is mapping %}
+# Environment variables
+{% for key, value in settings.items() %}
+Environment={{ key }}={{ value }}
+{% endfor %}
+{% elif section == 'ExecStartPre' and settings is iterable and settings is not string %}
+# Pre-execution commands
+{% for command in settings %}
+ExecStartPre={{ command }}
+{% endfor %}
+{% elif settings is mapping %}
+# {{ section }} section
+{% for key, value in settings.items() %}
+{% if key == 'Environment' and value is mapping %}
+# Environment variables as key-value pairs
+{% for env_key, env_value in value.items() %}
+Environment={{ env_key }}={{ env_value }}
+{% endfor %}
+{% elif key == 'Environment' and value is iterable and value is not string %}
+# Environment variables as list
+{% for env_var in value %}
+Environment={{ env_var }}
+{% endfor %}
+{% elif key == 'ExecStartPre' and value is iterable and value is not string %}
+# Pre-execution commands
+{% for command in value %}
+ExecStartPre={{ command }}
+{% endfor %}
+{% else %}
+{{ key }}={{ value }}
+{% endif %}
+{% endfor %}
+{% elif settings is iterable and settings is not string %}
+# {{ section }} list values
+{% for item in settings %}
+{{ section }}={{ item }}
+{% endfor %}
+{% else %}
+{{ section }}={{ settings }}
+{% endif %}
+{% endfor %}

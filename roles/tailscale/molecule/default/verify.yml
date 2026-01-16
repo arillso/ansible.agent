@@ -1,0 +1,93 @@
+---
+# Molecule verify playbook for Tailscale role
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+      - name: Check if Tailscale package is installed
+        ansible.builtin.package_facts:
+            manager: auto
+
+      - name: Assert Tailscale package is installed
+        ansible.builtin.assert:
+            that:
+                - "'tailscale' in ansible_facts.packages"
+            fail_msg: "Tailscale package is not installed"
+            success_msg: "Tailscale package is installed"
+
+      - name: Check tailscaled service status
+        ansible.builtin.systemd_service:
+            name: tailscaled
+        register: tailscaled_service
+
+      - name: Assert tailscaled service is running
+        ansible.builtin.assert:
+            that:
+                - tailscaled_service.status.ActiveState == "active"
+                - tailscaled_service.status.LoadState == "loaded"
+                - tailscaled_service.status.UnitFileState == "enabled"
+            fail_msg: "Tailscaled service is not running properly"
+            success_msg: "Tailscaled service is running and enabled"
+
+      - name: Check if tailscale binary exists
+        ansible.builtin.stat:
+            path: /usr/bin/tailscale
+        register: tailscale_binary
+
+      - name: Assert tailscale binary exists
+        ansible.builtin.assert:
+            that:
+                - tailscale_binary.stat.exists
+                - tailscale_binary.stat.executable
+            fail_msg: "Tailscale binary does not exist or is not executable"
+            success_msg: "Tailscale binary exists and is executable"
+
+      - name: Check if tailscaled binary exists
+        ansible.builtin.stat:
+            path: /usr/sbin/tailscaled
+        register: tailscaled_binary
+
+      - name: Assert tailscaled binary exists
+        ansible.builtin.assert:
+            that:
+                - tailscaled_binary.stat.exists
+                - tailscaled_binary.stat.executable
+            fail_msg: "Tailscaled binary does not exist or is not executable"
+            success_msg: "Tailscaled binary exists and is executable"
+
+      - name: Check tailscale version
+        ansible.builtin.command: tailscale version
+        register: tailscale_version
+        changed_when: false
+
+      - name: Display Tailscale version
+        ansible.builtin.debug:
+            msg: "Tailscale version: {{ tailscale_version.stdout_lines[0] }}"
+
+      - name: Check if systemd override directory exists
+        ansible.builtin.stat:
+            path: /etc/systemd/system/tailscaled.service.d
+        register: override_dir
+
+      - name: Assert systemd override directory exists
+        ansible.builtin.assert:
+            that:
+                - override_dir.stat.exists
+                - override_dir.stat.isdir
+            fail_msg: "Systemd override directory does not exist"
+            success_msg: "Systemd override directory exists"
+
+      - name: Check if Ansible facts script exists
+        ansible.builtin.stat:
+            path: /etc/ansible/facts.d/tailscale.fact
+        register: facts_script
+
+      - name: Assert Ansible facts script exists
+        ansible.builtin.assert:
+            that:
+                - facts_script.stat.exists
+                - facts_script.stat.executable
+            fail_msg: "Tailscale facts script does not exist or is not executable"
+            success_msg: "Tailscale facts script exists and is executable"

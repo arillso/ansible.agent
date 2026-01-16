@@ -1,0 +1,44 @@
+---
+# Tailscale VPN Agent Installation and Configuration
+# Main tasks for Tailscale installation and configuration
+
+- name: Display detected OS and Tailscale configuration
+  ansible.builtin.debug:
+      msg:
+          - "Detected OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
+          - "OS Family: {{ ansible_os_family }}"
+          - "Version Key: {{ tailscale_version_key }}"
+          - "Repository URL: {{ tailscale_repo_url }}"
+          - "GPG Key URL: {{ tailscale_gpg_key_url }}"
+          - "Repository Codename: {{ tailscale_repo_codename }}"
+          - "Package Only Mode: {{ tailscale_package_only }}"
+  tags: [tailscale, debug]
+
+- name: Validate tailscale configuration
+  ansible.builtin.assert:
+      that:
+          - tailscale_auth_key is defined
+          - tailscale_auth_key | length > 0
+      fail_msg: "tailscale_auth_key must be defined and not empty"
+      success_msg: "Tailscale configuration is valid"
+  tags: [tailscale, validation]
+
+- name: Install Tailscale repository and package
+  ansible.builtin.include_tasks: install.yml
+  tags: [tailscale, install]
+
+- name: Manage Tailscale service state
+  ansible.builtin.include_tasks: service.yml
+  tags: [tailscale, service]
+
+- name: Configure Tailscale service
+  ansible.builtin.include_tasks: configure.yml
+  tags: [tailscale, config]
+
+- name: Setup Tailscale local facts
+  ansible.builtin.include_tasks: facts.yml
+  tags: [tailscale, facts]
+
+- name: Verify Tailscale connectivity
+  ansible.builtin.include_tasks: verify.yml
+  tags: [tailscale, verify]

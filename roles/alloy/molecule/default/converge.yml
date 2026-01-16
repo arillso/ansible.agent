@@ -1,0 +1,36 @@
+---
+# Molecule converge playbook for Grafana Alloy role
+- name: Converge
+  hosts: all
+  become: true
+
+  pre_tasks:
+      - name: Update apt cache (Debian/Ubuntu)
+        ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+        when: ansible_os_family == "Debian"
+
+  roles:
+      - role: arillso.agent.alloy
+        vars:
+            # Basic Prometheus configuration
+            alloy_prometheus_enabled: true
+            alloy_prometheus_remote_write_url: "http://localhost:9090/api/v1/write"
+
+            # Enable Node Exporter
+            alloy_node_exporter_enabled: true
+            alloy_node_exporter_collectors:
+                - cpu
+                - diskstats
+                - filesystem
+                - loadavg
+                - meminfo
+                - netdev
+
+            # Enable Loki
+            alloy_loki_enabled: true
+            alloy_loki_url: "http://localhost:3100/loki/api/v1/push"
+
+            # Disable health check for testing (no actual Prometheus endpoint)
+            alloy_health_check_enabled: false

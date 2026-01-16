@@ -1,0 +1,56 @@
+---
+# Installation tasks for DigitalOcean Agent
+
+- name: Install package dependencies
+  ansible.builtin.package:
+      name: "{{ do_package_dependencies }}"
+      state: present
+  become: true
+
+- name: Download DigitalOcean GPG key (Debian/Ubuntu)
+  ansible.builtin.get_url:
+      url: "{{ do_gpg_key_url }}"
+      dest: /usr/share/keyrings/digitalocean-agent.asc
+      mode: "0644"
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Add DigitalOcean repository (Debian/Ubuntu)
+  ansible.builtin.apt_repository:
+      repo: "deb [signed-by=/usr/share/keyrings/digitalocean-agent.asc] https://repos.insights.digitalocean.com/apt main main"
+      state: present
+      update_cache: true
+      filename: digitalocean-agent
+  become: true
+  when: ansible_os_family == "Debian"
+
+- name: Add DigitalOcean repository (RedHat/CentOS)
+  ansible.builtin.yum_repository:
+      name: digitalocean
+      description: DigitalOcean Repository
+      baseurl: "{{ do_repository_rpm }}"
+      gpgcheck: true
+      gpgkey: "{{ do_gpg_key_url }}"
+      enabled: true
+  become: true
+  when: ansible_os_family == "RedHat"
+
+- name: Install DigitalOcean Agent package
+  ansible.builtin.package:
+      name: "{{ do_package_name }}"
+      state: present
+  become: true
+  notify: restart do agent
+
+- name: Create required directories
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+  loop:
+      - /etc/do-agent
+      - /var/lib/do-agent
+      - /var/log/do-agent
