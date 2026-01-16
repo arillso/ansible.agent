@@ -1,0 +1,77 @@
+---
+# Molecule verify playbook for DigitalOcean Agent role
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+      - name: Check if DO Agent package is installed
+        ansible.builtin.package_facts:
+            manager: auto
+
+      - name: Assert DO Agent package is installed
+        ansible.builtin.assert:
+            that:
+                - "'do-agent' in ansible_facts.packages"
+            fail_msg: "DO Agent package is not installed"
+            success_msg: "DO Agent package is installed"
+
+      - name: Check DO Agent service status
+        ansible.builtin.systemd_service:
+            name: do-agent
+        register: do_service
+
+      - name: Assert DO Agent service is enabled
+        ansible.builtin.assert:
+            that:
+                - do_service.status.LoadState == "loaded"
+                - do_service.status.UnitFileState == "enabled"
+            fail_msg: "DO Agent service is not properly configured"
+            success_msg: "DO Agent service is properly configured"
+
+      - name: Check if DO Agent config directory exists
+        ansible.builtin.stat:
+            path: /etc/do-agent
+        register: do_config_dir
+
+      - name: Assert DO Agent config directory exists
+        ansible.builtin.assert:
+            that:
+                - do_config_dir.stat.exists
+                - do_config_dir.stat.isdir
+            fail_msg: "DO Agent config directory does not exist"
+            success_msg: "DO Agent config directory exists"
+
+      - name: Check if DO Agent config file exists (when custom config enabled)
+        ansible.builtin.stat:
+            path: /etc/do-agent/do-agent.yaml
+        register: do_config_file
+        when: do_custom_config_enabled | default(false)
+
+      - name: Assert config file exists when custom config is enabled
+        ansible.builtin.assert:
+            that:
+                - do_config_file.stat.exists
+                - do_config_file.stat.isreg
+            fail_msg: "DO Agent config file does not exist"
+            success_msg: "DO Agent config file exists"
+        when: do_custom_config_enabled | default(false)
+
+      - name: Verify required directories exist
+        ansible.builtin.stat:
+            path: "{{ item }}"
+        register: do_directories
+        loop:
+            - /etc/do-agent
+            - /var/lib/do-agent
+            - /var/log/do-agent
+
+      - name: Assert all required directories exist
+        ansible.builtin.assert:
+            that:
+                - item.stat.exists
+                - item.stat.isdir
+            fail_msg: "Directory {{ item.item }} does not exist"
+            success_msg: "Directory {{ item.item }} exists"
+        loop: "{{ do_directories.results }}"

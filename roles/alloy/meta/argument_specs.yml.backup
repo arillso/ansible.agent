@@ -1,0 +1,1122 @@
+---
+# Argument specifications for Alloy role
+# This file defines and validates all input parameters for the role
+
+argument_specs:
+    # YAML anchors for reusable option groups
+    .common_options: &common_options
+    alloy_user:
+        type: "str"
+        required: false
+        default: "alloy"
+        description: "System user for Grafana Alloy service"
+
+    alloy_group:
+        type: "str"
+        required: false
+        default: "alloy"
+        description: "System group for Grafana Alloy service"
+
+    alloy_config_file:
+        type: "str"
+        required: false
+        default: "/etc/alloy/config.alloy"
+        description: "Configuration file path for Grafana Alloy"
+
+    alloy_service_name:
+        type: "str"
+        required: false
+        default: "alloy"
+        description: "Name of the systemd service"
+
+    # Installation-specific options
+    .install_options: &install_options
+    alloy_package_name:
+        type: "str"
+        required: false
+        default: "alloy"
+        description: "Name of the Grafana Alloy package"
+
+    alloy_package_state:
+        type: "str"
+        required: false
+        default: "present"
+        description: "State of the Grafana Alloy package"
+        choices: ["present", "latest", "absent"]
+
+    alloy_package_only:
+        type: "bool"
+        required: false
+        default: false
+        description: "Install only the package without repository setup (for distributions with Alloy in default repos)"
+
+    alloy_storage_path:
+        type: "str"
+        required: false
+        default: "/var/lib/alloy"
+        description: "Storage path for Grafana Alloy data"
+
+    alloy_log_file:
+        type: "str"
+        required: false
+        default: ""
+        description: "Log file for Grafana Alloy (empty for stdout)"
+
+    # Configuration-specific options
+    .configure_options: &configure_options
+    alloy_config_template:
+        type: "str"
+        required: false
+        default: "etc/alloy/config.alloy.j2"
+        description: "Template path for Grafana Alloy configuration"
+
+    alloy_env_template:
+        type: "str"
+        required: false
+        default: "etc/default/alloy.j2"
+        description: "Template path for Grafana Alloy environment file"
+
+    alloy_service_override_template:
+        type: "str"
+        required: false
+        default: "etc/systemd/system/alloy.service.d/override.conf.j2"
+        description: "Template path for systemd service override"
+
+    alloy_service_override_dir:
+        type: "str"
+        required: false
+        default: "/etc/systemd/system/alloy.service.d"
+        description: "Directory for systemd service overrides"
+
+    alloy_service_override_file:
+        type: "str"
+        required: false
+        default: "/etc/systemd/system/alloy.service.d/override.conf"
+        description: "File path for systemd service override"
+
+    alloy_env_file:
+        type: "str"
+        required: false
+        default: "/etc/default/alloy"
+        description: "Environment file path for Grafana Alloy service"
+
+    alloy_max_memory:
+        type: "str"
+        required: false
+        default: ""
+        description: "Maximum memory limit for Alloy service (e.g., '256Mi', '1Gi')"
+
+    alloy_max_cpu:
+        type: "str"
+        required: false
+        default: ""
+        description: "Maximum CPU limit for Alloy service (e.g., '500m', '1.0')"
+
+    alloy_external_labels:
+        type: "dict"
+        required: false
+        default: {}
+        description: "External labels added to all metrics and logs"
+
+    alloy_log_level:
+        type: "str"
+        required: false
+        default: "info"
+        choices:
+            - "debug"
+            - "info"
+            - "warn"
+            - "error"
+        description: "Log level for Grafana Alloy"
+
+    alloy_log_format:
+        type: "str"
+        required: false
+        default: "logfmt"
+        choices:
+            - "logfmt"
+            - "json"
+        description: "Log format for Grafana Alloy"
+
+    alloy_server_http_listen_address:
+        type: "str"
+        required: false
+        default: "0.0.0.0"
+        description: "HTTP listen address for Grafana Alloy server"
+
+    alloy_enable_web_server:
+        type: "bool"
+        required: false
+        default: true
+        description: "Enable HTTP web server for Alloy UI and API"
+
+    alloy_enable_grpc_server:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enable gRPC server for Alloy clustering and remote calls"
+
+    alloy_server_grpc_listen_address:
+        type: "str"
+        required: false
+        default: "0.0.0.0"
+        description: "gRPC listen address for Grafana Alloy server"
+
+    alloy_server_http_enable_pprof:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables pprof performance profiling"
+
+    alloy_server_log_source_ips:
+        type: "bool"
+        required: false
+        default: false
+        description: "Logs source IP addresses in server logs"
+
+    alloy_server_grpc_max_recv_msg_size:
+        type: "str"
+        required: false
+        default: ""
+        description: "Maximum receive message size for gRPC server"
+
+    alloy_server_grpc_max_send_msg_size:
+        type: "str"
+        required: false
+        default: ""
+        description: "Maximum send message size for gRPC server"
+
+    alloy_server_log_level:
+        type: "str"
+        required: false
+        default: ""
+        description: "Log level for server component"
+
+    alloy_clustering_enabled:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables clustering for high availability"
+
+    alloy_cluster_name:
+        type: "str"
+        required: false
+        default: "alloy-cluster"
+        description: "Name of the Grafana Alloy cluster"
+
+    alloy_cluster_advertise_address:
+        type: "str"
+        required: false
+        default: ""
+        description: "Advertise address for cluster communication"
+
+    alloy_cluster_join_peers:
+        type: "list"
+        required: false
+        default: []
+        description: "List of peer addresses to join cluster"
+        elements: "str"
+
+    alloy_cluster_advertise_port:
+        type: "str"
+        required: false
+        default: ""
+        description: "Port for cluster advertisement"
+
+    alloy_cluster_discover_peers:
+        type: "str"
+        required: false
+        default: ""
+        description: "Peer discovery configuration"
+
+    alloy_cluster_rejoin_interval:
+        type: "str"
+        required: false
+        default: ""
+        description: "Interval for cluster rejoin attempts"
+
+    alloy_enable_prometheus:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables Prometheus metrics collection"
+
+    alloy_prometheus_scrape_interval:
+        type: "str"
+        required: false
+        default: ""
+        description: "Default scrape interval for Prometheus"
+
+    alloy_prometheus_scrape_timeout:
+        type: "str"
+        required: false
+        default: ""
+        description: "Default scrape timeout for Prometheus"
+
+    alloy_prometheus_metrics_path:
+        type: "str"
+        required: false
+        default: ""
+        description: "Default metrics path for Prometheus"
+
+    alloy_prometheus_honor_labels:
+        type: "bool"
+        required: false
+        default: false
+        description: "Honor labels from targets"
+
+    alloy_prometheus_honor_timestamps:
+        type: "bool"
+        required: false
+        default: true
+        description: "Honor timestamps from targets"
+
+    alloy_prometheus_additional_scrape_configs:
+        type: "list"
+        required: false
+        default: []
+        description: "Additional Prometheus scrape configurations"
+        elements: "dict"
+
+    alloy_prometheus_remote_write:
+        type: "list"
+        required: false
+        default:
+            - name: "default"
+              url: "http://localhost:9090/api/v1/write"
+        description: "Prometheus remote write configuration"
+        elements: "dict"
+        options:
+            name:
+                type: "str"
+                required: true
+                description: "Name of the remote write target"
+            url:
+                type: "str"
+                required: true
+                description: "URL of the remote write endpoint"
+            basic_auth:
+                type: "dict"
+                required: false
+                description: "Basic authentication configuration"
+                options:
+                    username:
+                        type: "str"
+                        required: true
+                        description: "Username for basic auth"
+                    password:
+                        type: "str"
+                        required: true
+                        description: "Password for basic auth"
+                        no_log: true
+            bearer_token:
+                type: "str"
+                required: false
+                description: "Bearer token for authentication"
+                no_log: true
+            bearer_token_file:
+                type: "str"
+                required: false
+                description: "Path to bearer token file"
+            headers:
+                type: "dict"
+                required: false
+                description: "Additional HTTP headers"
+            # timeout moved to queue_config
+            tls_config:
+                type: "dict"
+                required: false
+                description: "TLS configuration"
+            queue_config:
+                type: "dict"
+                required: false
+                description: "Queue configuration for remote write"
+                options:
+                    capacity:
+                        type: "int"
+                        required: false
+                        description: "Number of samples to buffer per shard"
+                    max_shards:
+                        type: "int"
+                        required: false
+                        description: "Maximum number of shards, i.e. amount of concurrency"
+                    min_shards:
+                        type: "int"
+                        required: false
+                        description: "Minimum number of shards to keep running"
+                    max_samples_per_send:
+                        type: "int"
+                        required: false
+                        description: "Maximum number of samples per send"
+                    batch_send_deadline:
+                        type: "str"
+                        required: false
+                        description: "Maximum time samples will wait in buffer (e.g. '5s')"
+                    min_backoff:
+                        type: "str"
+                        required: false
+                        description: "Initial retry delay (e.g. '1s')"
+                    max_backoff:
+                        type: "str"
+                        required: false
+                        description: "Maximum retry delay (e.g. '1m')"
+                    backoff_factor:
+                        type: "int"
+                        required: false
+                        description: "Factor to increase backoff for subsequent retries"
+                    timeout:
+                        type: "str"
+                        required: false
+                        description: "Timeout for remote write requests"
+                    retry_on_http_429:
+                        type: "bool"
+                        required: false
+                        default: true
+                        description: "Retry when an HTTP 429 status code is received"
+                    sample_age_limit:
+                        type: "str"
+                        required: false
+                        default: "0s"
+                        description: "Maximum age of samples to send (e.g. '2m')"
+            metadata_config:
+                type: "dict"
+                required: false
+                description: "Metadata configuration"
+
+    alloy_prometheus_relabel_configs:
+        type: "list"
+        required: false
+        default: []
+        description: "List of Prometheus relabeling configurations for advanced label manipulation"
+        elements: "dict"
+        options:
+            name:
+                type: "str"
+                required: true
+                description: "Unique name for the relabeling component"
+            forward_to:
+                type: "str"
+                required: false
+                description: "The receiver to forward metrics to, typically a prometheus.remote_write component"
+            max_cache_size:
+                type: "int"
+                required: false
+                default: 100000
+                description: "Maximum number of entries to keep in the cache for relabeling operations"
+            rules:
+                type: "list"
+                required: true
+                description: "List of relabeling rules to apply"
+                elements: "dict"
+                options:
+                    source_labels:
+                        type: "list"
+                        required: false
+                        elements: "str"
+                        description: "List of source labels to use as input"
+                    target_label:
+                        type: "str"
+                        required: false
+                        description: "Label to modify with the extracted value"
+                    regex:
+                        type: "str"
+                        required: false
+                        description: "Regular expression to extract value from source labels"
+                    replacement:
+                        type: "str"
+                        required: false
+                        description: "Replacement for regex matches"
+                    separator:
+                        type: "str"
+                        required: false
+                        description: "Separator to join source_label values"
+                    action:
+                        type: "str"
+                        required: false
+                        default: "replace"
+                        choices:
+                            - "replace"
+                            - "keep"
+                            - "drop"
+                            - "hashmod"
+                            - "labelmap"
+                            - "labeldrop"
+                            - "labelkeep"
+                        description: "Action to perform on the label"
+                    modulus:
+                        type: "int"
+                        required: false
+                        description: "Modulus for hashmod action"
+                    case_sensitive:
+                        type: "bool"
+                        required: false
+                        description: "Whether regex matching should be case sensitive"
+                    keep_equal:
+                        type: "bool"
+                        required: false
+                        description: "For replace actions whether to keep the source value if the target and source are equal"
+
+    alloy_custom_exporters:
+        type: "list"
+        required: false
+        default: []
+        description: "Custom Prometheus exporters (including Tailscale)"
+        elements: "dict"
+        options:
+            name:
+                type: "str"
+                required: true
+                description: "Name of the exporter"
+            job_name:
+                type: "str"
+                required: true
+                description: "Job name for Prometheus"
+            targets:
+                type: "list"
+                required: true
+                description: "List of target addresses"
+                elements: "dict"
+                options:
+                    address:
+                        type: "str"
+                        required: true
+                        description: "Address of the exporter (host:port)"
+                    labels:
+                        type: "dict"
+                        required: false
+                        description: "Additional labels for the target"
+            remote_write:
+                type: "str"
+                required: false
+                default: "default"
+                description: "Remote write endpoint for this exporter"
+            scrape_interval:
+                type: "str"
+                required: false
+                description: "Scrape interval (e.g. '30s')"
+            scrape_timeout:
+                type: "str"
+                required: false
+                description: "Scrape timeout (e.g. '10s')"
+            metrics_path:
+                type: "str"
+                required: false
+                default: "/metrics"
+                description: "Path to metrics"
+            scheme:
+                type: "str"
+                required: false
+                default: "http"
+                choices:
+                    - "http"
+                    - "https"
+                description: "Scheme for the exporter"
+            params:
+                type: "dict"
+                required: false
+                description: "URL parameters for scrape requests"
+            basic_auth:
+                type: "dict"
+                required: false
+                description: "Basic authentication"
+                options:
+                    username:
+                        type: "str"
+                        required: true
+                        description: "Username"
+                    password:
+                        type: "str"
+                        required: true
+                        description: "Password"
+                        no_log: true
+            bearer_token:
+                type: "str"
+                required: false
+                description: "Bearer token"
+                no_log: true
+            bearer_token_file:
+                type: "str"
+                required: false
+                description: "Path to bearer token file"
+            tls_config:
+                type: "dict"
+                required: false
+                description: "TLS configuration"
+                options:
+                    ca_file:
+                        type: "str"
+                        required: false
+                        description: "CA certificate file"
+                    cert_file:
+                        type: "str"
+                        required: false
+                        description: "Client certificate file"
+                    key_file:
+                        type: "str"
+                        required: false
+                        description: "Private key file"
+                    server_name:
+                        type: "str"
+                        required: false
+                        description: "Server name for TLS verification"
+                    insecure_skip_verify:
+                        type: "bool"
+                        required: false
+                        default: false
+                        description: "Skip TLS certificate verification"
+            follow_redirects:
+                type: "bool"
+                required: false
+                default: true
+                description: "Follow HTTP redirects"
+            enable_http2:
+                type: "bool"
+                required: false
+                default: true
+                description: "Enable HTTP/2"
+            metric_relabel_configs:
+                type: "list"
+                required: false
+                description: "Metric relabel configurations"
+                elements: "dict"
+
+    alloy_enable_loki:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables Loki log collection"
+
+    alloy_loki_file_sources:
+        type: "list"
+        required: false
+        default: []
+        description: "Loki file source configurations"
+        elements: "dict"
+
+    alloy_loki_journal_enabled:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables systemd journal log collection"
+
+    alloy_loki_journal_matches:
+        type: "list"
+        required: false
+        default: []
+        description: "Journal matches for filtering"
+        elements: "str"
+
+    alloy_loki_journal_max_age:
+        type: "str"
+        required: false
+        default: ""
+        description: "Maximum age for journal entries"
+
+    alloy_loki_journal_relabel_rules:
+        type: "list"
+        required: false
+        default: []
+        description: "Relabel rules for journal entries"
+        elements: "dict"
+
+    alloy_loki_journal_write_to:
+        type: "str"
+        required: false
+        default: "default"
+        description: "Write target for journal entries"
+
+    alloy_loki_process_configs:
+        type: "list"
+        required: false
+        default: []
+        description: "Loki process pipeline configurations"
+        elements: "dict"
+
+    alloy_loki_clients:
+        type: "list"
+        required: false
+        default:
+            - name: "default"
+              url: "http://localhost:3100/loki/api/v1/push"
+        description: "List of Loki client configurations"
+        elements: "dict"
+        options:
+            name:
+                type: "str"
+                required: true
+                description: "Name of the Loki client"
+            url:
+                type: "str"
+                required: true
+                description: "URL of the Loki endpoint"
+            basic_auth:
+                type: "dict"
+                required: false
+                description: "Basic authentication configuration"
+                options:
+                    username:
+                        type: "str"
+                        required: true
+                        description: "Username for basic auth"
+                    password:
+                        type: "str"
+                        required: true
+                        description: "Password for basic auth"
+                        no_log: true
+            bearer_token:
+                type: "str"
+                required: false
+                description: "Bearer token for authentication"
+                no_log: true
+            bearer_token_file:
+                type: "str"
+                required: false
+                description: "Path to bearer token file"
+            headers:
+                type: "dict"
+                required: false
+                description: "Additional HTTP headers"
+            tls_config:
+                type: "dict"
+                required: false
+                description: "TLS configuration"
+            # timeout is now moved to queue_config in current Alloy versions
+            queue_config:
+                type: "dict"
+                required: false
+                description: "Queue configuration for Loki client"
+                options:
+                    capacity:
+                        type: "str"
+                        required: false
+                        description: "Number of logs to buffer (as string with units, e.g. '2500MiB')"
+
+                    drain_timeout:
+                        type: "str"
+                        required: false
+                        description: "Maximum amount of time to wait for the queue to be drained on shutdown (e.g. '30s')"
+            external_labels:
+                type: "dict"
+                required: false
+                description: "External labels for all logs"
+            tenant_id:
+                type: "str"
+                required: false
+                description: "Tenant ID for multi-tenant Loki instances"
+
+    alloy_enable_otel:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables OpenTelemetry support"
+
+    alloy_otel_grpc_endpoint:
+        type: "str"
+        required: false
+        default: "0.0.0.0:4317"
+        description: "gRPC endpoint for OpenTelemetry receiver"
+
+    alloy_otel_http_endpoint:
+        type: "str"
+        required: false
+        default: "0.0.0.0:4318"
+        description: "HTTP endpoint for OpenTelemetry receiver"
+
+    alloy_otel_grpc_tls:
+        type: "dict"
+        required: false
+        default: {}
+        description: "TLS configuration for gRPC endpoint"
+
+    alloy_otel_http_tls:
+        type: "dict"
+        required: false
+        default: {}
+        description: "TLS configuration for HTTP endpoint"
+
+    alloy_otel_traces_output:
+        type: "str"
+        required: false
+        default: ""
+        description: "Output target for OpenTelemetry traces"
+
+    alloy_enable_otel_processors:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enables OpenTelemetry processors"
+
+    alloy_otel_processor_batch:
+        type: "dict"
+        required: false
+        default: {}
+        description: "Batch processor configuration"
+
+    alloy_otel_processor_attributes:
+        type: "dict"
+        required: false
+        default: {}
+        description: "Attributes processor configuration"
+
+    alloy_otel_processor_resource:
+        type: "dict"
+        required: false
+        default: {}
+        description: "Resource processor configuration"
+
+    alloy_otel_exporters:
+        type: "list"
+        required: false
+        default: []
+        description: "List of OpenTelemetry exporters"
+        elements: "dict"
+        options:
+            type:
+                type: "str"
+                required: true
+                choices:
+                    - "otlp"
+                    - "jaeger"
+                    - "zipkin"
+                    - "logging"
+                    - "prometheus"
+                    - "kafka"
+                    - "file"
+                    - "datadog"
+                description: "Type of the exporter"
+            name:
+                type: "str"
+                required: true
+                description: "Name of the exporter"
+            endpoint:
+                type: "str"
+                required: false
+                description: "Endpoint URL of the exporter"
+            headers:
+                type: "dict"
+                required: false
+                description: "HTTP headers"
+            timeout:
+                type: "str"
+                required: false
+                description: "Timeout for exporter requests"
+            tls:
+                type: "dict"
+                required: false
+                description: "TLS configuration"
+
+    # Service-specific options
+    .service_options: &service_options
+    alloy_port:
+        type: "int"
+        required: false
+        default: 12345
+        description: "HTTP port for Grafana Alloy server"
+
+    alloy_grpc_port:
+        type: "int"
+        required: false
+        default: 12346
+        description: "gRPC port for Grafana Alloy server"
+
+    alloy_health_check_enabled:
+        type: "bool"
+        required: false
+        default: true
+        description: "Enables health check after installation"
+
+    alloy_version:
+        type: "str"
+        required: false
+        default: "latest"
+        description: "Version of the Grafana Alloy package (latest for newest version)"
+
+    # Node exporter configuration options
+    node_exporter_options: &node_exporter_options
+        alloy_enable_advanced_node_exporter:
+            type: "bool"
+            required: false
+            default: false
+            description: "Enable advanced Node Exporter integration with customized configuration"
+
+        alloy_node_exporter_config:
+            type: "dict"
+            required: false
+            description: "Advanced configuration for the integrated Node Exporter"
+            default: {}
+            options:
+                disable_collectors:
+                    type: "list"
+                    elements: "str"
+                    required: false
+                    description: "List of Node Exporter collectors to disable"
+
+                filesystem:
+                    type: "dict"
+                    required: false
+                    description: "Configuration for filesystem collector"
+                    options:
+                        fs_types_exclude:
+                            type: "str"
+                            required: false
+                            description: "Regexp of filesystem types to exclude from collection"
+
+                        mount_points_exclude:
+                            type: "str"
+                            required: false
+                            description: "Regexp of mount points to exclude from collection"
+
+                        mount_timeout:
+                            type: "str"
+                            required: false
+                            description: "Timeout for collecting filesystem metrics"
+
+                netclass:
+                    type: "dict"
+                    required: false
+                    description: "Configuration for netclass collector"
+                    options:
+                        ignored_devices:
+                            type: "str"
+                            required: false
+                            description: "Regexp of net devices to ignore for netclass collector"
+
+                netdev:
+                    type: "dict"
+                    required: false
+                    description: "Configuration for netdev collector"
+                    options:
+                        device_exclude:
+                            type: "str"
+                            required: false
+                            description: "Regexp of net devices to exclude from collection"
+
+                textfile_directory:
+                    type: "str"
+                    required: false
+                    description: "Directory to read custom metrics files from"
+
+                textfile_directory_pattern:
+                    type: "str"
+                    required: false
+                    description: "Pattern of files to be read from textfile directory"
+
+                systemd:
+                    type: "dict"
+                    required: false
+                    description: "Configuration for systemd collector"
+                    options:
+                        unit_include:
+                            type: "list"
+                            elements: "str"
+                            required: false
+                            description: "List of systemd units to include in metrics collection"
+
+                        unit_exclude:
+                            type: "list"
+                            elements: "str"
+                            required: false
+                            description: "List of systemd units to exclude from metrics collection"
+
+                        enable_start_time_metrics:
+                            type: "bool"
+                            required: false
+                            description: "Enable start time metrics for systemd units"
+
+                        enable_task_metrics:
+                            type: "bool"
+                            required: false
+                            description: "Enable task metrics for systemd units"
+
+                        enable_restarts_metrics:
+                            type: "bool"
+                            required: false
+                            description: "Enable restart metrics for systemd units"
+
+                procfs_path:
+                    type: "str"
+                    required: false
+                    description: "Path to procfs filesystem (used in container environments)"
+
+                sysfs_path:
+                    type: "str"
+                    required: false
+                    description: "Path to sysfs filesystem (used in container environments)"
+
+                environment:
+                    type: "str"
+                    required: false
+                    description: "Environment tag for node metrics (e.g. production, staging)"
+
+                node_type:
+                    type: "str"
+                    required: false
+                    description: "Node type tag for categorizing server roles (e.g. gateway, controller)"
+
+                region:
+                    type: "str"
+                    required: false
+                    description: "Region tag for geographic location of the node"
+
+                instance:
+                    type: "str"
+                    required: false
+                    description: "Instance identifier override (defaults to ansible_hostname)"
+
+        alloy_node_exporter_metric_allowlist:
+            type: "list"
+            elements: "str"
+            required: false
+            description: "List of metrics to keep, filtering out all others to reduce network and storage usage"
+
+    # Grafana Remote Configuration options
+    .remotecfg_options: &remotecfg_options
+    alloy_enable_remotecfg:
+        type: "bool"
+        required: false
+        default: false
+        description: "Enable Grafana remote configuration management via remotecfg block"
+
+    alloy_remotecfg:
+        type: "dict"
+        required: false
+        default: {}
+        description: "Remote configuration using the remotecfg block (only one per config file)"
+        options:
+            url:
+                type: "str"
+                required: true
+                description: "The address of the API to poll for configuration"
+            poll_frequency:
+                type: "str"
+                required: false
+                default: "1m"
+                description: "How often to poll the API for new configuration (minimum 10s)"
+            id:
+                type: "str"
+                required: false
+                description: "A self-reported ID (defaults to random UUID if not set)"
+            name:
+                type: "str"
+                required: false
+                default: ""
+                description: "A human-readable name for the collector"
+            attributes:
+                type: "dict"
+                required: false
+                default: {}
+                description: "A set of self-reported attributes (excludes collector.* prefix)"
+            basic_auth:
+                type: "dict"
+                required: false
+                description: "Configure basic_auth for authenticating to the endpoint"
+                options:
+                    username:
+                        type: "str"
+                        required: true
+                        description: "Basic auth username"
+                    password:
+                        type: "str"
+                        required: false
+                        description: "Basic auth password"
+                        no_log: true
+                    password_file:
+                        type: "str"
+                        required: false
+                        description: "File containing the basic auth password"
+            bearer_token:
+                type: "str"
+                required: false
+                description: "Bearer token to authenticate with"
+                no_log: true
+            bearer_token_file:
+                type: "str"
+                required: false
+                description: "File containing a bearer token to authenticate with"
+            tls_config:
+                type: "dict"
+                required: false
+                description: "Configure TLS settings for connecting to the endpoint"
+                options:
+                    ca_file:
+                        type: "str"
+                        required: false
+                        description: "CA certificate to validate the server with"
+                    insecure_skip_verify:
+                        type: "bool"
+                        required: false
+                        description: "Disables validation of the server certificate"
+            enable_http2:
+                type: "bool"
+                required: false
+                default: true
+                description: "Whether HTTP2 is supported for requests"
+            follow_redirects:
+                type: "bool"
+                required: false
+                default: true
+                description: "Whether redirects returned by the server should be followed"
+
+    # OS-specific installation options
+    .os_specific_options: &os_specific_options
+    alloy_package_dependencies:
+        type: "list"
+        elements: "str"
+        required: false
+        description: "OS-specific package dependencies for Grafana Alloy installation"
+
+    alloy_grafana_gpg_key_url:
+        type: "str"
+        required: false
+        description: "URL for Grafana GPG key (OS-specific)"
+
+    alloy_grafana_keyring_path:
+        type: "str"
+        required: false
+        description: "Path for Grafana GPG keyring (Debian/Ubuntu only)"
+
+    alloy_grafana_repository:
+        type: "str"
+        required: false
+        description: "Grafana repository configuration (APT for Debian/Ubuntu, RPM for RedHat/CentOS)"
+
+    main:
+        short_description: "Install and configure Grafana Alloy for monitoring and observability"
+        description: |
+            This role installs and configures Grafana Alloy via official package sources
+            for collecting, transforming, and forwarding telemetry data.
+        author: "Simon Bärlocher"
+        options:
+            <<: [*common_options, *install_options, *configure_options, *service_options, *remotecfg_options, *os_specific_options]
+
+    install:
+        short_description: "Install Grafana Alloy package and dependencies"
+        description: |
+            This entry point only handles the installation of Grafana Alloy package
+            and required dependencies without configuration.
+        author: "Simon Bärlocher"
+        options:
+            <<: *common_options
+            <<: *install_options
+            <<: *os_specific_options
+
+    configure:
+        short_description: "Configure Grafana Alloy with templates and settings"
+        description: |
+            This entry point handles the configuration of Grafana Alloy using
+            templates and variable settings.
+        author: "Simon Bärlocher"
+        options:
+            <<: *common_options
+            <<: *configure_options
+            <<: *remotecfg_options
+
+    service:
+        short_description: "Manage Grafana Alloy systemd service"
+        description: |
+            This entry point manages the systemd service for Grafana Alloy,
+            including starting, stopping, and health checks.
+        author: "Simon Bärlocher"
+        options:
+            <<: *common_options
+            <<: *service_options

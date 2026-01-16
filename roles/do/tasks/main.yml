@@ -1,9 +1,21 @@
 ---
-- name: Include distribution tasks
-  ansible.builtin.include_tasks: "{{ lookup('ansible.builtin.first_found', params) }}"
-  vars:
-    params:
-      skip: true
-      files:
-        - "install_do_{{ ansible_os_family | lower }}.yml"
-        - "install_do_{{ ansible_system | lower }}.yml"
+# Main tasks for DigitalOcean role
+# Diese Datei orchestriert die Installation und Konfiguration von DigitalOcean Agent
+
+- name: Include installation tasks
+  ansible.builtin.include_tasks: install.yml
+  tags:
+      - do
+      - install
+
+- name: Include configuration tasks
+  ansible.builtin.include_tasks: configure.yml
+  tags:
+      - do
+      - configure
+
+- name: Include service management tasks
+  ansible.builtin.include_tasks: service.yml
+  tags:
+      - do
+      - service

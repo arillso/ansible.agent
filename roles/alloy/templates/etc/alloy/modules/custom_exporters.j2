@@ -1,0 +1,40 @@
+{# Custom Exporters Configuration Module #}
+{% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options %}
+
+{% if alloy_custom_exporters | default([]) | length > 0 %}
+// Custom Prometheus exporters
+{% for custom_exporter in alloy_custom_exporters %}
+prometheus.scrape "{{ custom_exporter.name }}" {
+  targets = [
+    {% for target in custom_exporter.targets %}
+    {"__address__" = "{{ target.address }}"{% if target.labels | default('') | length > 0 %}, {% for label_key, label_value in target.labels.items() %}{{ label_key }} = "{{ label_value }}"{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}},
+    {% endfor %}
+  ]
+  forward_to = [prometheus.remote_write.{{ custom_exporter.remote_write | default(alloy_prometheus_remote_write[0].name) | replace('-', '_') }}.receiver]
+  job_name   = "{{ custom_exporter.job_name }}"
+  {% if custom_exporter.scrape_interval | default("") | length > 0 %}
+  scrape_interval = "{{ custom_exporter.scrape_interval }}"
+  {% endif %}
+  {% if custom_exporter.scrape_timeout | default("") | length > 0 %}
+  scrape_timeout = "{{ custom_exporter.scrape_timeout }}"
+  {% endif %}
+  {% if custom_exporter.metrics_path | default('') | length > 0 %}
+  metrics_path = "{{ custom_exporter.metrics_path }}"
+  {% endif %}
+  {% if custom_exporter.scheme | default('') | length > 0 %}
+  scheme = "{{ custom_exporter.scheme }}"
+  {% endif %}
+  {% if custom_exporter.params | default('') | length > 0 %}
+  params = {{ custom_exporter.params | to_json }}
+  {% endif %}
+  {{ auth_options(custom_exporter) }}
+  {{ tls_config(custom_exporter.tls_config) }}
+  {% if custom_exporter.follow_redirects | default(true) %}
+  follow_redirects = true
+  {% endif %}
+  {% if custom_exporter.enable_http2 | default(true) %}
+  enable_http2 = true
+  {% endif %}
+}
+{% endfor %}
+{% endif %}

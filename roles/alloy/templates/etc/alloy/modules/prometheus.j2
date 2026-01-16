@@ -1,0 +1,221 @@
+{#
+   Prometheus Configuration Module
+
+   Comprehensive configuration for Prometheus scraping in Alloy.
+   Implements all available options from the Alloy River format.
+   See https://grafana.com/docs/alloy/latest/reference/components/prometheus.scrape/
+#}
+{% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options, external_labels, queue_config, metadata_config, endpoint_config, process_relabel_configs, relabel_config, authorization_block, basic_auth_block, oauth2_block, clustering_block %}
+
+{% if alloy_enable_prometheus | default(false) %}
+{% if alloy_prometheus_additional_scrape_configs | default([]) | length > 0 %}
+// Additional Prometheus scrape configurations
+{% for scrape_config in alloy_prometheus_additional_scrape_configs %}
+prometheus.scrape "{{ scrape_config.job_name | replace('-', '_') }}" {
+  targets = [
+    {% if scrape_config.targets | default([]) | length > 0 %}
+    {% for target in scrape_config.targets %}
+    {"__address__" = "{{ target }}"},
+    {% endfor %}
+    {% elif scrape_config.static_configs | default([]) | length > 0 %}
+    {% for static_config in scrape_config.static_configs %}
+    {% for target in static_config.targets %}
+    {"__address__" = "{{ target }}"},
+    {% endfor %}
+    {% endfor %}
+    {% endif %}
+  ]
+
+  {# Forward to prometheus.relabel if configured, otherwise directly to remote_write #}
+  {% if scrape_config.forward_to | default('') | length > 0 %}
+  forward_to = [{{ scrape_config.forward_to | replace('-', '_') }}]
+  {% else %}
+  forward_to = [prometheus.remote_write.{{ scrape_config.remote_write | default(alloy_prometheus_remote_write[0].name) | replace('-', '_') }}.receiver]
+  {% endif %}
+
+  {# Core Configuration #}
+  job_name   = "{{ scrape_config.job_name }}"
+  {% if scrape_config.scrape_interval | default('') | length > 0 %}
+  scrape_interval = "{{ scrape_config.scrape_interval }}"
+  {% endif %}
+  {% if scrape_config.scrape_timeout | default('') | length > 0 %}
+  scrape_timeout = "{{ scrape_config.scrape_timeout }}"
+  {% endif %}
+  {% if scrape_config.metrics_path | default('') | length > 0 %}
+  metrics_path = "{{ scrape_config.metrics_path }}"
+  {% endif %}
+  {% if scrape_config.scheme | default('') | length > 0 %}
+  scheme = "{{ scrape_config.scheme }}"
+  {% endif %}
+
+  {# Advanced Scraping Options #}
+  {% if scrape_config.honor_labels | default('') != '' %}
+  honor_labels = {{ scrape_config.honor_labels | lower }}
+  {% endif %}
+  {% if scrape_config.honor_timestamps | default('') != '' %}
+  honor_timestamps = {{ scrape_config.honor_timestamps | lower }}
+  {% endif %}
+  {% if scrape_config.follow_redirects | default('') != '' %}
+  follow_redirects = {{ scrape_config.follow_redirects | lower }}
+  {% endif %}
+  {% if scrape_config.enable_http2 | default('') != '' %}
+  enable_http2 = {{ scrape_config.enable_http2 | lower }}
+  {% endif %}
+  {% if scrape_config.body_size_limit | default('') != '' %}
+  body_size_limit = {{ scrape_config.body_size_limit }}
+  {% endif %}
+  {% if scrape_config.sample_limit | default('') != '' %}
+  sample_limit = {{ scrape_config.sample_limit }}
+  {% endif %}
+  {% if scrape_config.target_limit | default('') != '' %}
+  target_limit = {{ scrape_config.target_limit }}
+  {% endif %}
+  {% if scrape_config.label_limit | default('') != '' %}
+  label_limit = {{ scrape_config.label_limit }}
+  {% endif %}
+  {% if scrape_config.label_name_length_limit | default('') != '' %}
+  label_name_length_limit = {{ scrape_config.label_name_length_limit }}
+  {% endif %}
+  {% if scrape_config.label_value_length_limit | default('') != '' %}
+  label_value_length_limit = {{ scrape_config.label_value_length_limit }}
+  {% endif %}
+
+  {# Native Histogram Options #}
+  {% if scrape_config.scrape_classic_histograms | default('') != '' %}
+  scrape_classic_histograms = {{ scrape_config.scrape_classic_histograms | lower }}
+  {% endif %}
+  {% if scrape_config.scrape_native_histograms | default('') != '' %}
+  scrape_native_histograms = {{ scrape_config.scrape_native_histograms | lower }}
+  {% endif %}
+  {% if scrape_config.extra_metrics | default('') != '' %}
+  extra_metrics = {{ scrape_config.extra_metrics | lower }}
+  {% endif %}
+  {% if scrape_config.track_timestamps_staleness | default('') != '' %}
+  track_timestamps_staleness = {{ scrape_config.track_timestamps_staleness | lower }}
+  {% endif %}
+
+  {# Scrape Protocol Configuration #}
+  {% if scrape_config.enable_protobuf_negotiation | default('') != '' %}
+  enable_protobuf_negotiation = {{ scrape_config.enable_protobuf_negotiation | lower }}
+  {% endif %}
+  {% if scrape_config.scrape_protocols | default([]) | length > 0 %}
+  scrape_protocols = {{ scrape_config.scrape_protocols | to_json }}
+  {% endif %}
+
+  {# HTTP Configuration #}
+  {% if scrape_config.http_headers | default({}) | length > 0 %}
+  http_headers = {
+    {% for header, values in scrape_config.http_headers.items() %}
+    "{{ header }}" = {{ values | to_json if values is sequence else '"' ~ values ~ '"' }},
+    {% endfor %}
+  }
+  {% endif %}
+
+  {# Proxy Configuration #}
+  {% if scrape_config.proxy_url | default('') | length > 0 %}
+  proxy_url = "{{ scrape_config.proxy_url }}"
+  {% endif %}
+  {% if scrape_config.proxy_from_environment | default('') != '' %}
+  proxy_from_environment = {{ scrape_config.proxy_from_environment | lower }}
+  {% endif %}
+  {% if scrape_config.no_proxy | default('') | length > 0 %}
+  no_proxy = "{{ scrape_config.no_proxy }}"
+  {% endif %}
+  {% if scrape_config.proxy_connect_header | default({}) | length > 0 %}
+  proxy_connect_header = {
+    {% for header, values in scrape_config.proxy_connect_header.items() %}
+    "{{ header }}" = {{ values | to_json if values is sequence else '"' ~ values ~ '"' }},
+    {% endfor %}
+  }
+  {% endif %}
+
+  {# URL Parameters #}
+  {% if scrape_config.params | default({}) | length > 0 %}
+  params = {
+    {% for param, values in scrape_config.params.items() %}
+    "{{ param }}" = {{ values | to_json if values is sequence else '"' ~ values ~ '"' }},
+    {% endfor %}
+  }
+  {% endif %}
+
+  {# Error Handling #}
+  {% if scrape_config.scrape_failure_log_file | default('') | length > 0 %}
+  scrape_failure_log_file = "{{ scrape_config.scrape_failure_log_file }}"
+  {% endif %}
+
+  {# Authentication Blocks #}
+  {{ auth_options(scrape_config) }}
+  {{ authorization_block(scrape_config) }}
+  {{ basic_auth_block(scrape_config) }}
+  {{ oauth2_block(scrape_config) }}
+  {{ tls_config(scrape_config.tls_config) }}
+
+  {# Clustering Configuration #}
+  {{ clustering_block(scrape_config.clustering) }}
+
+  {# Relabeling Configuration #}
+  {{ process_relabel_configs(scrape_config.relabel_configs) }}
+}
+{% endfor %}
+{% endif %}
+
+// Prometheus remote write configuration
+{% for remote_write in alloy_prometheus_remote_write %}
+prometheus.remote_write "{{ remote_write.name | replace('-', '_') }}" {
+  {{ external_labels(alloy_external_labels) }}
+
+  endpoint {
+    url = "{{ remote_write.url }}"
+
+    {% if remote_write.basic_auth | default({}) | length > 0 %}
+    basic_auth {
+      {% if remote_write.basic_auth.username | default('') | length > 0 %}
+      {% if remote_write.basic_auth.username.startswith('env:') %}
+      username = sys.env("{{ remote_write.basic_auth.username | replace('env:', '') }}")
+      {% else %}
+      username = "{{ remote_write.basic_auth.username }}"
+      {% endif %}
+      {% endif %}
+
+      {% if remote_write.basic_auth.password | default('') | length > 0 %}
+      {% if remote_write.basic_auth.password.startswith('env:') %}
+      password = sys.env("{{ remote_write.basic_auth.password | replace('env:', '') }}")
+      {% else %}
+      password = "{{ remote_write.basic_auth.password }}"
+      {% endif %}
+      {% endif %}
+    }
+    {% endif %}
+
+    {% if remote_write.bearer_token | default('') | length > 0 %}
+    {% if remote_write.bearer_token.startswith('env:') %}
+    bearer_token = sys.env("{{ remote_write.bearer_token | replace('env:', '') }}")
+    {% else %}
+    bearer_token = "{{ remote_write.bearer_token }}"
+    {% endif %}
+    {% endif %}
+
+    {% if remote_write.bearer_token_file | default('') | length > 0 %}
+    bearer_token_file = "{{ remote_write.bearer_token_file }}"
+    {% endif %}
+
+    {% if remote_write.headers | default({}) | length > 0 %}
+    {{ headers_config(remote_write.headers) }}
+    {% endif %}
+
+    {% if remote_write.tls_config | default({}) | length > 0 %}
+    {{ tls_config(remote_write.tls_config) }}
+    {% endif %}
+
+    {# Handle queue_config safely - only pass to macro if it exists #}
+    {% if remote_write.queue_config is defined and remote_write.queue_config is not none and remote_write.queue_config | default(alloy_default_queue_config) | length > 0 %}
+    {{ queue_config(remote_write.queue_config) }}
+    {% endif %}
+
+    {% if remote_write.metadata_config | default({}) | length > 0 %}
+    {{ metadata_config(remote_write.metadata_config) }}
+    {% endif %}
+  }
+}
+{% endfor %}
+{% endif %}

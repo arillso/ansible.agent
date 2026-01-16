@@ -1,0 +1,242 @@
+---
+# Argument specifications for Tailscale role
+# This file defines and validates all input parameters for the role
+
+argument_specs:
+    main:
+        short_description: "Install and configure Tailscale VPN for mesh networking"
+        description: |
+            This role installs and configures Tailscale VPN via official package sources
+            for creating secure mesh networks between devices and infrastructure.
+            All configuration is persistent via /etc/tailscale/config.json daemon config file.
+        author: "Simon Bärlocher"
+        options:
+            # Package and Service Configuration
+            tailscale_package_name:
+                type: "str"
+                required: false
+                default: "tailscale"
+                description: "Name of the Tailscale package to install"
+
+            tailscale_package_state:
+                type: "str"
+                required: false
+                default: "present"
+                choices: ["present", "absent", "latest"]
+                description: "Desired state of the Tailscale package"
+
+            tailscale_service_state:
+                type: "str"
+                required: false
+                default: "started"
+                choices: ["started", "stopped", "restarted", "reloaded"]
+                description: "Desired state of the tailscaled service"
+
+            tailscale_service_enabled:
+                type: "bool"
+                required: false
+                default: true
+                description: "Whether the tailscaled service should be enabled on boot"
+
+            tailscale_config_dir:
+                type: "str"
+                required: false
+                default: "/etc/tailscale"
+                description: "Directory path for Tailscale configuration files"
+
+            tailscale_service_override:
+                type: "dict"
+                required: false
+                default: {}
+                description: "Dictionary of systemd service override parameters"
+
+            # Authentication
+            tailscale_auth_key:
+                type: "str"
+                required: true
+                description: "Tailscale authentication key for initial device registration (tskey-auth-* or tskey-reusable-*)"
+                no_log: true
+
+            tailscale_tags:
+                type: "list"
+                required: false
+                default: []
+                elements: "str"
+                description: "List of Tailscale tags for ACL-based access control (e.g., 'tag:gateway')"
+
+            tailscale_reset_authentication:
+                type: "bool"
+                required: false
+                default: false
+                description: "Perform logout and re-authentication (WARNING: temporary disconnect)"
+
+            # Daemon Configuration File
+            tailscale_config_enabled:
+                type: "bool"
+                required: false
+                default: true
+                description: "Enable persistent daemon configuration via config.json"
+
+            tailscale_config_file:
+                type: "str"
+                required: false
+                default: "/etc/tailscale/config.json"
+                description: "Path to Tailscale daemon configuration file"
+
+            # Authentication (Daemon Config)
+            tailscale_server_url:
+                type: "str"
+                required: false
+                default: ""
+                description: "Custom control server URL (default: https://controlplane.tailscale.com)"
+
+            # General Settings (Daemon Config)
+            tailscale_locked:
+                type: "str"
+                required: false
+                default: ""
+                description: "Lock config to prevent CLI changes (true/false)"
+
+            tailscale_enabled:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable/disable Tailscale (true/false)"
+
+            tailscale_hostname:
+                type: "str"
+                required: false
+                default: ""
+                description: "Custom hostname for this device in Tailscale network"
+
+            tailscale_operator_user:
+                type: "str"
+                required: false
+                default: ""
+                description: "Unix username allowed to operate tailscale without root"
+
+            # DNS & Routing (Daemon Config)
+            tailscale_accept_dns:
+                type: "str"
+                required: false
+                default: ""
+                description: "Accept DNS configuration from tailnet (true/false)"
+
+            tailscale_accept_routes:
+                type: "str"
+                required: false
+                default: ""
+                description: "Accept subnet routes advertised by other nodes (true/false)"
+
+            tailscale_advertise_routes:
+                type: "list"
+                required: false
+                default: []
+                elements: "str"
+                description: "Subnet routes to advertise in CIDR format (e.g., '192.168.1.0/24')"
+
+            tailscale_snat_subnet_routes:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable source NAT for advertised routes (true/false)"
+
+            # Exit Nodes (Daemon Config)
+            tailscale_advertise_exit_node:
+                type: "str"
+                required: false
+                default: ""
+                description: "Advertise this node as an exit node (true/false)"
+
+            tailscale_exit_node:
+                type: "str"
+                required: false
+                default: ""
+                description: "Exit node to use (IP, stable node ID, or MagicDNS name)"
+
+            tailscale_exit_node_allow_lan_access:
+                type: "str"
+                required: false
+                default: ""
+                description: "Allow direct LAN access when using exit node (true/false)"
+
+            # Features (Daemon Config)
+            tailscale_ssh_enabled:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable Tailscale SSH server (true/false)"
+
+            tailscale_webclient_enabled:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable web client interface on port 5252 (true/false)"
+
+            tailscale_shields_up:
+                type: "str"
+                required: false
+                default: ""
+                description: "Block all incoming connections from tailnet (true/false)"
+
+            tailscale_posture_checking:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable device posture data collection (true/false)"
+
+            tailscale_advertise_services:
+                type: "list"
+                required: false
+                default: []
+                elements: "str"
+                description: "Services to advertise (e.g., 'svc:my-api')"
+
+            # App Connector (Daemon Config)
+            tailscale_advertise_connector:
+                type: "str"
+                required: false
+                default: ""
+                description: "Advertise as app connector for domain-based routing (true/false)"
+
+            # Auto-Update (Daemon Config)
+            tailscale_auto_update_check:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable automatic update checking (true/false)"
+
+            tailscale_auto_update_apply:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable automatic update application (true/false)"
+
+            # Linux-Specific (Daemon Config)
+            tailscale_netfilter_mode:
+                type: "str"
+                required: false
+                default: ""
+                choices: ["", "on", "off", "nodivert"]
+                description: "Firewall management mode: 'on' (default), 'off', or 'nodivert'"
+
+            tailscale_stateful_filtering:
+                type: "str"
+                required: false
+                default: ""
+                description: "Enable stateful packet filtering (true/false)"
+
+            # Advanced (Daemon Config)
+            tailscale_static_endpoints:
+                type: "list"
+                required: false
+                default: []
+                elements: "str"
+                description: "WireGuard endpoints in '<address>:<port>' format"
+
+            # Legacy/Advanced Options
+            tailscale_preferences:
+                type: "dict"
+                required: false
+                default: {}
+                description: "Custom Tailscale preferences via 'tailscale set' (advanced users only)"

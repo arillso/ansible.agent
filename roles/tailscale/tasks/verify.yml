@@ -1,0 +1,118 @@
+---
+# Tailscale Connectivity Verification Tasks
+# Verify Tailscale connectivity and status using local facts
+
+- name: Gather Tailscale facts before verification
+  ansible.builtin.setup:
+      filter: ansible_local
+  tags: [tailscale, verify, facts]
+
+- name: Check if Tailscale facts are available
+  ansible.builtin.debug:
+      msg: "Tailscale local facts: {{ ansible_local.tailscale | default('Not available') }}"
+  tags: [tailscale, verify, debug]
+
+- name: Debug actual facts structure
+  ansible.builtin.debug:
+      var: ansible_local.tailscale
+  when: ansible_local.tailscale is defined
+  tags: [tailscale, verify, debug]
+
+- name: Display Tailscale connection status
+  ansible.builtin.debug:
+      msg:
+          - "Tailscale Status: {{ ansible_local.tailscale.status.backend_state | default('Unknown') }}"
+          - "Tailscale Version: {{ ansible_local.tailscale.version | default('Unknown') }}"
+          - "Self IPv4: {{ ansible_local.tailscale.network.ipv4 | default('N/A') }}"
+          - "Self IPv6: {{ ansible_local.tailscale.network.ipv6 | default('N/A') }}"
+          - "Hostname: {{ ansible_local.tailscale.network.hostname | default('N/A') }}"
+          - "DNS Name: {{ ansible_local.tailscale.network.dns_name | default('N/A') }}"
+          - "Tailnet: {{ ansible_local.tailscale.network.tailnet | default('N/A') }}"
+          - "Connected Peers: {{ ansible_local.tailscale.peers.count | default(0) }}"
+          - "Online Peers: {{ ansible_local.tailscale.peers.online | default(0) }}"
+          - "Health: {{ ansible_local.tailscale.health | length | default(0) }} issues"
+  when: ansible_local.tailscale is defined
+  tags: [tailscale, verify, status]
+
+- name: Verify Tailscale is running
+  ansible.builtin.assert:
+      that:
+          - ansible_local.tailscale is defined
+          - ansible_local.tailscale is mapping
+          - ansible_local.tailscale.status.installed | default(false) | bool
+          - ansible_local.tailscale.status.running | default(false) | bool
+          - ansible_local.tailscale.status.backend_state | default('') == 'Running'
+          - ansible_local.tailscale.network.ipv4 is defined
+          - ansible_local.tailscale.network.ipv4 != ""
+      fail_msg: |
+          Tailscale verification failed:
+          - Installed: {{ ansible_local.tailscale.status.installed | default(false) }}
+          - Running: {{ ansible_local.tailscale.status.running | default(false) }}
+          - Backend State: {{ ansible_local.tailscale.status.backend_state | default('Unknown') }}
+          - IPv4: {{ ansible_local.tailscale.network.ipv4 | default('N/A') }}
+          - Authenticated: {{ ansible_local.tailscale.authenticated | default(false) }}
+          - Health Issues: {{ ansible_local.tailscale.health | length | default('N/A') }}
+      success_msg: "Tailscale is running successfully with IP {{ ansible_local.tailscale.network.ipv4 }}"
+  tags: [tailscale, verify, status]
+
+- name: Test connectivity to Tailscale coordinator
+  ansible.builtin.uri:
+      url: https://controlplane.tailscale.com/
+      method: GET
+      timeout: 10
+      status_code: [200, 404] # 404 is expected for unauthorized access
+  register: tailscale_coordinator_check
+  when: not ansible_check_mode
+  tags: [tailscale, verify, connectivity]
+
+- name: Display coordinator connectivity result
+  ansible.builtin.debug:
+      msg: "Tailscale coordinator is reachable (status: {{ tailscale_coordinator_check.get('status', 'unknown') }})"
+  when:
+      - tailscale_coordinator_check is defined
+      - tailscale_coordinator_check is not skipped
+  tags: [tailscale, verify, connectivity]
+
+- name: Verify key Tailscale configuration settings
+  ansible.builtin.debug:
+      msg:
+          - "Accept DNS: {{ ansible_local.tailscale.settings['accept-dns'] | default('N/A') }}"
+          - "Accept Routes: {{ ansible_local.tailscale.settings['accept-routes'] | default('N/A') }}"
+          - "Exit Node: {{ ansible_local.tailscale.settings['exit-node'] | default('N/A') }}"
+          - "SSH Enabled: {{ ansible_local.tailscale.settings.ssh | default('N/A') }}"
+          - "Shields Up: {{ ansible_local.tailscale.settings['shields-up'] | default('N/A') }}"
+          - "Advertise Routes: {{ ansible_local.tailscale.settings['advertise-routes'] | default('N/A') }}"
+          - "Advertise Exit Node: {{ ansible_local.tailscale.settings['advertise-exit-node'] | default('N/A') }}"
+          - "Hostname: {{ ansible_local.tailscale.settings.hostname | default('N/A') }}"
+          - "Auto Update: {{ ansible_local.tailscale.settings['auto-update'] | default('N/A') }}"
+  when:
+      - ansible_local.tailscale is defined
+      - ansible_local.tailscale.settings is defined
+  tags: [tailscale, verify, settings]
+
+- name: Verify peer connectivity (when peers exist)
+  ansible.builtin.debug:
+      msg:
+          - "Total Peers: {{ ansible_local.tailscale.peers.count | default(0) }}"
+          - "Online Peers: {{ ansible_local.tailscale.peers.online | default(0) }}"
+          - "Self Relay: {{ ansible_local.tailscale.network.relay | default('N/A') }}"
+          - "Self Online: {{ ansible_local.tailscale.network.online | default('N/A') }}"
+          - "Exit Nodes Available: {{ ansible_local.tailscale.peers.exit_nodes | length | default(0) }}"
+  when:
+      - ansible_local.tailscale is defined
+      - ansible_local.tailscale.peers is defined
+      - ansible_local.tailscale.peers.count | default(0) | int > 0
+  tags: [tailscale, verify, peers]
+
+- name: Display self information
+  ansible.builtin.debug:
+      msg:
+          - "Node ID: {{ ansible_local.tailscale.self.id | default('N/A') }}"
+          - "Tags: {{ ansible_local.tailscale.self.tags | default([]) | join(', ') or 'None' }}"
+          - "Exit Node Option: {{ ansible_local.tailscale.self.exit_node_option | default('N/A') }}"
+          - "Primary Routes: {{ ansible_local.tailscale.self.primary_routes | default([]) | join(', ') or 'None' }}"
+          - "OS: {{ ansible_local.tailscale.self.os | default('N/A') }}"
+  when:
+      - ansible_local.tailscale is defined
+      - ansible_local.tailscale.self is defined
+  tags: [tailscale, verify, self]

@@ -1,0 +1,29 @@
+---
+# Grafana Alloy service management tasks
+# Handles service lifecycle and health checking
+
+- name: "Enable and start Grafana Alloy service"
+  ansible.builtin.systemd_service:
+      name: "{{ alloy_service_name }}"
+      enabled: true
+      state: started
+      daemon_reload: true
+  become: true
+  tags:
+      - alloy
+      - service
+
+- name: "Wait for Grafana Alloy to be ready"
+  ansible.builtin.uri:
+      # kics-scan ignore-line: localhost health check endpoint - no external network traffic
+      url: "http://localhost:{{ alloy_port }}/ready" # checkov:skip=CKV2_ANSIBLE_1: Localhost health check requires HTTP
+      method: GET
+      status_code: 200
+  register: alloy_ready
+  until: alloy_ready.status == 200
+  retries: 10
+  delay: 5
+  when: alloy_health_check_enabled | default(true)
+  tags:
+      - alloy
+      - health-check

@@ -1,0 +1,33 @@
+# DigitalOcean Agent Configuration Template (Optional)
+# This file is only used when advanced configuration is required
+# The DigitalOcean Agent normally works without a configuration file
+# Documentation: https://docs.digitalocean.com/products/monitoring/
+
+{% if do_api_token %}
+# API configuration (optional, for advanced features)
+api:
+  token: "{{ do_api_token }}"
+{% endif %}
+
+{% if do_log_level != "info" or do_log_format != "json" %}
+# Logging configuration
+logging:
+  level: "{{ do_log_level }}"
+  format: "{{ do_log_format }}"
+{% endif %}
+
+{% if do_tags %}
+# Tags for better organization
+tags:
+{% for tag in do_tags %}
+  - "{{ tag }}"
+{% endfor %}
+{% endif %}
+
+{% if do_labels %}
+# Labels for metadata
+labels:
+{% for key, value in do_labels.items() %}
+  {{ key }}: "{{ value }}"
+{% endfor %}
+{% endif %}

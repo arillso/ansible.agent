@@ -1,0 +1,109 @@
+{# Tailscale Daemon Configuration File Template #}
+{# Reference: https://tailscale.com/kb/1654/tailscaled-config-file #}
+{# Only includes non-empty configuration options #}
+{%- set config = {} -%}
+{%- set _ = config.update({"version": "alpha0"}) -%}
+
+{# Authentication #}
+{%- if tailscale_server_url | default('') | length > 0 -%}
+  {%- set _ = config.update({"serverURL": tailscale_server_url}) -%}
+{%- endif -%}
+
+{# General Settings #}
+{%- if tailscale_locked is defined and tailscale_locked != '' -%}
+  {%- set _ = config.update({"locked": tailscale_locked | bool}) -%}
+{%- endif -%}
+{%- if tailscale_enabled is defined and tailscale_enabled != '' -%}
+  {%- set _ = config.update({"enabled": tailscale_enabled | bool}) -%}
+{%- endif -%}
+{%- if tailscale_hostname | default('') | length > 0 -%}
+  {%- set _ = config.update({"hostname": tailscale_hostname}) -%}
+{%- endif -%}
+{%- if tailscale_operator_user | default('') | length > 0 -%}
+  {%- set _ = config.update({"operatorUser": tailscale_operator_user}) -%}
+{%- endif -%}
+
+{# DNS & Routing #}
+{%- if tailscale_accept_dns is defined and tailscale_accept_dns != '' -%}
+  {%- set _ = config.update({"acceptDNS": tailscale_accept_dns | bool}) -%}
+{%- endif -%}
+{%- if tailscale_accept_routes is defined and tailscale_accept_routes != '' -%}
+  {%- set _ = config.update({"acceptRoutes": tailscale_accept_routes | bool}) -%}
+{%- endif -%}
+{%- if tailscale_advertise_routes | default([]) | length > 0 -%}
+  {%- set _ = config.update({"advertiseRoutes": tailscale_advertise_routes}) -%}
+{%- endif -%}
+{# Handle exit node routes - add 0.0.0.0/0 and ::/0 if advertise_exit_node is true #}
+{%- if tailscale_advertise_exit_node is defined and tailscale_advertise_exit_node != '' and tailscale_advertise_exit_node | bool -%}
+  {%- set exit_routes = ["0.0.0.0/0", "::/0"] -%}
+  {%- if tailscale_advertise_routes | default([]) | length > 0 -%}
+    {%- set combined_routes = (tailscale_advertise_routes + exit_routes) | unique -%}
+    {%- set _ = config.update({"advertiseRoutes": combined_routes | list}) -%}
+  {%- else -%}
+    {%- set _ = config.update({"advertiseRoutes": exit_routes}) -%}
+  {%- endif -%}
+{%- endif -%}
+{# SNAT: Ansible variable is positive (enable), API expects negative (disable) #}
+{%- if tailscale_snat_subnet_routes is defined and tailscale_snat_subnet_routes != '' -%}
+  {%- set _ = config.update({"disableSNAT": not (tailscale_snat_subnet_routes | bool)}) -%}
+{%- endif -%}
+
+{# Exit Nodes #}
+{%- if tailscale_exit_node | default('') | length > 0 -%}
+  {%- set _ = config.update({"exitNode": tailscale_exit_node}) -%}
+{%- endif -%}
+{%- if tailscale_exit_node_allow_lan_access is defined and tailscale_exit_node_allow_lan_access != '' -%}
+  {%- set _ = config.update({"allowLANWhileUsingExitNode": tailscale_exit_node_allow_lan_access | bool}) -%}
+{%- endif -%}
+
+{# Features #}
+{%- if tailscale_ssh_enabled is defined and tailscale_ssh_enabled != '' -%}
+  {%- set _ = config.update({"runSSHServer": tailscale_ssh_enabled | bool}) -%}
+{%- endif -%}
+{%- if tailscale_webclient_enabled is defined and tailscale_webclient_enabled != '' -%}
+  {%- set _ = config.update({"runWebClient": tailscale_webclient_enabled | bool}) -%}
+{%- endif -%}
+{%- if tailscale_shields_up is defined and tailscale_shields_up != '' -%}
+  {%- set _ = config.update({"shieldsUp": tailscale_shields_up | bool}) -%}
+{%- endif -%}
+{%- if tailscale_posture_checking is defined and tailscale_posture_checking != '' -%}
+  {%- set _ = config.update({"postureChecking": tailscale_posture_checking | bool}) -%}
+{%- endif -%}
+{%- if tailscale_advertise_services | default([]) | length > 0 -%}
+  {%- set _ = config.update({"advertiseServices": tailscale_advertise_services}) -%}
+{%- endif -%}
+
+{# App Connector #}
+{%- if tailscale_advertise_connector is defined and tailscale_advertise_connector != '' -%}
+  {%- set _ = config.update({"appConnector": {"advertise": tailscale_advertise_connector | bool}}) -%}
+{%- endif -%}
+
+{# Auto-Update #}
+{%- set has_auto_update = (tailscale_auto_update_check is defined and tailscale_auto_update_check != '') or (tailscale_auto_update_apply is defined and tailscale_auto_update_apply != '') -%}
+{%- if has_auto_update -%}
+  {%- set auto_update = {} -%}
+  {%- if tailscale_auto_update_check is defined and tailscale_auto_update_check != '' -%}
+    {%- set _ = auto_update.update({"check": tailscale_auto_update_check | bool}) -%}
+  {%- endif -%}
+  {%- if tailscale_auto_update_apply is defined and tailscale_auto_update_apply != '' -%}
+    {%- set _ = auto_update.update({"apply": tailscale_auto_update_apply | bool}) -%}
+  {%- endif -%}
+  {%- set _ = config.update({"autoUpdate": auto_update}) -%}
+{%- endif -%}
+
+{# Linux-Specific #}
+{%- if tailscale_netfilter_mode | default('') | length > 0 -%}
+  {%- set _ = config.update({"netfilterMode": tailscale_netfilter_mode}) -%}
+{%- endif -%}
+{# Stateful filtering: Ansible variable is positive (enable), API expects negative (disable) #}
+{%- if tailscale_stateful_filtering is defined and tailscale_stateful_filtering != '' -%}
+  {%- set _ = config.update({"noStatefulFiltering": not (tailscale_stateful_filtering | bool)}) -%}
+{%- endif -%}
+
+{# Advanced #}
+{%- if tailscale_static_endpoints | default([]) | length > 0 -%}
+  {%- set _ = config.update({"staticEndpoints": tailscale_static_endpoints}) -%}
+{%- endif -%}
+
+{{ config | to_nice_json(indent=2) }}
+

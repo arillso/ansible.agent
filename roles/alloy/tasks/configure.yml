@@ -1,0 +1,53 @@
+---
+# Configuration tasks for Grafana Alloy
+
+- name: Generate Grafana Alloy configuration
+  ansible.builtin.template:
+      src: "{{ alloy_config_template }}"
+      dest: "{{ alloy_config_file }}"
+      owner: "{{ alloy_user }}"
+      group: "{{ alloy_group }}"
+      mode: "0644"
+      backup: true
+  become: true
+  notify: restart alloy
+
+- name: Create systemd service override directory
+  ansible.builtin.file:
+      path: "{{ alloy_service_override_dir }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+
+- name: Create systemd service override file
+  ansible.builtin.template:
+      src: "{{ alloy_service_override_template }}"
+      dest: "{{ alloy_service_override_file }}"
+      owner: root
+      group: root
+      mode: "0644"
+  become: true
+  notify:
+      - reload systemd
+      - restart alloy
+
+- name: Create environment file
+  ansible.builtin.template:
+      src: "{{ alloy_env_template }}"
+      dest: "{{ alloy_env_file }}"
+      owner: root
+      group: root
+      mode: "0640"
+  become: true
+  notify: restart alloy
+
+- name: Ensure log directory exists with proper permissions
+  ansible.builtin.file:
+      path: "/var/log/alloy"
+      state: directory
+      owner: "{{ alloy_user }}"
+      group: "{{ alloy_group }}"
+      mode: "0755"
+  become: true

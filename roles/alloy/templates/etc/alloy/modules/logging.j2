@@ -1,0 +1,32 @@
+{# Logging Configuration Module #}
+
+// Logging configuration
+logging {
+  level  = "{{ alloy_log_level | default('info') }}"
+  format = "{{ alloy_log_format | default('logfmt') }}"
+  {% if alloy_log_file | default('') | length > 0 %}
+  write_to = [loki.write.{{ alloy_loki_clients[0].name | replace("-", "_") }}.receiver]
+  {% endif %}
+}
+
+{% if alloy_clustering_enabled | default(false) %}
+// Clustering configuration
+cluster {
+  name = "{{ alloy_cluster_name | default('alloy-cluster') }}"
+  {% if alloy_cluster_advertise_address | default('') | length > 0 %}
+  advertise_address = "{{ alloy_cluster_advertise_address }}"
+  {% endif %}
+  {% if alloy_cluster_advertise_port | default('') | length > 0 %}
+  advertise_port = {{ alloy_cluster_advertise_port }}
+  {% endif %}
+  {% if alloy_cluster_join_peers | default([]) | length > 0 %}
+  join_peers = {{ alloy_cluster_join_peers | to_json }}
+  {% endif %}
+  {% if alloy_cluster_discover_peers | default('') | length > 0 %}
+  discover_peers = "{{ alloy_cluster_discover_peers }}"
+  {% endif %}
+  {% if alloy_cluster_rejoin_interval | default('') | length > 0 %}
+  rejoin_interval = "{{ alloy_cluster_rejoin_interval }}"
+  {% endif %}
+}
+{% endif %}

@@ -1,0 +1,131 @@
+---
+# Grafana Alloy Package Installation Tasks
+# Install Grafana Alloy package and repository setup using arillso.system.packages
+
+# Debian/Ubuntu installation with repository setup
+- name: Setup Grafana GPG key
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: keys
+  vars:
+      packages_keys:
+          - url: "{{ alloy_grafana_gpg_key_url }}"
+            state: present
+            keyring: "{{ alloy_grafana_keyring_path }}"
+            name: grafana
+            dearmor: true
+  when:
+      - ansible_os_family == "Debian"
+      - not alloy_package_only
+  tags: [alloy, install, keys]
+
+- name: Setup Grafana repository
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: repositories
+  vars:
+      packages_repositories:
+          - repo: "deb [signed-by={{ alloy_grafana_keyring_path }}] https://apt.grafana.com stable main"
+            state: present
+            filename: grafana
+            update_cache: false # We'll update cache separately
+  when:
+      - ansible_os_family == "Debian"
+      - not alloy_package_only
+  tags: [alloy, install, repository]
+
+- name: Update package cache
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: cache
+  when:
+      - ansible_os_family == "Debian"
+      - not alloy_package_only
+  tags: [alloy, install, cache]
+
+- name: Install Grafana Alloy package (Debian/Ubuntu)
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: packages
+  vars:
+      packages_list:
+          - name: "{{ alloy_package_name }}"
+            state: "{{ alloy_package_state }}"
+      packages_retry_count: 3
+      packages_retry_delay: 10
+      packages_services_to_restart: ["alloy"]
+  when:
+      - ansible_os_family == "Debian"
+      - not alloy_package_only
+  tags: [alloy, install, package]
+
+# Red Hat family installation tasks
+- name: Add Grafana repository (Red Hat family)
+  ansible.builtin.yum_repository:
+      name: grafana
+      description: Grafana Repository
+      baseurl: "{{ alloy_grafana_repository }}"
+      gpgkey: "{{ alloy_grafana_gpg_key_url }}"
+      gpgcheck: true
+      enabled: true
+      state: present
+  when:
+      - ansible_os_family == "RedHat"
+      - not alloy_package_only
+  tags: [alloy, install, repository]
+
+- name: Install Grafana Alloy package (Red Hat family)
+  ansible.builtin.package:
+      name: "{{ alloy_package_name }}"
+      state: "{{ alloy_package_state }}"
+  register: _alloy_package_installed
+  retries: 3
+  delay: 10
+  until: _alloy_package_installed is succeeded
+  when:
+      - ansible_os_family == "RedHat"
+      - not alloy_package_only
+  notify: restart alloy
+  tags: [alloy, install, package]
+
+# Package-only installation (Alpine, Arch, etc.)
+- name: Install Grafana Alloy package (Package Only Mode)
+  ansible.builtin.package:
+      name: "{{ alloy_package_name }}"
+      state: "{{ alloy_package_state }}"
+  register: _alloy_package_installed_simple
+  retries: 3
+  delay: 10
+  until: _alloy_package_installed_simple is succeeded
+  when: alloy_package_only
+  notify: restart alloy
+  tags: [alloy, install, package]
+
+# Generic installation for other OS families (fallback)
+- name: Install Grafana Alloy package (Generic)
+  ansible.builtin.package:
+      name: "{{ alloy_package_name }}"
+      state: "{{ alloy_package_state }}"
+  register: _alloy_package_installed_generic
+  retries: 3
+  delay: 10
+  until: _alloy_package_installed_generic is succeeded
+  when:
+      - ansible_os_family not in ["Debian", "RedHat"]
+      - not alloy_package_only
+  notify: restart alloy
+  tags: [alloy, install, package]
+
+- name: Create required directories
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: directory
+      owner: "{{ alloy_user }}"
+      group: "{{ alloy_group }}"
+      mode: "0755"
+  become: true
+  loop:
+      - "{{ alloy_config_file | dirname }}"
+      - "{{ alloy_storage_path }}"
+      - "{{ alloy_log_file | dirname if alloy_log_file else '/var/log/alloy' }}"
+  tags: [alloy, install, config]

@@ -1,0 +1,171 @@
+{#
+   Advanced Node Exporter Configuration Module
+
+   Implements the integrated Grafana Alloy Node Exporter with best practices for
+   enterprise deployments. This module configures the exporter, relabeling, and metric filtering.
+
+   Documentation: https://grafana.com/docs/alloy/latest/reference/components/prometheus.exporter.unix/
+#}
+{% from 'etc/alloy/macros/alloy_macros.j2' import relabel_config, process_relabel_configs, external_labels %}
+
+{% if alloy_enable_advanced_node_exporter | default(false) %}
+// Advanced Node Exporter with optimized configuration and relabeling
+
+// Node Exporter integration - embedded exporter with enterprise configuration
+prometheus.exporter.unix "integrations_node_exporter" {
+  // Collector configuration
+  {% if alloy_node_exporter_config.disable_collectors | default([]) | length > 0 %}
+  disable_collectors = {{ alloy_node_exporter_config.disable_collectors | to_json }}
+  {% endif %}
+
+  // Additional enterprise paths configuration
+  {% if alloy_node_exporter_config.procfs_path | default('') | length > 0 %}
+  procfs_path = "{{ alloy_node_exporter_config.procfs_path }}"
+  {% endif %}
+  {% if alloy_node_exporter_config.sysfs_path | default('') | length > 0 %}
+  sysfs_path = "{{ alloy_node_exporter_config.sysfs_path }}"
+  {% endif %}
+
+  // Textfile collector for custom metrics (enterprise feature)
+  {% if alloy_node_exporter_config.textfile_directory | default('') | length > 0 %}
+  textfile {
+    directory = "{{ alloy_node_exporter_config.textfile_directory }}"
+    {% if alloy_node_exporter_config.textfile_directory_pattern | default('') | length > 0 %}
+    directory_pattern = "{{ alloy_node_exporter_config.textfile_directory_pattern }}"
+    {% endif %}
+  }
+  {% endif %}
+
+  // Systemd collector configuration
+  {% if alloy_node_exporter_config.systemd | default({}) | length > 0 %}
+  systemd {
+    {% if alloy_node_exporter_config.systemd.unit_include | default([]) | length > 0 %}
+    unit_include = {{ alloy_node_exporter_config.systemd.unit_include | to_json }}
+    {% endif %}
+    {% if alloy_node_exporter_config.systemd.unit_exclude | default([]) | length > 0 %}
+    unit_exclude = {{ alloy_node_exporter_config.systemd.unit_exclude | to_json }}
+    {% endif %}
+    {% if alloy_node_exporter_config.systemd.enable_start_time_metrics | default('') != '' %}
+    enable_start_time_metrics = {{ alloy_node_exporter_config.systemd.enable_start_time_metrics | lower }}
+    {% endif %}
+    {% if alloy_node_exporter_config.systemd.enable_task_metrics | default('') != '' %}
+    enable_task_metrics = {{ alloy_node_exporter_config.systemd.enable_task_metrics | lower }}
+    {% endif %}
+    {% if alloy_node_exporter_config.systemd.enable_restarts_metrics | default('') != '' %}
+    enable_restarts_metrics = {{ alloy_node_exporter_config.systemd.enable_restarts_metrics | lower }}
+    {% endif %}
+  }
+  {% endif %}
+
+  // Filesystem collector configuration
+  {% if alloy_node_exporter_config.filesystem | default({}) | length > 0 %}
+  filesystem {
+    {% if alloy_node_exporter_config.filesystem.fs_types_exclude | default('') | length > 0 %}
+    fs_types_exclude = "{{ alloy_node_exporter_config.filesystem.fs_types_exclude }}"
+    {% endif %}
+    {% if alloy_node_exporter_config.filesystem.mount_points_exclude | default('') | length > 0 %}
+    mount_points_exclude = "{{ alloy_node_exporter_config.filesystem.mount_points_exclude }}"
+    {% endif %}
+    {% if alloy_node_exporter_config.filesystem.mount_timeout | default('') | length > 0 %}
+    mount_timeout = "{{ alloy_node_exporter_config.filesystem.mount_timeout }}"
+    {% endif %}
+  }
+  {% endif %}
+
+  // Network class collector configuration
+  {% if alloy_node_exporter_config.netclass | default({}) | length > 0 %}
+  netclass {
+    {% if alloy_node_exporter_config.netclass.ignored_devices | default('') | length > 0 %}
+    ignored_devices = "{{ alloy_node_exporter_config.netclass.ignored_devices }}"
+    {% endif %}
+  }
+  {% endif %}
+
+  // Network device collector configuration
+  {% if alloy_node_exporter_config.netdev | default({}) | length > 0 %}
+  netdev {
+    {% if alloy_node_exporter_config.netdev.device_exclude | default('') | length > 0 %}
+    device_exclude = "{{ alloy_node_exporter_config.netdev.device_exclude }}"
+    {% endif %}
+  }
+  {% endif %}
+}
+
+// Discovery and relabeling for node exporter metrics
+// Note: discovery.relabel is the correct syntax for Alloy River discovery components
+discovery.relabel "integrations_node_exporter" {
+  targets = prometheus.exporter.unix.integrations_node_exporter.targets
+
+  // Set consistent instance label to host identifier
+  rule {
+    target_label = "instance"
+    replacement  = "{{ ansible_hostname }}"
+  }
+
+  // Set job label for proper service discovery
+  rule {
+    target_label = "job"
+    replacement = "integrations/node_exporter"
+  }
+
+  // Add additional host information labels
+  {% if alloy_node_exporter_config.environment | default('') | length > 0 %}
+  rule {
+    target_label = "environment"
+    replacement = "{{ alloy_node_exporter_config.environment }}"
+  }
+  {% endif %}
+
+  {% if alloy_node_exporter_config.node_type | default('') | length > 0 %}
+  rule {
+    target_label = "node_type"
+    replacement = "{{ alloy_node_exporter_config.node_type }}"
+  }
+  {% endif %}
+
+  {% if alloy_node_exporter_config.region | default('') | length > 0 %}
+  rule {
+    target_label = "region"
+    replacement = "{{ alloy_node_exporter_config.region }}"
+  }
+  {% endif %}
+}
+
+// Scrape node exporter metrics with optimized settings
+prometheus.scrape "integrations_node_exporter" {
+  targets    = discovery.relabel.integrations_node_exporter.output
+  forward_to = [prometheus.relabel.integrations_node_exporter.receiver]
+
+  // Set scraping parameters if specified globally
+  {% if alloy_prometheus_scrape_interval | default('') | length > 0 %}
+  scrape_interval = "{{ alloy_prometheus_scrape_interval }}"
+  {% endif %}
+  {% if alloy_prometheus_scrape_timeout | default('') | length > 0 %}
+  scrape_timeout = "{{ alloy_prometheus_scrape_timeout }}"
+  {% endif %}
+}
+
+// Relabel and filter node exporter metrics
+prometheus.relabel "integrations_node_exporter" {
+  forward_to = [prometheus.remote_write.{{ alloy_prometheus_remote_write[0].name | replace('-', '_') }}.receiver]
+
+  {% if alloy_node_exporter_metric_allowlist | default([]) | length > 0 %}
+  // Keep only important metrics to reduce network and storage usage
+  rule {
+    source_labels = ["__name__"]
+    regex         = "{{ alloy_node_exporter_metric_allowlist | join('|') }}"
+    action        = "keep"
+  }
+  {% endif %}
+
+  // Apply global external labels for consistent identification
+  {% if alloy_external_labels | default({}) | length > 0 %}
+  {% for label_name, label_value in alloy_external_labels.items() %}
+  rule {
+    target_label = "{{ label_name }}"
+    replacement = "{{ label_value }}"
+  }
+  {% endfor %}
+  {% endif %}
+}
+{% endif %}

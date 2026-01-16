@@ -1,0 +1,24 @@
+---
+# Service management tasks for DigitalOcean Agent
+
+- name: Enable and start DigitalOcean Agent service
+  ansible.builtin.systemd_service:
+      name: do-agent
+      enabled: true
+      state: started
+      daemon_reload: true
+  become: true
+
+- name: Check if DigitalOcean Agent is running
+  ansible.builtin.systemd_service:
+      name: do-agent
+      state: started
+  register: do_agent_status
+  when: do_health_check_enabled | default(true)
+
+- name: Verify DigitalOcean Agent process is active
+  ansible.builtin.command: pgrep -f do-agent
+  register: do_agent_process
+  changed_when: false
+  failed_when: do_agent_process.rc != 0
+  when: do_health_check_enabled | default(true)

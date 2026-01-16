@@ -1,5 +1,24 @@
 ---
-do_packages:
-  - name: do-agent
+# Default variables for DigitalOcean Agent role
+# Diese Variablen können in group_vars oder host_vars überschrieben werden
 
-do_service_name: do-agent
+# Package-Konfiguration
+do_package_name: "do-agent"
+do_version: "latest"
+
+# Service-Konfiguration
+do_health_check_enabled: true
+
+# Konfiguration (meist nicht erforderlich)
+do_custom_config_enabled: false
+
+# Optionale API-Konfiguration (für erweiterte Features)
+do_api_token: ""
+
+# Logging-Konfiguration (optional)
+do_log_level: "info"
+do_log_format: "json"
+
+# Tags für bessere Organisation (optional)
+do_tags: []
+do_labels: {}

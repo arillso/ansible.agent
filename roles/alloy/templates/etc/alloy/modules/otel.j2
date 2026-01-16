@@ -1,0 +1,125 @@
+{# OpenTelemetry Configuration Module #}
+{% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options, output_config %}
+
+{% if alloy_enable_otel | default(false) %}
+// OpenTelemetry Receiver (optional)
+otelcol.receiver.otlp "default" {
+  grpc {
+    endpoint = "{{ alloy_otel_grpc_endpoint | default('0.0.0.0:4317') }}"
+    {{ tls_config(alloy_otel_grpc_tls) }}
+  }
+  http {
+    endpoint = "{{ alloy_otel_http_endpoint | default('0.0.0.0:4318') }}"
+    {{ tls_config(alloy_otel_http_tls) }}
+  }
+  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+}
+
+{% if alloy_enable_otel_processors | default(false) %}
+// OpenTelemetry Processors
+{% if alloy_otel_processor_batch | default('') | length > 0 %}
+otelcol.processor.batch "default" {
+  timeout = "{{ alloy_otel_processor_batch.timeout | default('1s') }}"
+  send_batch_size = {{ alloy_otel_processor_batch.send_batch_size | default(1024) }}
+  send_batch_max_size = {{ alloy_otel_processor_batch.send_batch_max_size | default(2048) }}
+
+  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+}
+{% endif %}
+
+{% if alloy_otel_processor_attributes | default('') | length > 0 %}
+otelcol.processor.attributes "default" {
+  {% for action in alloy_otel_processor_attributes.actions %}
+  action {
+    key = "{{ action.key }}"
+    action = "{{ action.action }}"
+    {% if action.value | default('') | length > 0 %}
+    value = "{{ action.value }}"
+    {% endif %}
+    {% if action.from_attribute | default('') | length > 0 %}
+    from_attribute = "{{ action.from_attribute }}"
+    {% endif %}
+  }
+  {% endfor %}
+
+  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+}
+{% endif %}
+
+{% if alloy_otel_processor_resource | default('') | length > 0 %}
+otelcol.processor.resource "default" {
+  {% for attr_key, attr_value in alloy_otel_processor_resource.attributes.items() %}
+  attributes {
+    key = "{{ attr_key }}"
+    value = "{{ attr_value }}"
+    action = "upsert"
+  }
+  {% endfor %}
+
+  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+}
+{% endif %}
+{% endif %}
+
+{% if alloy_otel_exporters | default([]) | length > 0 %}
+// OpenTelemetry Exporters
+{% for exporter in alloy_otel_exporters %}
+{% if exporter.type == 'otlp' %}
+otelcol.exporter.otlp "{{ exporter.name }}" {
+  client {
+    endpoint = "{{ exporter.endpoint }}"
+    {% if exporter.headers | default('') | length > 0 %}
+    headers = {{ exporter.headers | to_json }}
+    {% endif %}
+    {% if exporter.compression | default('') | length > 0 %}
+    compression = "{{ exporter.compression }}"
+    {% endif %}
+    {% if exporter.timeout | default("") | length > 0 %}
+    timeout = "{{ exporter.timeout }}"
+    {% endif %}
+    {{ tls_config(exporter.tls) }}
+  }
+}
+{% endif %}
+
+{% if exporter.type == 'jaeger' %}
+otelcol.exporter.jaeger "{{ exporter.name }}" {
+  endpoint = "{{ exporter.endpoint }}"
+  {% if exporter.timeout | default("") | length > 0 %}
+  timeout = "{{ exporter.timeout }}"
+  {% endif %}
+  {{ tls_config(exporter.tls) }}
+}
+{% endif %}
+
+{% if exporter.type == 'zipkin' %}
+otelcol.exporter.zipkin "{{ exporter.name }}" {
+  endpoint = "{{ exporter.endpoint }}"
+  {% if exporter.format | default('') | length > 0 %}
+  format = "{{ exporter.format }}"
+  {% endif %}
+  {% if exporter.timeout | default("") | length > 0 %}
+  timeout = "{{ exporter.timeout }}"
+  {% endif %}
+  {% if exporter.default_service_name | default('') | length > 0 %}
+  default_service_name = "{{ exporter.default_service_name }}"
+  {% endif %}
+}
+{% endif %}
+
+{% if exporter.type == 'logging' %}
+otelcol.exporter.logging "{{ exporter.name }}" {
+  {% if exporter.verbosity | default("") | length > 0 %}
+  verbosity = "{{ exporter.verbosity }}"
+  {% endif %}
+  {% if exporter.sampling_initial | default("") | length > 0 %}
+  sampling_initial = {{ exporter.sampling_initial }}
+  {% endif %}
+  {% if exporter.sampling_thereafter | default("") | length > 0 %}
+  sampling_thereafter = {{ exporter.sampling_thereafter }}
+  {% endif %}
+}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% endif %}

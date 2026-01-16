@@ -1,0 +1,24 @@
+---
+# Molecule converge playbook for DigitalOcean Agent role
+- name: Converge
+  hosts: all
+  become: true
+
+  pre_tasks:
+      - name: Update apt cache (Debian/Ubuntu)
+        ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+        when: ansible_os_family == "Debian"
+
+  roles:
+      - role: arillso.agent.do
+        vars:
+            # Disable health checks for testing (no actual DO metadata service)
+            do_health_check_enabled: false
+
+            # Enable custom config for testing
+            do_custom_config_enabled: true
+            do_tags:
+                - molecule-test
+                - testing

@@ -1,0 +1,30 @@
+# Systemd drop-in override for Alloy service
+# This file overrides specific settings from the package-installed service
+
+[Service]
+# Override user and group
+User={{ alloy_user }}
+Group={{ alloy_group }}
+
+# Override configuration file path
+ExecStart=
+ExecStart=/usr/bin/alloy run {{ alloy_config_file }} --storage.path={{ alloy_storage_path }}{% if alloy_enable_web_server | default(true) %} --server.http.listen-addr={{ alloy_server_http_listen_address | default('0.0.0.0') }}:{{ alloy_port | default('12345') }}{% endif %}{% if alloy_enable_grpc_server | default(false) %} --server.grpc.listen-addr={{ alloy_server_grpc_listen_address | default('0.0.0.0') }}:{{ alloy_grpc_port | default('12346') }}{% endif %}
+
+# Override environment file
+EnvironmentFile={{ alloy_env_file }}
+
+# Override security settings for custom paths
+ReadWritePaths={{ alloy_storage_path }} /var/log/alloy
+
+{% if alloy_log_file %}
+# Additional log directory access
+ReadWritePaths={{ alloy_log_file | dirname }}
+{% endif %}
+
+# Resource limits
+{% if alloy_max_memory is defined %}
+MemoryLimit={{ alloy_max_memory }}
+{% endif %}
+{% if alloy_max_cpu is defined %}
+CPUQuota={{ alloy_max_cpu }}
+{% endif %}

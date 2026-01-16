@@ -1,2 +1,13 @@
 ---
-requires_ansible: ">=2.15.5"
+# Runtime metadata for arillso.agent collection
+# This file defines collection-level metadata and requirements
+
+# Minimum Ansible version required
+requires_ansible: ">=2.15.0"
+
+# Action groups for easier role execution
+action_groups:
+    arillso_agent:
+        - arillso.agent.alloy
+        - arillso.agent.do
+        - arillso.agent.tailscale

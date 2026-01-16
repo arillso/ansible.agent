@@ -1,0 +1,71 @@
+---
+dependency:
+    name: galaxy
+    options:
+        requirements-file: requirements.yml
+
+driver:
+    name: docker
+
+platforms:
+    - name: tailscale-ubuntu2204
+      image: geerlingguy/docker-ubuntu2204-ansible:latest
+      command: ""
+      volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      cgroupns_mode: host
+      privileged: true
+      pre_build_image: true
+
+    - name: tailscale-ubuntu2404
+      image: geerlingguy/docker-ubuntu2404-ansible:latest
+      command: ""
+      volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      cgroupns_mode: host
+      privileged: true
+      pre_build_image: true
+
+    - name: tailscale-debian12
+      image: geerlingguy/docker-debian12-ansible:latest
+      command: ""
+      volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      cgroupns_mode: host
+      privileged: true
+      pre_build_image: true
+
+provisioner:
+    name: ansible
+    config_options:
+        defaults:
+            interpreter_python: auto_silent
+            callback_whitelist: profile_tasks, timer, yaml
+            stdout_callback: yaml
+    inventory:
+        host_vars:
+            tailscale-ubuntu2204:
+                ansible_user: root
+            tailscale-ubuntu2404:
+                ansible_user: root
+            tailscale-debian12:
+                ansible_user: root
+
+verifier:
+    name: ansible
+
+scenario:
+    name: default
+    test_sequence:
+        - dependency
+        - cleanup
+        - destroy
+        - syntax
+        - create
+        - prepare
+        - converge
+        - idempotence
+        - side_effect
+        - verify
+        - cleanup
+        - destroy

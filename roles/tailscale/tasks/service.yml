@@ -1,0 +1,30 @@
+---
+# Tailscale Service Management Tasks
+# Manage tailscaled service state
+
+- name: Enable and start tailscaled service
+  ansible.builtin.systemd_service:
+      name: tailscaled
+      state: "{{ tailscale_service_state }}"
+      enabled: "{{ tailscale_service_enabled }}"
+      daemon_reload: true
+  become: true
+  tags: [tailscale, service]
+
+- name: Wait for Tailscale service to be ready
+  ansible.builtin.wait_for:
+      timeout: 30
+  when: tailscale_service_state == "started"
+  tags: [tailscale, service, wait]
+
+- name: Check tailscaled service status
+  ansible.builtin.systemd_service:
+      name: tailscaled
+  register: tailscale_service_status
+  become: true
+  tags: [tailscale, service, status]
+
+- name: Display service status
+  ansible.builtin.debug:
+      msg: "Tailscaled service is {{ tailscale_service_status.status.ActiveState }}"
+  tags: [tailscale, service, status]

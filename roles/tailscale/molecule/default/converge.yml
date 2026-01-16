@@ -1,0 +1,28 @@
+---
+# Molecule converge playbook for Tailscale role
+- name: Converge
+  hosts: all
+  become: true
+
+  pre_tasks:
+      - name: Update apt cache (Debian/Ubuntu)
+        ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+        when: ansible_os_family == "Debian"
+
+  roles:
+      - role: arillso.agent.tailscale
+        vars:
+            # Skip Tailscale authentication in tests (no valid auth key)
+            tailscale_up_skip: true
+
+            # Install only, don't configure
+            tailscale_auth_key: ""
+
+            # Skip connectivity verification
+            tailscale_verify_connectivity: false
+
+            # Basic settings for testing
+            tailscale_accept_routes: true
+            tailscale_ssh_enabled: false

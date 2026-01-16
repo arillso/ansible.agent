@@ -1,0 +1,125 @@
+---
+# Tailscale Package Installation Tasks
+# Install Tailscale package and repository setup using arillso.system.packages
+
+# Debian/Ubuntu installation with repository setup
+- name: Setup Tailscale GPG key
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: keys
+  vars:
+      packages_keys:
+          - url: "{{ tailscale_gpg_key_url }}"
+            state: present
+            keyring: "{{ tailscale_gpg_key_path }}"
+            name: tailscale
+  when:
+      - ansible_os_family == "Debian"
+      - not tailscale_package_only
+  tags: [tailscale, install, keys]
+
+- name: Setup Tailscale repository
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: repositories
+  vars:
+      packages_repositories:
+          - repo: >-
+                deb [signed-by={{ tailscale_gpg_key_path }}] {{ tailscale_repo_url }}
+                {{ tailscale_repo_codename | default(ansible_distribution_release) }} main
+            state: present
+            filename: tailscale
+            update_cache: false # We'll update cache separately
+  when:
+      - ansible_os_family == "Debian"
+      - not tailscale_package_only
+  tags: [tailscale, install, repository]
+
+- name: Update package cache
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: cache
+  when:
+      - ansible_os_family == "Debian"
+      - not tailscale_package_only
+  tags: [tailscale, install, cache]
+
+- name: Install Tailscale package (Debian/Ubuntu)
+  ansible.builtin.include_role:
+      name: arillso.system.packages
+      tasks_from: packages
+  vars:
+      packages_list:
+          - name: "{{ tailscale_package_name }}"
+            state: "{{ tailscale_package_state }}"
+      packages_retry_count: 3
+      packages_retry_delay: 10
+      packages_services_to_restart: ["tailscaled"]
+  when:
+      - ansible_os_family == "Debian"
+      - not tailscale_package_only
+  tags: [tailscale, install, package]
+
+# Red Hat family installation tasks
+- name: Add Tailscale repository (Red Hat family)
+  ansible.builtin.yum_repository:
+      name: tailscale-stable
+      description: Tailscale stable
+      baseurl: "{{ tailscale_repo_url }}"
+      gpgkey: "{{ tailscale_gpg_key_url }}"
+      gpgcheck: true
+      enabled: true
+      state: present
+  when:
+      - ansible_os_family == "RedHat"
+      - not tailscale_package_only
+  tags: [tailscale, install, repository]
+
+- name: Install Tailscale package (Red Hat family)
+  ansible.builtin.package:
+      name: "{{ tailscale_package_name }}"
+      state: "{{ tailscale_package_state }}"
+  register: _tailscale_package_installed
+  retries: 3
+  delay: 10
+  until: _tailscale_package_installed is succeeded
+  when:
+      - ansible_os_family == "RedHat"
+      - not tailscale_package_only
+  tags: [tailscale, install, package]
+
+# Package-only installation (Alpine, Arch, etc.)
+- name: Install Tailscale package (Package Only Mode)
+  ansible.builtin.package:
+      name: "{{ tailscale_package_name }}"
+      state: "{{ tailscale_package_state }}"
+  register: _tailscale_package_installed_simple
+  retries: 3
+  delay: 10
+  until: _tailscale_package_installed_simple is succeeded
+  when: tailscale_package_only
+  tags: [tailscale, install, package]
+
+# Generic installation for other OS families (fallback)
+- name: Install Tailscale package (Generic)
+  ansible.builtin.package:
+      name: "{{ tailscale_package_name }}"
+      state: "{{ tailscale_package_state }}"
+  register: _tailscale_package_installed_generic
+  retries: 3
+  delay: 10
+  until: _tailscale_package_installed_generic is succeeded
+  when:
+      - ansible_os_family not in ["Debian", "RedHat"]
+      - not tailscale_package_only
+  tags: [tailscale, install, package]
+
+- name: Create Tailscale configuration directory
+  ansible.builtin.file:
+      path: "{{ tailscale_config_dir }}"
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
+  become: true
+  tags: [tailscale, install, config]

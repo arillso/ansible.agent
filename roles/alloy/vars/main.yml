@@ -1,0 +1,24 @@
+---
+# Internal OS-specific variables for Grafana Alloy installation and configuration
+# All variables are prefixed with _alloy_ to ensure proper namespacing
+
+# OS-specific configuration
+_alloy_os:
+    Debian:
+        package_dependencies:
+            - curl
+            - gnupg
+            - software-properties-common
+            - apt-transport-https
+        grafana:
+            gpg_key_url: "https://apt.grafana.com/gpg.key"
+            keyring_path: "/usr/share/keyrings/grafana-archive-keyring.gpg"
+            repository: "deb [signed-by=/usr/share/keyrings/grafana-archive-keyring.gpg] https://apt.grafana.com stable main"
+
+    RedHat:
+        package_dependencies:
+            - curl
+            - gnupg2
+        grafana:
+            gpg_key_url: "https://rpm.grafana.com/gpg.key"
+            repository: "https://rpm.grafana.com"

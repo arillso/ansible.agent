@@ -1,0 +1,206 @@
+---
+# Default variables for Alloy role
+# These variables can be overridden in group_vars or host_vars
+
+# OS-specific variable mappings - these map internal vars to public API
+# Dynamic variable assignment based on OS family using hierarchical structure
+alloy_package_dependencies: "{{ _alloy_os[ansible_os_family].package_dependencies }}"
+alloy_grafana_gpg_key_url: "{{ _alloy_os[ansible_os_family].grafana.gpg_key_url }}"
+alloy_grafana_keyring_path: "{{ _alloy_os[ansible_os_family].grafana.keyring_path | default(omit) }}"
+alloy_grafana_repository: "{{ _alloy_os[ansible_os_family].grafana.repository | default(omit) }}"
+
+# Package configuration
+alloy_package_name: "alloy"
+alloy_package_state: "present"
+alloy_package_only: false
+alloy_version: "latest"
+
+# Service configuration
+alloy_port: 12345
+alloy_grpc_port: 12346
+alloy_health_check_enabled: true
+
+# Logging configuration
+alloy_log_level: "info"
+alloy_log_format: "logfmt"
+alloy_log_file: ""
+
+# Storage configuration
+alloy_storage_path: "/var/lib/alloy"
+
+# Default empty queue_config to prevent undefined variable errors
+alloy_default_queue_config: {}
+
+# Configuration file path
+alloy_config_file: "/etc/alloy/config.alloy"
+
+# Environment file path
+alloy_env_file: "/etc/default/alloy"
+
+# User and group configuration
+alloy_user: "alloy"
+alloy_group: "alloy"
+
+# Template paths
+alloy_config_template: "etc/alloy/config.alloy.j2"
+alloy_env_template: "etc/default/alloy.j2"
+alloy_service_override_template: "etc/systemd/system/alloy.service.d/override.conf.j2"
+
+# Service configuration
+alloy_service_name: "alloy"
+alloy_service_file: "/etc/systemd/system/alloy.service"
+alloy_service_override_dir: "/etc/systemd/system/alloy.service.d"
+alloy_service_override_file: "/etc/systemd/system/alloy.service.d/override.conf"
+
+# Server configuration
+alloy_enable_web_server: true
+alloy_enable_grpc_server: false
+alloy_server_http_listen_address: "0.0.0.0"
+alloy_server_grpc_listen_address: "0.0.0.0"
+alloy_server_http_enable_pprof: false
+alloy_server_grpc_max_recv_msg_size: ""
+alloy_server_grpc_max_send_msg_size: ""
+alloy_server_log_level: ""
+alloy_server_log_source_ips: false
+
+# Clustering configuration (optional)
+alloy_clustering_enabled: false
+alloy_cluster_name: "alloy-cluster"
+alloy_cluster_advertise_address: ""
+alloy_cluster_advertise_port: ""
+alloy_cluster_join_peers: []
+alloy_cluster_discover_peers: ""
+alloy_cluster_rejoin_interval: ""
+
+# Prometheus configuration
+alloy_enable_prometheus: false
+alloy_prometheus_scrape_interval: ""
+alloy_prometheus_scrape_timeout: ""
+alloy_prometheus_metrics_path: ""
+alloy_prometheus_honor_labels: false
+alloy_prometheus_honor_timestamps: true
+
+# Additional Prometheus scrape configurations
+alloy_prometheus_additional_scrape_configs: []
+
+# Prometheus relabeling configurations
+alloy_prometheus_relabel_configs: []
+
+# Prometheus remote write configuration
+alloy_prometheus_remote_write:
+    - name: "default"
+      url: "http://localhost:9090/api/v1/write"
+
+# Custom exporters
+alloy_custom_exporters: []
+
+# Loki configuration
+alloy_enable_loki: false
+alloy_loki_file_sources: []
+alloy_loki_journal_enabled: false
+alloy_loki_journal_matches: []
+alloy_loki_journal_max_age: ""
+alloy_loki_journal_relabel_rules: []
+alloy_loki_journal_write_to: "default"
+alloy_loki_process_configs: []
+
+# Loki clients
+alloy_loki_clients:
+    - name: "default"
+      url: "http://localhost:3100/loki/api/v1/push"
+
+# OpenTelemetry configuration
+alloy_enable_otel: false
+alloy_otel_grpc_endpoint: "0.0.0.0:4317"
+alloy_otel_http_endpoint: "0.0.0.0:4318"
+alloy_otel_grpc_tls: {}
+alloy_otel_http_tls: {}
+alloy_otel_traces_output: ""
+
+# OpenTelemetry processors
+alloy_enable_otel_processors: false
+alloy_otel_processor_batch: {}
+alloy_otel_processor_attributes: {}
+alloy_otel_processor_resource: {}
+
+# OpenTelemetry exporters
+alloy_otel_exporters: []
+
+# Advanced node exporter and journal monitoring configuration
+alloy_enable_advanced_node_exporter: false
+alloy_enable_journal_monitoring: false
+
+# Default node exporter configuration (can be overridden in group_vars)
+alloy_node_exporter_config:
+    disable_collectors:
+        - "ipvs"
+        - "btrfs"
+        - "infiniband"
+        - "xfs"
+        - "zfs"
+    filesystem:
+        fs_types_exclude: >-
+            ^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|
+            rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+        mount_points_exclude: "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+        mount_timeout: "5s"
+    netclass:
+        ignored_devices: "^(veth.*|cali.*|[a-f0-9]{15})$"
+    netdev:
+        device_exclude: "^(veth.*|cali.*|[a-f0-9]{15})$"
+    # Enterprise-specific parameters
+    textfile_directory: "/var/lib/node_exporter/textfile_collector"
+    # Systemd monitoring configuration
+    systemd:
+        unit_include: []
+        unit_exclude: []
+        enable_start_time_metrics: true
+        enable_task_metrics: false
+        enable_restarts_metrics: true
+    # Custom paths for specialized environments
+    procfs_path: "" # Default is /proc
+    sysfs_path: "" # Default is /sys
+
+# Journal module configuration
+alloy_journal_config:
+    max_age: "12h0m0s"
+    relabel_rules:
+        - source_labels: ["__journal__systemd_unit"]
+          target_label: "unit"
+        - source_labels: ["__journal__boot_id"]
+          target_label: "boot_id"
+        - source_labels: ["__journal__transport"]
+          target_label: "transport"
+        - source_labels: ["__journal_priority_keyword"]
+          target_label: "level"
+
+# Grafana Remote Configuration
+alloy_enable_remotecfg: false
+
+# Remote configuration using the remotecfg block
+# This is a single configuration object for the remotecfg block (can only appear once per config file)
+alloy_remotecfg: {}
+# Example configuration:
+# alloy_remotecfg:
+#   url: "https://fleet-management-prod-011.grafana.net/api/v1/config"
+#   poll_frequency: "30s"
+#   id: "{{ ansible_hostname }}"
+#   name: "Gateway Node {{ ansible_hostname }}"
+#   attributes:
+#     cluster: "hetzner-k3s"
+#     region: "nbg1"
+#     environment: "production"
+#     node_type: "gateway"
+#   basic_auth:
+#     username: "{{ grafana_cloud_fleet_user }}"
+#     password: "env:GRAFANA_CLOUD_FLEET_API_KEY"
+#   # Alternative authentication methods:
+#   # bearer_token: "env:GRAFANA_FLEET_TOKEN"
+#   # bearer_token_file: "/etc/grafana/fleet-token"
+#   # authorization:
+#   #   type: "Bearer"
+#   #   credentials: "env:GRAFANA_FLEET_AUTH_TOKEN"
+#   tls_config:
+#     insecure_skip_verify: false
+#   enable_http2: true
+#   follow_redirects: true

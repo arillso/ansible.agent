@@ -1,0 +1,18 @@
+# Environment file for DigitalOcean Agent service (Optional)
+# Diese Datei wird vom systemd Service geladen
+# Der DigitalOcean Agent funktioniert normalerweise ohne zusätzliche Umgebungsvariablen
+
+{% if do_api_token %}
+# DigitalOcean API Token (für erweiterte Features)
+DO_API_TOKEN={{ do_api_token }}
+{% endif %}
+
+{% if do_log_level != "info" %}
+# Custom Log Level
+DO_LOG_LEVEL={{ do_log_level }}
+{% endif %}
+
+{% if do_tags %}
+# Tags als Umgebungsvariable
+DO_TAGS={{ do_tags | join(',') }}
+{% endif %}
