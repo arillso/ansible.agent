@@ -20,11 +20,9 @@
       owner: root
       group: root
   become: true
-  register: _tailscale_facts_installed
+  notify: Refresh ansible facts
   tags: [tailscale, facts]
 
-- name: Force facts refresh if facts script was just installed
-  ansible.builtin.setup:
-      filter: ansible_local
-  when: _tailscale_facts_installed is changed
+- name: Flush handlers to refresh facts immediately
+  ansible.builtin.meta: flush_handlers
   tags: [tailscale, facts]

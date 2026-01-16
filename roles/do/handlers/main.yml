@@ -1,13 +1,15 @@
 ---
 # Handler definitions for DigitalOcean Agent role
 
-- name: reload systemd
+- name: Reload systemd
   ansible.builtin.systemd_service:
       daemon_reload: true
   become: true
+  listen: reload systemd
 
-- name: restart do agent
+- name: Restart do agent
   ansible.builtin.systemd_service:
       name: do-agent
       state: restarted
   become: true
+  listen: restart do agent

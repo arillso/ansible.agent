@@ -24,7 +24,9 @@
       tasks_from: repositories
   vars:
       packages_repositories:
-          - repo: "deb [signed-by={{ tailscale_gpg_key_path }}] {{ tailscale_repo_url }} {{ tailscale_repo_codename | default(ansible_distribution_release) }} main"
+          - repo: >-
+                deb [signed-by={{ tailscale_gpg_key_path }}] {{ tailscale_repo_url }}
+                {{ tailscale_repo_codename | default(ansible_distribution_release) }} main
             state: present
             filename: tailscale
             update_cache: false # We'll update cache separately

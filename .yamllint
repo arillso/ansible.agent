@@ -2,81 +2,86 @@
 extends: default
 
 rules:
-  # Line length - Allow up to 160 characters (ansible-lint default)
-  line-length:
-    max: 160
-    level: warning
+    # Line length - Allow up to 160 characters (ansible-lint default)
+    line-length:
+        max: 160
+        level: warning
 
-  # Comments - Require at least 1 space from content
-  comments:
-    min-spaces-from-content: 1
+    # Comments - Require at least 1 space from content
+    comments:
+        min-spaces-from-content: 1
 
-  # Comments indentation
-  comments-indentation: {}
+    # Comments indentation - disabled for ansible-lint compatibility
+    comments-indentation: false
 
-  # Indentation - 4 spaces, indent sequences
-  indentation:
-    spaces: 4
-    indent-sequences: true
-    check-multi-line-strings: false
+    # Indentation - 4 spaces, indent sequences
+    indentation:
+        spaces: 4
+        indent-sequences: true
+        check-multi-line-strings: false
 
-  # Truthy - Only allow true/false (not yes/no, on/off)
-  truthy:
-    allowed-values: ['true', 'false']
-    check-keys: false
+    # Truthy - Only allow true/false (not yes/no, on/off)
+    truthy:
+        allowed-values: ['true', 'false']
+        check-keys: false
 
-  # Brackets - Consistent spacing
-  brackets:
-    min-spaces-inside: 0
-    max-spaces-inside: 0
+    # Brackets - Consistent spacing
+    brackets:
+        min-spaces-inside: 0
+        max-spaces-inside: 0
 
-  # Braces - Consistent spacing for dictionaries
-  braces:
-    min-spaces-inside: 0
-    max-spaces-inside: 1
+    # Braces - Consistent spacing for dictionaries
+    braces:
+        min-spaces-inside: 0
+        max-spaces-inside: 1
 
-  # Colons - Require space after, none before
-  colons:
-    max-spaces-before: 0
-    max-spaces-after: 1
+    # Colons - Require space after, none before
+    colons:
+        max-spaces-before: 0
+        max-spaces-after: 1
 
-  # Commas - Require space after
-  commas:
-    max-spaces-before: 0
-    max-spaces-after: 1
+    # Commas - Require space after
+    commas:
+        max-spaces-before: 0
+        max-spaces-after: 1
 
-  # Hyphens - Consistent spacing for lists
-  hyphens:
-    max-spaces-after: 1
+    # Hyphens - Consistent spacing for lists
+    hyphens:
+        max-spaces-after: 1
 
-  # Empty lines
-  empty-lines:
-    max: 2
-    max-start: 0
-    max-end: 1
+    # Empty lines
+    empty-lines:
+        max: 2
+        max-start: 0
+        max-end: 1
 
-  # Document start - Require --- at start
-  document-start:
-    present: true
+    # Document start - Require --- at start
+    document-start:
+        present: true
 
-  # Document end - Don't require ...
-  document-end:
-    present: false
+    # Document end - Don't require ...
+    document-end:
+        present: false
 
-  # Trailing spaces
-  trailing-spaces: {}
+    # Trailing spaces
+    trailing-spaces: {}
 
-  # Key duplicates
-  key-duplicates: {}
+    # Key duplicates
+    key-duplicates: {}
 
-  # New lines
-  new-lines:
-    type: unix
+    # New lines
+    new-lines:
+        type: unix
+
+    # Octal values - ansible-lint requirements
+    octal-values:
+        forbid-implicit-octal: true
+        forbid-explicit-octal: true
 
 # Ignore patterns
 ignore: |
-  .tox/
-  .ansible/
-  *.tar.gz
-  venv/
-  __pycache__/
+    .tox/
+    .ansible/
+    *.tar.gz
+    venv/
+    __pycache__/

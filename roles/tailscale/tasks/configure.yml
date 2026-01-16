@@ -80,6 +80,7 @@
           {% if tailscale_tags | default([]) | length > 0 %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
           --reset
   become: true
+  changed_when: true
   when: not ansible_local.tailscale.authenticated | default(false)
   notify: restart tailscaled
   no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
@@ -119,6 +120,7 @@
         ansible.builtin.command:
             cmd: tailscale logout
         become: true
+        changed_when: true
 
       - name: Re-authenticate with minimal setup only
         ansible.builtin.command:
@@ -127,6 +129,7 @@
                 --auth-key={{ tailscale_auth_key }}
                 {% if tailscale_tags %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
         become: true
+        changed_when: true
         no_log: true
 
 # Handle custom preferences if defined

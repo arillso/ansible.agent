@@ -1,12 +1,13 @@
 ---
 # Handler definitions for Grafana Alloy role
 
-- name: reload systemd
+- name: Reload systemd
   ansible.builtin.systemd_service:
       daemon_reload: true
   become: true
+  listen: reload systemd
 
-- name: restart alloy
+- name: Restart alloy
   ansible.builtin.systemd_service:
       name: "{{ alloy_service_name }}"
       state: restarted
@@ -15,8 +16,9 @@
       - restart alloy
       - restart grafana alloy
 
-- name: update apt cache
+- name: Update apt cache
   ansible.builtin.apt:
       update_cache: true
   become: true
+  listen: update apt cache
   when: ansible_os_family == "Debian"

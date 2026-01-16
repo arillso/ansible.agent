@@ -4,7 +4,7 @@
 
 galaxy_info:
     role_name: tailscale
-    namespace: arillso.agent
+    namespace: arillso
     author: Arillso
     description: Install and configure Tailscale VPN mesh networking
     company: Arillso
