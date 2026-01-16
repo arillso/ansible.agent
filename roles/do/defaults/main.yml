@@ -4,7 +4,8 @@
 
 # Package-Konfiguration
 do_package_name: "do-agent"
-do_version: "latest"
+# renovate: datasource=github-releases depName=digitalocean/do-agent
+do_version: "3.18.7"
 
 # Service-Konfiguration
 do_health_check_enabled: true
