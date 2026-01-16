@@ -54,7 +54,7 @@
       - name: Verify Alloy modules are configured
         ansible.builtin.stat:
             path: "{{ item }}"
-        register: module_files
+        register: alloy_module_files
         loop:
             - /etc/alloy/modules/prometheus.alloy
             - /etc/alloy/modules/node_exporter.alloy
@@ -66,4 +66,4 @@
                 - item.stat.exists
             fail_msg: "Module file {{ item.item }} does not exist"
             success_msg: "Module file {{ item.item }} exists"
-        loop: "{{ module_files.results }}"
+        loop: "{{ alloy_module_files.results }}"

@@ -20,14 +20,14 @@
       - name: Check tailscaled service status
         ansible.builtin.systemd_service:
             name: tailscaled
-        register: tailscaled_service
+        register: tailscale_service
 
       - name: Assert tailscaled service is running
         ansible.builtin.assert:
             that:
-                - tailscaled_service.status.ActiveState == "active"
-                - tailscaled_service.status.LoadState == "loaded"
-                - tailscaled_service.status.UnitFileState == "enabled"
+                - tailscale_service.status.ActiveState == "active"
+                - tailscale_service.status.LoadState == "loaded"
+                - tailscale_service.status.UnitFileState == "enabled"
             fail_msg: "Tailscaled service is not running properly"
             success_msg: "Tailscaled service is running and enabled"
 
@@ -47,13 +47,13 @@
       - name: Check if tailscaled binary exists
         ansible.builtin.stat:
             path: /usr/sbin/tailscaled
-        register: tailscaled_binary
+        register: tailscale_daemon_binary
 
       - name: Assert tailscaled binary exists
         ansible.builtin.assert:
             that:
-                - tailscaled_binary.stat.exists
-                - tailscaled_binary.stat.executable
+                - tailscale_daemon_binary.stat.exists
+                - tailscale_daemon_binary.stat.executable
             fail_msg: "Tailscaled binary does not exist or is not executable"
             success_msg: "Tailscaled binary exists and is executable"
 
@@ -69,25 +69,25 @@
       - name: Check if systemd override directory exists
         ansible.builtin.stat:
             path: /etc/systemd/system/tailscaled.service.d
-        register: override_dir
+        register: tailscale_override_dir
 
       - name: Assert systemd override directory exists
         ansible.builtin.assert:
             that:
-                - override_dir.stat.exists
-                - override_dir.stat.isdir
+                - tailscale_override_dir.stat.exists
+                - tailscale_override_dir.stat.isdir
             fail_msg: "Systemd override directory does not exist"
             success_msg: "Systemd override directory exists"
 
       - name: Check if Ansible facts script exists
         ansible.builtin.stat:
             path: /etc/ansible/facts.d/tailscale.fact
-        register: facts_script
+        register: tailscale_facts_script
 
       - name: Assert Ansible facts script exists
         ansible.builtin.assert:
             that:
-                - facts_script.stat.exists
-                - facts_script.stat.executable
+                - tailscale_facts_script.stat.exists
+                - tailscale_facts_script.stat.executable
             fail_msg: "Tailscale facts script does not exist or is not executable"
             success_msg: "Tailscale facts script exists and is executable"

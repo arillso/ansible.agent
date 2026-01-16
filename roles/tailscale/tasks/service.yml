@@ -20,11 +20,11 @@
 - name: Check tailscaled service status
   ansible.builtin.systemd_service:
       name: tailscaled
-  register: tailscaled_service_status
+  register: tailscale_service_status
   become: true
   tags: [tailscale, service, status]
 
 - name: Display service status
   ansible.builtin.debug:
-      msg: "Tailscaled service is {{ tailscaled_service_status.status.ActiveState }}"
+      msg: "Tailscaled service is {{ tailscale_service_status.status.ActiveState }}"
   tags: [tailscale, service, status]
