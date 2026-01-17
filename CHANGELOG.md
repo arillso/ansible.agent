@@ -7,6 +7,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-01-17
+
+### Fixed
+
+- **Argument Specs Validation** - Fixed Galaxy publication errors by removing invalid `no_log` fields from `argument_specs.yml`
+    - Removed `no_log` from alloy role (8 nested password/token fields in basic_auth and bearer_token options)
+    - Removed `no_log` from do role (do_api_token field)
+    - Removed `no_log` from tailscale role (tailscale_auth_key field)
+    - Note: The `no_log` field is not permitted in Ansible's argument_specs schema. Sensitive values are still protected via `no_log` in task definitions.
+
 ## [1.0.0] - 2026-01-17
 
 ### Added
@@ -263,5 +273,6 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.1...HEAD
+[1.0.1]: https://github.com/arillso/ansible.agent/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/arillso/ansible.agent/releases/tag/1.0.0

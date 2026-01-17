@@ -55,7 +55,6 @@ argument_specs:
                 type: "str"
                 required: true
                 description: "Tailscale authentication key for initial device registration (tskey-auth-* or tskey-reusable-*)"
-                no_log: true
 
             tailscale_tags:
                 type: "list"
