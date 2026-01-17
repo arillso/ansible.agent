@@ -71,7 +71,6 @@ argument_specs:
                 required: false
                 default: ""
                 description: "DigitalOcean API token for authentication"
-                no_log: true
 
             do_droplet_id:
                 type: "str"

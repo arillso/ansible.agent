@@ -312,12 +312,10 @@ argument_specs:
                                 type: "str"
                                 required: true
                                 description: "Password for basic auth"
-                                no_log: true
                     bearer_token:
                         type: "str"
                         required: false
                         description: "Bearer token for authentication"
-                        no_log: true
                     bearer_token_file:
                         type: "str"
                         required: false
@@ -531,12 +529,10 @@ argument_specs:
                                 type: "str"
                                 required: true
                                 description: "Password"
-                                no_log: true
                     bearer_token:
                         type: "str"
                         required: false
                         description: "Bearer token"
-                        no_log: true
                     bearer_token_file:
                         type: "str"
                         required: false
@@ -665,12 +661,10 @@ argument_specs:
                                 type: "str"
                                 required: true
                                 description: "Password for basic auth"
-                                no_log: true
                     bearer_token:
                         type: "str"
                         required: false
                         description: "Bearer token for authentication"
-                        no_log: true
                     bearer_token_file:
                         type: "str"
                         required: false
@@ -999,7 +993,6 @@ argument_specs:
                                 type: "str"
                                 required: false
                                 description: "Basic auth password"
-                                no_log: true
                             password_file:
                                 type: "str"
                                 required: false
@@ -1008,7 +1001,6 @@ argument_specs:
                         type: "str"
                         required: false
                         description: "Bearer token to authenticate with"
-                        no_log: true
                     bearer_token_file:
                         type: "str"
                         required: false
