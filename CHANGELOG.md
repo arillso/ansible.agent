@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-01-17
+
 ### Added
 
 #### Documentation & Development Workflow
@@ -24,7 +26,7 @@ All notable changes to this project will be documented in this file.
 #### CI/CD Improvements
 
 - **Unified CI Workflow** - All-in-one workflow for linting, tests, and build (.github/workflows/ci.yml)
-- **Renovate** - Automated dependency updates (.github/renovate.json)
+- **Renovate** - Automated dependency updates with custom regex manager for agent version tracking (.github/renovate.json)
 - **Enhanced Publish Workflow** - Improved Galaxy publishing with changelog integration
 
 #### Molecule Tests
@@ -32,33 +34,6 @@ All notable changes to this project will be documented in this file.
 - **Alloy Role** - Complete molecule test suite with Docker driver
 - **DO Role** - Complete molecule test suite with Docker driver
 - **Tailscale Role** - Complete molecule test suite with Docker driver
-
-### Changed
-
-#### Documentation
-
-- **README.md** - Updated with all three roles and improved examples
-- **LICENSE** - Updated copyright year to 2022-2026
-- **galaxy.yml** - Updated metadata, dependencies, and tags
-- **meta/runtime.yml** - Updated to require Ansible 2.15+
-
-#### CI/CD
-
-- **.gitignore** - Streamlined and reorganized
-- **publish.yml** - Enhanced with better error handling and changelog integration
-
-### Removed
-
-#### Development Configuration
-
-- **.pre-commit-config.yaml** - Removed pre-commit hooks in favor of CI-based linting
-- **dependabot.yml** - Replaced by Renovate
-- **renovate.json** (root) - Moved to .github/renovate.json
-- **linter.yml** - Consolidated into ci.yml workflow
-
-## [1.0.0] - 2025-11-20
-
-### Added
 
 #### Alloy Role (New)
 
@@ -105,6 +80,29 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+#### Documentation
+
+- **README.md** - Updated with all three roles and improved examples
+- **LICENSE** - Updated copyright year to 2022-2026
+- **galaxy.yml** - Updated metadata, dependencies, and tags
+- **meta/runtime.yml** - Updated to require Ansible 2.15+
+
+#### CI/CD
+
+- **.gitignore** - Streamlined and reorganized
+- **publish.yml** - Enhanced with better error handling and changelog integration
+
+### Removed
+
+#### Development Configuration
+
+- **.pre-commit-config.yaml** - Removed pre-commit hooks in favor of CI-based linting
+- **dependabot.yml** - Replaced by Renovate
+- **renovate.json** (root) - Moved to .github/renovate.json
+- **linter.yml** - Consolidated into ci.yml workflow
+
+#### Old Roles and Structure
+
 #### DO Role (Restructured)
 
 - **Complete restructuring** of DigitalOcean Agent role with improved architecture
@@ -128,23 +126,12 @@ All notable changes to this project will be documented in this file.
 
 ### Deprecated
 
-- **Grafana Agent role** - Replaced by Grafana Alloy role (see Migration Guide below)
+- **Grafana Agent role** - Replaced by Grafana Alloy role (see Migration Guide)
 
 ### Removed
 
 - **Grafana Agent role** - Completely removed in favor of Grafana Alloy
-    - All Grafana Agent task files (Debian, RedHat, Windows variants)
-    - All Grafana Agent templates (Linux and Windows configurations)
-    - All Grafana Agent metadata and documentation
-    - All Grafana Agent handlers
-
 - **Old DO role structure** - Replaced with modular architecture
-    - `tasks/install_do_debian.yml` - replaced by `tasks/install.yml` with OS-specific vars
-    - `tasks/install_do_redhat.yml` - replaced by `tasks/install.yml` with OS-specific vars
-
-- **Repository configuration files**
-    - `.gitignore` - Removed (needs recreation)
-    - `.pre-commit-config.yaml` - Removed (optional, can be recreated)
 
 ### Migration Guide
 
@@ -276,5 +263,5 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/arillso/ansible.agent/releases/tag/v1.0.0
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.0...HEAD
+[1.0.0]: https://github.com/arillso/ansible.agent/releases/tag/1.0.0

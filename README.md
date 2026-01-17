@@ -1,8 +1,6 @@
 # Ansible Collection: arillso.agent
 
-[![CI](https://github.com/arillso/ansible.agent/workflows/CI/badge.svg)](https://github.com/arillso/ansible.agent/actions)
-[![Ansible Galaxy](https://img.shields.io/badge/galaxy-arillso.agent-blue.svg)](https://galaxy.ansible.com/arillso/agent)
-[![License](https://img.shields.io/github/license/arillso/ansible.agent)](LICENSE)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=popout-square)](LICENSE) [![Ansible Galaxy](http://img.shields.io/badge/ansible--galaxy-arillso.agent-blue.svg?style=popout-square)](https://galaxy.ansible.com/arillso/agent)
 
 ## Description
 
@@ -56,11 +54,7 @@ Full documentation is available at:
 
 ## License
 
-<!-- markdownlint-disable -->
-
 This project is under the MIT License. See the [LICENSE](LICENSE) file for the full license text.
-
-<!-- markdownlint-enable -->
 
 ## Copyright
 
