@@ -50,7 +50,10 @@ argument_specs:
                 default:
                     ExecStart:
                         - ""
-                        - "/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config=/etc/tailscale/config.json"
+                        - >-
+                            /usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state
+                            --socket=/run/tailscale/tailscaled.sock --port=${PORT}
+                            --config=/etc/tailscale/config.json
                 description: |
                     Dictionary of systemd service override parameters for tailscaled.service.
                     Default includes ExecStart override to enable daemon config file support.
