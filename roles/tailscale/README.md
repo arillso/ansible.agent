@@ -16,7 +16,9 @@ Installs and configures Tailscale VPN for secure mesh networking with support fo
 
 For detailed documentation including all variables, examples, and usage instructions, see:
 
-**<https://guide.arillso.io/collections/arillso/agent/tailscale_role.html>**
+**[Complete Documentation][docs]**
+
+[docs]: https://guide.arillso.io/collections/arillso/agent/tailscale_role.html?utm_source=github&utm_medium=readme&utm_campaign=documentation&utm_content=tailscale_role
 
 ## Quick Start
 

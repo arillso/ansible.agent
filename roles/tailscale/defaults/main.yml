@@ -16,7 +16,15 @@ tailscale_tags: []
 tailscale_reset_authentication: false
 
 tailscale_preferences: {}
-tailscale_service_override: {}
+tailscale_service_override:
+    ExecStart:
+        - ""
+        - >-
+            /usr/sbin/tailscaled
+            --state=/var/lib/tailscale/tailscaled.state
+            --socket=/run/tailscale/tailscaled.sock
+            --port=${PORT}
+            --config={{ tailscale_config_file }}
 
 tailscale_server_url: ""
 tailscale_locked: ""

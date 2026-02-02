@@ -1,8 +1,0 @@
-# Tailscale Daemon Configuration File Override
-# Ensures tailscaled uses persistent configuration from config.json
-# Reference: https://tailscale.com/kb/1654/tailscaled-config-file
-
-[Service]
-# Override ExecStart to include --config flag
-ExecStart=
-ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ tailscale_config_file }}

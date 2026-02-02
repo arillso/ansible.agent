@@ -1,8 +1,34 @@
 # Tailscale Systemd Service Override Template
-# Template for systemd service override configuration
+# Consolidated override configuration for daemon config and custom settings
+# Reference: https://tailscale.com/kb/1654/tailscaled-config-file
+{% set unit_directives = ['After', 'Before', 'Wants', 'Requires', 'PartOf', 'Conflicts', 'ReloadPropagatedFrom', 'BindsTo', 'Requisite', 'OnFailure', 'PropagatesReloadTo', 'JoinsNamespaceOf'] %}
+{% set unit_settings = {} %}
+{% set service_settings = {} %}
+{% for key, value in tailscale_service_override.items() %}
+{% if key in unit_directives %}
+{% set _ = unit_settings.update({key: value}) %}
+{% else %}
+{% set _ = service_settings.update({key: value}) %}
+{% endif %}
+{% endfor %}
 
+{% if unit_settings %}
+[Unit]
+{% for section, settings in unit_settings.items() %}
+{% if settings is iterable and settings is not string %}
+# {{ section }} list values
+{% for item in settings %}
+{{ section }}={{ item }}
+{% endfor %}
+{% else %}
+{{ section }}={{ settings }}
+{% endif %}
+{% endfor %}
+
+{% endif %}
 [Service]
-{% for section, settings in tailscale_service_override.items() %}
+{% if service_settings %}
+{% for section, settings in service_settings.items() %}
 {% if section == 'Environment' and settings is mapping %}
 # Environment variables
 {% for key, value in settings.items() %}
@@ -44,3 +70,4 @@ ExecStartPre={{ command }}
 {{ section }}={{ settings }}
 {% endif %}
 {% endfor %}
+{% endif %}

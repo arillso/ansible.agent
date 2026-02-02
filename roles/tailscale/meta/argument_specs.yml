@@ -47,8 +47,23 @@ argument_specs:
             tailscale_service_override:
                 type: "dict"
                 required: false
-                default: {}
-                description: "Dictionary of systemd service override parameters"
+                default:
+                    ExecStart:
+                        - ""
+                        - "/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config=/etc/tailscale/config.json"
+                description: |
+                    Dictionary of systemd service override parameters for tailscaled.service.
+                    Default includes ExecStart override to enable daemon config file support.
+
+                    Supports both Unit and Service section directives:
+                    - Unit directives: After, Before, Wants, Requires, PartOf, Conflicts, etc.
+                    - Service directives: ExecStart, ExecStartPre, Environment, etc.
+
+                    Examples:
+                    - Override ExecStart: tailscale_service_override: {ExecStart: ["", "/custom/path"]}
+                    - Add environment: tailscale_service_override: {Environment: {VAR: "value"}}
+                    - Add dependencies: tailscale_service_override: {After: ["network.target"]}
+                    - Disable config: tailscale_service_override: {} (empty dict)
 
             # Authentication
             tailscale_auth_key:

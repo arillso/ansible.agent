@@ -56,17 +56,30 @@
   notify: reload tailscale config
   tags: [tailscale, config, daemon]
 
-- name: Configure systemd service to use daemon config file
+- name: Create Tailscale systemd override directory
+  ansible.builtin.file:
+      path: /etc/systemd/system/tailscaled.service.d
+      state: directory
+      mode: "0755"
+      owner: root
+      group: root
+  become: true
+  when: >
+      (tailscale_config_enabled | default(true) | bool and _tailscale_has_config | bool) or
+      (tailscale_service_override | length > 0)
+  tags: [tailscale, config, systemd]
+
+- name: Configure Tailscale systemd service override
   ansible.builtin.template:
-      src: etc/systemd/system/tailscaled.service.d/config-override.conf.j2
-      dest: /etc/systemd/system/tailscaled.service.d/config-override.conf
+      src: etc/systemd/system/tailscaled.service.d/override.conf.j2
+      dest: /etc/systemd/system/tailscaled.service.d/override.conf
       mode: "0644"
       owner: root
       group: root
   become: true
-  when:
-      - tailscale_config_enabled | default(true) | bool
-      - _tailscale_has_config | bool
+  when: >
+      (tailscale_config_enabled | default(true) | bool and _tailscale_has_config | bool) or
+      (tailscale_service_override | length > 0)
   notify:
       - reload systemd
       - restart tailscaled
@@ -85,31 +98,6 @@
   notify: restart tailscaled
   no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
   tags: [tailscale, config, auth]
-
-- name: Create Tailscale systemd override directory
-  ansible.builtin.file:
-      path: /etc/systemd/system/tailscaled.service.d
-      state: directory
-      mode: "0755"
-      owner: root
-      group: root
-  become: true
-  when: tailscale_service_override | length > 0
-  tags: [tailscale, config, systemd]
-
-- name: Configure Tailscale systemd service override
-  ansible.builtin.template:
-      src: etc/systemd/system/tailscaled.service.d/override.conf.j2
-      dest: /etc/systemd/system/tailscaled.service.d/override.conf
-      mode: "0644"
-      owner: root
-      group: root
-  become: true
-  when: tailscale_service_override | length > 0
-  notify:
-      - reload systemd
-      - restart tailscaled
-  tags: [tailscale, config, systemd]
 
 # Reset authentication if requested
 - name: Reset Tailscale configuration (logout and re-authenticate)
