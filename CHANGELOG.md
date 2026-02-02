@@ -7,6 +7,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-02-02
+
+### Fixed
+
+- **Tailscale Role** - Fixed systemd service variable expansion
+    - Changed PORT variable from `$PORT` to `${PORT}` in [tailscaled.service override template](roles/tailscale/templates/etc/systemd/system/tailscaled.service.d/config-override.conf.j2:8)
+    - Ensures proper Bash variable expansion in systemd ExecStart directive
+
 ## [1.0.1] - 2026-01-17
 
 ### Fixed
@@ -273,6 +281,7 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.1...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.2...HEAD
+[1.0.2]: https://github.com/arillso/ansible.agent/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/arillso/ansible.agent/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/arillso/ansible.agent/releases/tag/1.0.0
