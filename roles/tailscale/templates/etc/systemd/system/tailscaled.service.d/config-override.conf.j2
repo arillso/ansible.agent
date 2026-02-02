@@ -5,4 +5,4 @@
 [Service]
 # Override ExecStart to include --config flag
 ExecStart=
-ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=$PORT --config={{ tailscale_config_file }}
+ExecStart=/usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state --socket=/run/tailscale/tailscaled.sock --port=${PORT} --config={{ tailscale_config_file }}
