@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-02-02
+
+### Changed
+
+- **Tailscale Role** - Refactored systemd service override architecture
+    - Consolidated `config-override.conf.j2` and `override.conf.j2` into single unified template
+    - Moved ExecStart override logic from template to [defaults/main.yml](roles/tailscale/defaults/main.yml:19-27)
+    - Fixed Unit vs Service section directive handling in systemd overrides
+    - Added automatic cleanup task for legacy `config-override.conf` file
+    - Updated [argument_specs.yml](roles/tailscale/meta/argument_specs.yml:47-68) with detailed documentation and examples
+    - Improved YAML formatting with multiline syntax for better readability
+
+### Fixed
+
+- **Tailscale Role** - Fixed systemd directive placement errors
+    - Unit directives (After, Wants, PartOf, ReloadPropagatedFrom) now correctly placed in `[Unit]` section
+    - Service directives (ExecStart, Environment, etc.) correctly placed in `[Service]` section
+    - Resolves systemd warning: "Unknown key name in section 'Service'"
+
 ## [1.0.2] - 2026-02-02
 
 ### Fixed
@@ -281,7 +300,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.2...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.3...HEAD
+[1.0.3]: https://github.com/arillso/ansible.agent/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/arillso/ansible.agent/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/arillso/ansible.agent/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/arillso/ansible.agent/releases/tag/1.0.0
