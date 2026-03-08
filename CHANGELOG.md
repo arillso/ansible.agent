@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-03-08
+
+### Changed
+
+- **Minimum Requirements** - Bumped minimum ansible-core from 2.15 to 2.18
+    - Versions 2.15, 2.16, and 2.17 are end-of-life
+    - Updated `requires_ansible` in `meta/runtime.yml` to `>=2.18.0`
+    - Updated `min_ansible_version` in all role metadata
+    - Updated Python minimum to 3.11 (required by ansible-core 2.18)
+- **CI/CD** - Migrated to reusable workflows from `arillso/.github`
+    - Replaced inline CI workflow with shared `ci-ansible-collection.yml`
+    - Replaced inline publish workflow with shared `release-ansible-collection.yml`
+    - Added Claude Code AI review workflow
+    - Added security secrets scanning workflow
+    - Pinned Renovate preset to `2026-03-08` tag
+- **Dependencies** - Updated development dependencies
+    - Excluded `ansible-core` from Renovate updates (compatibility constraint)
+    - Updated pytest, sphinx, ruff, yamllint, molecule, and other dev dependencies
+
 ## [1.0.3] - 2026-02-02
 
 ### Changed
@@ -300,7 +319,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.0.3...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.1.0...HEAD
+[1.1.0]: https://github.com/arillso/ansible.agent/compare/1.0.3...1.1.0
 [1.0.3]: https://github.com/arillso/ansible.agent/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/arillso/ansible.agent/compare/1.0.1...1.0.2
 [1.0.1]: https://github.com/arillso/ansible.agent/compare/1.0.0...1.0.1
