@@ -36,7 +36,7 @@ collections:
 
 ## Requirements
 
-- Ansible >= 2.15
+- Ansible >= 2.18
 - systemd on target systems
 
 ## Dependencies
