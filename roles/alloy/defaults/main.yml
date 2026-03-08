@@ -14,7 +14,7 @@ alloy_package_name: "alloy"
 alloy_package_state: "present"
 alloy_package_only: false
 # renovate: datasource=github-releases depName=grafana/alloy extractVersion=^v(?<version>.*)$
-alloy_version: "1.12.2"
+alloy_version: "1.13.2"
 
 # Service configuration
 alloy_port: 12345
