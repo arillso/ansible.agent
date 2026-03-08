@@ -22,8 +22,8 @@ This project adheres to a Code of Conduct. By participating, you are expected to
 
 ### Prerequisites
 
-- Ansible >= 2.15
-- Python >= 3.9
+- Ansible >= 2.18
+- Python >= 3.11
 - Git
 - A GitHub account
 
@@ -373,8 +373,8 @@ Contributors are recognized in:
 
 ## Version Compatibility
 
-- **Ansible:** >= 2.15
-- **Python:** >= 3.9
+- **Ansible:** >= 2.18
+- **Python:** >= 3.11
 - **Platforms:**
     - Ubuntu 20.04, 22.04, 24.04
     - Debian 11, 12

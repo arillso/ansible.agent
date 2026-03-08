@@ -1,5 +1,5 @@
 # Ansible Collection Dependencies
-ansible-core>=2.15.0
+ansible-core>=2.18.0
 ansible-lint>=6.22.0
 
 # Testing Tools
