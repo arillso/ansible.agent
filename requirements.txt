@@ -11,7 +11,7 @@ pytest-cov>=4.1.0
 
 # Linting and Formatting
 yamllint>=1.38.0
-ruff>=0.15.4
+ruff>=0.15.5
 black>=23.12.1
 
 # Documentation
