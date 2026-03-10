@@ -19,8 +19,8 @@ argument_specs:
             do_version:
                 type: "str"
                 required: false
-                default: "latest"
-                description: "Version of the DigitalOcean Agent package (latest for newest version)"
+                default: "3.18.8"
+                description: "Version of the DigitalOcean Agent package"
 
             do_port:
                 type: "int"
@@ -107,6 +107,12 @@ argument_specs:
                 required: false
                 default: 9091
                 description: "Port for Prometheus metrics endpoint"
+
+            do_custom_config_enabled:
+                type: "bool"
+                required: false
+                default: false
+                description: "Enable custom configuration for DigitalOcean Agent"
 
             do_tags:
                 type: "list"
