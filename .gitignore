@@ -1,17 +1,20 @@
 # Python
-*.pyc
 __pycache__/
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
+build/
+dist/
+*.egg-info/
 
 # Ansible
 *.retry
 .ansible/
 
 # IDEs
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
@@ -24,14 +27,17 @@ Thumbs.db
 .tox/
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 
 # Build
 *.tar.gz
 *.zip
 
-# Temporary
-*.bak
-*.tmp
-tmp/
-temp/
+# Environments
+.env
+.venv/
+venv/
+
+# Reports
+megalinter-reports

@@ -1,25 +1,37 @@
 ---
 # Default variables for DigitalOcean Agent role
-# Diese Variablen können in group_vars oder host_vars überschrieben werden
 
-# Package-Konfiguration
+# Package configuration
 do_package_name: "do-agent"
 # renovate: datasource=github-releases depName=digitalocean/do-agent
 do_version: "3.18.8"
 
-# Service-Konfiguration
+# Service configuration
+do_port: 9090
 do_health_check_enabled: true
+do_listen_address: "0.0.0.0"
+do_storage_path: "/var/lib/do-agent"
 
-# Konfiguration (meist nicht erforderlich)
+# Custom configuration (usually not required)
 do_custom_config_enabled: false
 
-# Optionale API-Konfiguration (für erweiterte Features)
-do_api_token: ""
+# Feature flags
+do_enable_metrics: true
+do_enable_logs: true
+do_enable_insights: true
 
-# Logging-Konfiguration (optional)
+# Optional API configuration
+do_api_token: ""
+do_droplet_id: ""
+
+# Prometheus integration
+do_prometheus_enabled: false
+do_prometheus_port: 9091
+
+# Logging configuration
 do_log_level: "info"
 do_log_format: "json"
 
-# Tags für bessere Organisation (optional)
+# Tags and labels
 do_tags: []
 do_labels: {}

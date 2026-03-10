@@ -178,13 +178,15 @@ argument_specs:
                 default: false
                 description: "Logs source IP addresses in server logs"
 
-            alloy_server_grpc_max_recv_msg_size: &alloy_server_grpc_max_recv_msg_size
+            alloy_server_grpc_max_recv_msg_size:
+                &alloy_server_grpc_max_recv_msg_size
                 type: "str"
                 required: false
                 default: ""
                 description: "Maximum receive message size for gRPC server"
 
-            alloy_server_grpc_max_send_msg_size: &alloy_server_grpc_max_send_msg_size
+            alloy_server_grpc_max_send_msg_size:
+                &alloy_server_grpc_max_send_msg_size
                 type: "str"
                 required: false
                 default: ""
@@ -269,13 +271,15 @@ argument_specs:
                 default: false
                 description: "Honor labels from targets"
 
-            alloy_prometheus_honor_timestamps: &alloy_prometheus_honor_timestamps
+            alloy_prometheus_honor_timestamps:
+                &alloy_prometheus_honor_timestamps
                 type: "bool"
                 required: false
                 default: true
                 description: "Honor timestamps from targets"
 
-            alloy_prometheus_additional_scrape_configs: &alloy_prometheus_additional_scrape_configs
+            alloy_prometheus_additional_scrape_configs:
+                &alloy_prometheus_additional_scrape_configs
                 type: "list"
                 required: false
                 default: []
@@ -822,11 +826,12 @@ argument_specs:
             alloy_version: &alloy_version
                 type: "str"
                 required: false
-                default: "latest"
-                description: "Version of the Grafana Alloy package (latest for newest version)"
+                default: "1.13.2"
+                description: "Version of the Grafana Alloy package"
 
             # Node exporter configuration options
-            alloy_enable_advanced_node_exporter: &alloy_enable_advanced_node_exporter
+            alloy_enable_advanced_node_exporter:
+                &alloy_enable_advanced_node_exporter
                 type: "bool"
                 required: false
                 default: false
@@ -836,7 +841,32 @@ argument_specs:
                 type: "dict"
                 required: false
                 description: "Advanced configuration for the integrated Node Exporter"
-                default: {}
+                default:
+                    disable_collectors:
+                        - "ipvs"
+                        - "btrfs"
+                        - "infiniband"
+                        - "xfs"
+                        - "zfs"
+                    filesystem:
+                        fs_types_exclude: >-
+                            ^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|
+                            rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+                        mount_points_exclude: "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+                        mount_timeout: "5s"
+                    netclass:
+                        ignored_devices: "^(veth.*|cali.*|[a-f0-9]{15})$"
+                    netdev:
+                        device_exclude: "^(veth.*|cali.*|[a-f0-9]{15})$"
+                    textfile_directory: "/var/lib/node_exporter/textfile_collector"
+                    systemd:
+                        unit_include: []
+                        unit_exclude: []
+                        enable_start_time_metrics: true
+                        enable_task_metrics: false
+                        enable_restarts_metrics: true
+                    procfs_path: ""
+                    sysfs_path: ""
                 options:
                     disable_collectors:
                         type: "list"
@@ -938,10 +968,12 @@ argument_specs:
                         required: false
                         description: "Instance identifier override (defaults to ansible_hostname)"
 
-            alloy_node_exporter_metric_allowlist: &alloy_node_exporter_metric_allowlist
+            alloy_node_exporter_metric_allowlist:
+                &alloy_node_exporter_metric_allowlist
                 type: "list"
                 elements: "str"
                 required: false
+                default: []
                 description: "List of metrics to keep, filtering out all others to reduce network and storage usage"
 
             # Grafana Remote Configuration options
@@ -1050,6 +1082,61 @@ argument_specs:
                 type: "str"
                 required: false
                 description: "Grafana repository configuration (APT for Debian/Ubuntu, RPM for RedHat/CentOS)"
+
+            alloy_default_queue_config: &alloy_default_queue_config
+                type: "dict"
+                required: false
+                default: {}
+                description: "Default queue configuration to prevent undefined variable errors"
+
+            alloy_enable_journal_monitoring: &alloy_enable_journal_monitoring
+                type: "bool"
+                required: false
+                default: false
+                description: "Enable journal monitoring for log collection"
+
+            alloy_journal_config: &alloy_journal_config
+                type: "dict"
+                required: false
+                default:
+                    max_age: "12h0m0s"
+                    relabel_rules:
+                        - source_labels: ["__journal__systemd_unit"]
+                          target_label: "unit"
+                        - source_labels: ["__journal__boot_id"]
+                          target_label: "boot_id"
+                        - source_labels: ["__journal__transport"]
+                          target_label: "transport"
+                        - source_labels: ["__journal_priority_keyword"]
+                          target_label: "level"
+                description: "Journal module configuration for log collection from systemd journal"
+                options:
+                    max_age:
+                        type: "str"
+                        required: false
+                        default: "12h0m0s"
+                        description: "Maximum age of journal entries to read"
+                    relabel_rules:
+                        type: "list"
+                        required: false
+                        elements: "dict"
+                        description: "Relabel rules for journal entries"
+                        options:
+                            source_labels:
+                                type: "list"
+                                required: false
+                                elements: "str"
+                                description: "List of source labels to use as input"
+                            target_label:
+                                type: "str"
+                                required: false
+                                description: "Label to set with the extracted value"
+
+            alloy_service_file: &alloy_service_file
+                type: "str"
+                required: false
+                default: "/etc/systemd/system/alloy.service"
+                description: "Path to the systemd service file for Grafana Alloy"
 
     install:
         short_description: "Install Grafana Alloy package and dependencies"

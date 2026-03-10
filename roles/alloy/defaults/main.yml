@@ -21,6 +21,13 @@ alloy_port: 12345
 alloy_grpc_port: 12346
 alloy_health_check_enabled: true
 
+# Resource limits
+alloy_max_memory: ""
+alloy_max_cpu: ""
+
+# External labels added to all metrics and logs
+alloy_external_labels: {}
+
 # Logging configuration
 alloy_log_level: "info"
 alloy_log_format: "logfmt"
@@ -130,6 +137,7 @@ alloy_otel_exporters: []
 # Advanced node exporter and journal monitoring configuration
 alloy_enable_advanced_node_exporter: false
 alloy_enable_journal_monitoring: false
+alloy_node_exporter_metric_allowlist: []
 
 # Default node exporter configuration (can be overridden in group_vars)
 alloy_node_exporter_config:

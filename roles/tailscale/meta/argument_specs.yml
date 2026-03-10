@@ -25,6 +25,12 @@ argument_specs:
                 choices: ["present", "absent", "latest"]
                 description: "Desired state of the Tailscale package"
 
+            tailscale_version:
+                type: "str"
+                required: false
+                default: "1.94.2"
+                description: "Version of the Tailscale package"
+
             tailscale_service_state:
                 type: "str"
                 required: false
@@ -51,9 +57,11 @@ argument_specs:
                     ExecStart:
                         - ""
                         - >-
-                            /usr/sbin/tailscaled --state=/var/lib/tailscale/tailscaled.state
-                            --socket=/run/tailscale/tailscaled.sock --port=${PORT}
-                            --config=/etc/tailscale/config.json
+                            /usr/sbin/tailscaled
+                            --state=/var/lib/tailscale/tailscaled.state
+                            --socket=/run/tailscale/tailscaled.sock
+                            --port=${PORT}
+                            --config={{ tailscale_config_file }}
                 description: |
                     Dictionary of systemd service override parameters for tailscaled.service.
                     Default includes ExecStart override to enable daemon config file support.
