@@ -7,19 +7,20 @@ body:
     - type: markdown
       attributes:
           value: |
-              Thanks for suggesting a new feature! Please describe your idea in detail.
+              Thanks for suggesting a new feature! Please provide as much detail as possible.
 
     - type: dropdown
       id: role
       attributes:
-          label: Which role is this for?
-          description: Select the role this feature would affect
+          label: Which role is this feature for?
+          description: Select the role that should have this feature
           options:
               - Alloy (Grafana Alloy)
               - DO (DigitalOcean Agent)
               - Tailscale
-              - Collection (general)
               - New role
+              - Collection (general)
+              - Not sure
       validations:
           required: true
 
@@ -31,10 +32,10 @@ body:
           options:
               - New functionality
               - Enhancement to existing feature
-              - New configuration option
-              - New platform support
+              - Configuration option
               - Performance improvement
-              - Documentation improvement
+              - Better error handling
+              - Documentation
               - Other
       validations:
           required: true
@@ -43,8 +44,8 @@ body:
       id: problem
       attributes:
           label: Problem Statement
-          description: Is your feature request related to a problem? Please describe.
-          placeholder: I'm frustrated when...
+          description: What problem does this feature solve? What use case does it enable?
+          placeholder: Currently, I cannot... / It would be useful if...
       validations:
           required: true
 
@@ -52,43 +53,43 @@ body:
       id: solution
       attributes:
           label: Proposed Solution
-          description: Describe the solution you'd like
-          placeholder: I would like to see...
+          description: How do you envision this feature working?
+          placeholder: Describe your ideal solution
       validations:
           required: true
 
     - type: textarea
       id: example
       attributes:
-          label: Usage Example
-          description: If applicable, show how you would use this feature
+          label: Example Usage
+          description: Show how you would use this feature
           render: yaml
           placeholder: |
               - hosts: all
                 roles:
                   - role: arillso.agent.alloy
                     vars:
-                      alloy_new_feature: true
+                      # Your example here
 
     - type: textarea
       id: alternatives
       attributes:
           label: Alternatives Considered
-          description: Describe any alternative solutions or features you've considered
-          placeholder: I've also thought about...
+          description: Have you considered any alternative solutions or workarounds?
+          placeholder: Describe alternatives or current workarounds
 
     - type: textarea
       id: additional
       attributes:
           label: Additional Context
-          description: Add any other context, screenshots, or examples about the feature request
-          placeholder: Any additional information
+          description: Any other context, screenshots, or examples
+          placeholder: Links to similar features, documentation, etc.
 
     - type: checkboxes
       id: contribution
       attributes:
           label: Contribution
-          description: Would you be willing to contribute this feature?
+          description: Would you like to implement this feature yourself?
           options:
               - label: I would be willing to submit a pull request for this feature
                 required: false
@@ -99,7 +100,7 @@ body:
           label: Checklist
           description: Please confirm the following
           options:
-              - label: I have searched existing issues to avoid duplicates
+              - label: I have searched existing issues and feature requests
                 required: true
-              - label: This feature aligns with the collection's scope
+              - label: This feature aligns with the collection's purpose
                 required: true
