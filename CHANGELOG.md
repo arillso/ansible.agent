@@ -7,6 +7,25 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-03-18
+
+### Added
+
+- **Alloy Role** - Resource limits (`alloy_max_memory`, `alloy_max_cpu`), external labels (`alloy_external_labels`), metric allowlist filtering (`alloy_node_exporter_metric_allowlist`), journal monitoring (`alloy_enable_journal_monitoring`, `alloy_journal_config`), and new argument specs (`alloy_default_queue_config`, `alloy_service_file`)
+- **DO Role** - Service config (`do_port`, `do_listen_address`, `do_storage_path`), feature flags (`do_enable_metrics`, `do_enable_logs`, `do_enable_insights`), Prometheus integration (`do_prometheus_enabled`, `do_prometheus_port`), and new argument_specs entries (`do_droplet_id`, `do_custom_config_enabled`)
+- **Tailscale Role** - `tailscale_version` added to argument_specs
+- **Developer Tooling** - `.ansible-lint`, security scanning configs (`.checkov.yml`, `.gitleaks.toml`, `.grype.yaml`, `.kics.json`, `.trivy.yaml`, `.secretlintrc.json`), code quality configs (`.jscpd.json`, `.markdown-link-check.json`, `.markdownlint.json`), `.pre-commit-config.yaml`, and `Makefile`
+
+### Changed
+
+- **Alloy Role** - Updated Grafana Alloy to v1.14.0; updated `alloy_node_exporter_config` defaults with production values; fixed argument_specs defaults for `alloy_version` and `alloy_node_exporter_config`
+- **DO Role** - Translated German comments to English; fixed argument_specs default for `do_version`
+- **Tailscale Role** - Improved YAML formatting for systemd override defaults
+- **Developer Tooling** - Replaced `pytest.ini` with `pyproject.toml`; updated `.yamllint` and `.gitignore`; streamlined `CONTRIBUTING.md`
+- **CI/CD** - Restricted Claude review to newly opened pull requests
+- **Collection** - Added arillso as co-author in `galaxy.yml`
+- **Dependencies** - Updated molecule-plugins to v25, pytest-cov to v7, and python dependencies
+
 ## [1.1.0] - 2026-03-08
 
 ### Changed
@@ -319,7 +338,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.1.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.2.0...HEAD
+[1.2.0]: https://github.com/arillso/ansible.agent/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/arillso/ansible.agent/compare/1.0.3...1.1.0
 [1.0.3]: https://github.com/arillso/ansible.agent/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/arillso/ansible.agent/compare/1.0.1...1.0.2
