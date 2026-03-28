@@ -4,7 +4,7 @@
 # Package configuration
 do_package_name: "do-agent"
 # renovate: datasource=github-releases depName=digitalocean/do-agent
-do_version: "3.18.8"
+do_version: "3.18.10"
 
 # Service configuration
 do_port: 9090
