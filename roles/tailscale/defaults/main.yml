@@ -2,7 +2,7 @@
 tailscale_package_name: tailscale
 tailscale_package_state: present
 # renovate: datasource=github-releases depName=tailscale/tailscale extractVersion=^v(?<version>.*)$
-tailscale_version: "1.96.3"
+tailscale_version: "1.96.4"
 
 tailscale_service_state: started
 tailscale_service_enabled: true
