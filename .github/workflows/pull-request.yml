@@ -30,35 +30,40 @@ jobs:
 
     molecule-alloy:
         # alloy must run as a stable systemd service, which is unreliable
-        # under the docker driver — use the KVM (molecule-qemu) reusable.
+        # under the docker driver — use the qemu (KVM) molecule driver.
         # Roles keep molecule scenarios under roles/<role>/molecule/, so
         # scenarios_root is set per role and the matrix is pinned to the
         # single `default` scenario. concurrency-suffix keeps this nested
         # call out of the caller's concurrency group.
-        uses: arillso/.github/.github/workflows/ci-ansible-molecule-kvm.yml@2026-06-17
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
         with:
             collection_namespace: arillso
             collection_name: agent
+            driver: qemu
             python_version: "3.12"
             scenarios_root: roles/alloy/molecule
             scenarios: '["default"]'
             concurrency-suffix: molecule-alloy
 
     molecule-do:
-        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-14
+        # do and tailscale converge fine under the docker driver (their
+        # molecule.yml uses driver: docker), so keep the default driver.
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
         with:
             collection_namespace: arillso
             collection_name: agent
+            driver: docker
             python_version: "3.12"
             scenarios_root: roles/do/molecule
             scenarios: '["default"]'
             concurrency-suffix: molecule-do
 
     molecule-tailscale:
-        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-14
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
         with:
             collection_namespace: arillso
             collection_name: agent
+            driver: docker
             python_version: "3.12"
             scenarios_root: roles/tailscale/molecule
             scenarios: '["default"]'
