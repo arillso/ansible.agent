@@ -26,7 +26,7 @@ jobs:
         with:
             collection_namespace: arillso
             collection_name: agent
-            python_version: "3.12"
+            python_version: "3.13"
 
     molecule-alloy:
         # alloy must run as a stable systemd service, which is unreliable
@@ -40,7 +40,7 @@ jobs:
             collection_namespace: arillso
             collection_name: agent
             driver: qemu
-            python_version: "3.12"
+            python_version: "3.13"
             scenarios_root: roles/alloy/molecule
             scenarios: '["default"]'
             concurrency-suffix: molecule-alloy
@@ -53,7 +53,7 @@ jobs:
             collection_namespace: arillso
             collection_name: agent
             driver: docker
-            python_version: "3.12"
+            python_version: "3.13"
             scenarios_root: roles/do/molecule
             scenarios: '["default"]'
             concurrency-suffix: molecule-do
@@ -64,7 +64,7 @@ jobs:
             collection_namespace: arillso
             collection_name: agent
             driver: docker
-            python_version: "3.12"
+            python_version: "3.13"
             scenarios_root: roles/tailscale/molecule
             scenarios: '["default"]'
             concurrency-suffix: molecule-tailscale

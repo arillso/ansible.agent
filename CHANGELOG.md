@@ -1,11 +1,24 @@
 # Changelog
 
-This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
-and [human-readable changelog](https://keepachangelog.com/en/1.0.0/).
-
 All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [Unreleased]
+
+### Changed
+
+- Raise the Python target to `3.13` (the highest version `ansible-test`
+  supports): bump `python_version` in `pull-request.yml` and `merge.yml` so CI
+  exercises the same interpreter the release artifact is built with, matching
+  `.python-version`.
+- Adopt the standard Keep a Changelog header.
+
+### Added
+
+- `.python-version` pinning Python `3.13` (org-wide target, kept current by the
+  shared `renovate-ansible` preset); consumed by the release workflow.
 
 ## [1.2.0] - 2026-03-18
 
