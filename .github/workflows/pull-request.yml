@@ -35,9 +35,7 @@ jobs:
         # scenarios_root is set per role and the matrix is pinned to the
         # single `default` scenario. concurrency-suffix keeps this nested
         # call out of the caller's concurrency group.
-        # NOTE: branch ref while the KVM reusable PoC is validated; pin to
-        # a date tag once arillso/.github merges it.
-        uses: arillso/.github/.github/workflows/ci-ansible-molecule-kvm.yml@feat/ci-ansible-molecule-kvm
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule-kvm.yml@2026-06-17
         with:
             collection_namespace: arillso
             collection_name: agent
