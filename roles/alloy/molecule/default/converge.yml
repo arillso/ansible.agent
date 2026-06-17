@@ -14,23 +14,27 @@
   roles:
       - role: arillso.agent.alloy
         vars:
-            # Basic Prometheus configuration
-            alloy_prometheus_enabled: true
-            alloy_prometheus_remote_write_url: "http://localhost:9090/api/v1/write"
+            # Prometheus: enable and define one scrape config so a
+            # prometheus.scrape component is rendered. Forwards to the
+            # default remote_write target shipped in role defaults.
+            alloy_enable_prometheus: true
+            alloy_prometheus_additional_scrape_configs:
+                - job_name: "self"
+                  static_configs:
+                      - targets: ["127.0.0.1:12345"]
+                  remote_write: "default"
 
-            # Enable Node Exporter
-            alloy_node_exporter_enabled: true
-            alloy_node_exporter_collectors:
-                - cpu
-                - diskstats
-                - filesystem
-                - loadavg
-                - meminfo
-                - netdev
+            # Node exporter: renders prometheus.exporter.unix.
+            alloy_enable_advanced_node_exporter: true
 
-            # Enable Loki
-            alloy_loki_enabled: true
-            alloy_loki_url: "http://localhost:3100/loki/api/v1/push"
+            # Loki: enable and define one file source so a loki.source
+            # component is rendered. Forwards to the default loki client.
+            alloy_enable_loki: true
+            alloy_loki_file_sources:
+                - name: "syslog"
+                  targets:
+                      - path: "/var/log/syslog"
+                  write_to: "default"
 
-            # Disable health check for testing (no actual Prometheus endpoint)
+            # Disable health check for testing (no actual endpoints).
             alloy_health_check_enabled: false

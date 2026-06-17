@@ -95,6 +95,12 @@ argument_specs:
                 default: false
                 description: "Perform logout and re-authentication (WARNING: temporary disconnect)"
 
+            tailscale_verify_connectivity:
+                type: "bool"
+                required: false
+                default: true
+                description: "Run the connectivity verification phase (requires a running, authenticated tailscaled)"
+
             # Daemon Configuration File
             tailscale_config_enabled:
                 type: "bool"

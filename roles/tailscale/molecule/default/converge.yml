@@ -14,10 +14,9 @@
   roles:
       - role: arillso.agent.tailscale
         vars:
-            # Skip Tailscale authentication in tests (no valid auth key)
-            tailscale_up_skip: true
-
-            # Install only, don't configure
+            # Install + configure, but skip `tailscale up`: with an empty
+            # auth key the role installs the package and writes config
+            # without authenticating (no valid auth key available in CI).
             tailscale_auth_key: ""
 
             # Skip connectivity verification

@@ -15,6 +15,10 @@ tailscale_auth_key: ""
 tailscale_tags: []
 tailscale_reset_authentication: false
 
+# Run the connectivity verification phase (verify.yml). Requires a
+# running, authenticated tailscaled; disable for install-only runs.
+tailscale_verify_connectivity: true
+
 tailscale_preferences: {}
 tailscale_service_override:
     ExecStart:

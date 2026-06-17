@@ -14,30 +14,34 @@
 
 - name: Check if any config options are set
   ansible.builtin.set_fact:
+      # Scalars are cast to string before measuring length: several of
+      # these options accept booleans (e.g. tailscale_accept_routes,
+      # tailscale_ssh_enabled), and `bool | length` raises "object of
+      # type 'bool' has no len()". Lists keep their native length.
       _tailscale_has_config: >-
           {{
-            (tailscale_server_url | default('') | length > 0) or
-            (tailscale_locked | default('') | length > 0) or
-            (tailscale_enabled | default('') | length > 0) or
-            (tailscale_hostname | default('') | length > 0) or
-            (tailscale_operator_user | default('') | length > 0) or
-            (tailscale_accept_dns | default('') | length > 0) or
-            (tailscale_accept_routes | default('') | length > 0) or
+            (tailscale_server_url | default('') | string | length > 0) or
+            (tailscale_locked | default('') | string | length > 0) or
+            (tailscale_enabled | default('') | string | length > 0) or
+            (tailscale_hostname | default('') | string | length > 0) or
+            (tailscale_operator_user | default('') | string | length > 0) or
+            (tailscale_accept_dns | default('') | string | length > 0) or
+            (tailscale_accept_routes | default('') | string | length > 0) or
             (tailscale_advertise_routes | default([]) | length > 0) or
-            (tailscale_advertise_exit_node | default('') | length > 0) or
-            (tailscale_snat_subnet_routes | default('') | length > 0) or
-            (tailscale_exit_node | default('') | length > 0) or
-            (tailscale_exit_node_allow_lan_access | default('') | length > 0) or
-            (tailscale_ssh_enabled | default('') | length > 0) or
-            (tailscale_webclient_enabled | default('') | length > 0) or
-            (tailscale_shields_up | default('') | length > 0) or
-            (tailscale_posture_checking | default('') | length > 0) or
+            (tailscale_advertise_exit_node | default('') | string | length > 0) or
+            (tailscale_snat_subnet_routes | default('') | string | length > 0) or
+            (tailscale_exit_node | default('') | string | length > 0) or
+            (tailscale_exit_node_allow_lan_access | default('') | string | length > 0) or
+            (tailscale_ssh_enabled | default('') | string | length > 0) or
+            (tailscale_webclient_enabled | default('') | string | length > 0) or
+            (tailscale_shields_up | default('') | string | length > 0) or
+            (tailscale_posture_checking | default('') | string | length > 0) or
             (tailscale_advertise_services | default([]) | length > 0) or
-            (tailscale_advertise_connector | default('') | length > 0) or
-            (tailscale_auto_update_check | default('') | length > 0) or
-            (tailscale_auto_update_apply | default('') | length > 0) or
-            (tailscale_netfilter_mode | default('') | length > 0) or
-            (tailscale_stateful_filtering | default('') | length > 0) or
+            (tailscale_advertise_connector | default('') | string | length > 0) or
+            (tailscale_auto_update_check | default('') | string | length > 0) or
+            (tailscale_auto_update_apply | default('') | string | length > 0) or
+            (tailscale_netfilter_mode | default('') | string | length > 0) or
+            (tailscale_stateful_filtering | default('') | string | length > 0) or
             (tailscale_static_endpoints | default([]) | length > 0)
           }}
   tags: [tailscale, config, daemon]
@@ -94,7 +98,9 @@
           --reset
   become: true
   changed_when: true
-  when: not ansible_local.tailscale.authenticated | default(false)
+  when:
+      - tailscale_auth_key | length > 0
+      - not ansible_local.tailscale.authenticated | default(false)
   notify: restart tailscaled
   no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
   tags: [tailscale, config, auth]

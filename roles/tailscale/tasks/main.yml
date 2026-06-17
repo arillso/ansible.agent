@@ -18,8 +18,7 @@
   ansible.builtin.assert:
       that:
           - tailscale_auth_key is defined
-          - tailscale_auth_key | length > 0
-      fail_msg: "tailscale_auth_key must be defined and not empty"
+      fail_msg: "tailscale_auth_key must be defined (may be empty to install without authenticating)"
       success_msg: "Tailscale configuration is valid"
   tags: [tailscale, validation]
 
@@ -41,4 +40,5 @@
 
 - name: Verify Tailscale connectivity
   ansible.builtin.include_tasks: verify.yml
+  when: tailscale_verify_connectivity | default(true) | bool
   tags: [tailscale, verify]

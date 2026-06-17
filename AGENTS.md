@@ -11,8 +11,10 @@ This is an Ansible collection that provides production-ready roles for deploying
 ```text
 ansible.agent/
 ├── .github/workflows/
-│   ├── ci.yml              # All-in-one: linting, tests, build
-│   └── publish.yml         # Galaxy publishing
+│   ├── pull-request.yml    # Lint, tests, secret scan, Claude review on PRs
+│   ├── merge.yml           # CI + secret scan on push to main
+│   ├── nightly-security.yml # Scheduled weekly secret scan
+│   └── tag.yml             # Galaxy publishing (triggered by tag)
 ├── roles/
 │   ├── alloy/             # Grafana Alloy observability agent
 │   ├── do/                # DigitalOcean monitoring agent
@@ -65,15 +67,16 @@ Three-level testing strategy:
     - Location: `tests/unit/`
     - Run: `pytest tests/unit/`
 
-2. **Molecule Tests** - For individual roles (optional)
+2. **Molecule Tests** - For individual roles
     - Location: `roles/*/molecule/default/`
     - Run: `molecule test -s default`
+    - CI: one `molecule-<role>` job per role in `pull-request.yml`
 
 3. **Integration Tests** (ansible-test) - For role integration
     - Location: `tests/integration/targets/`
     - Run: `ansible-test integration`
 
-All tests consolidated in single `ci.yml` workflow.
+Tests run via the reusable CI (`arillso/.github`) on pull requests and merges.
 
 ### Documentation
 
@@ -88,10 +91,12 @@ All tests consolidated in single `ci.yml` workflow.
 
 ### CI/CD
 
-**Standard workflows:**
+Event-focused workflows calling reusables from `arillso/.github`:
 
-- `ci.yml` - All linting, tests (unit, integration), and build
-- `publish.yml` - Galaxy publishing (triggered by tag)
+- `pull-request.yml` - Lint, unit/integration tests, per-role molecule, secret scan, and Claude review on PRs
+- `merge.yml` - Same CI plus secret scan on push to `main`
+- `nightly-security.yml` - Scheduled weekly secret scan
+- `tag.yml` - Publishes to Ansible Galaxy on tag push (e.g. `1.0.1`)
 
 ### Release Process
 
@@ -110,7 +115,7 @@ All tests consolidated in single `ci.yml` workflow.
     - Command: `git tag 1.0.1 && git push origin 1.0.1`
 
 4. **Automated workflow triggers**
-    - `publish.yml` publishes to Ansible Galaxy
+    - `tag.yml` publishes to Ansible Galaxy
     - Creates GitHub Release with CHANGELOG notes
 
 ## Do
@@ -130,6 +135,6 @@ All tests consolidated in single `ci.yml` workflow.
 - ❌ Do not use deprecated Ansible syntax
 - ❌ Do not hardcode values that should be variables
 - ❌ Do not add excessive comments to defaults/main.yml
-- ❌ Do not create separate test workflows (use ci.yml)
+- ❌ Do not create separate test workflows (CI runs via the reusable in `pull-request.yml`/`merge.yml`)
 - ❌ Do not skip CHANGELOG.md updates before releases
 - ❌ Do not use 'v' prefix in Ansible Collection tags

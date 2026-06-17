@@ -1,0 +1,78 @@
+---
+name: Pull Request
+run-name: |
+    Pull Request by @${{ github.actor }}
+
+on:
+    pull_request:
+        branches: [main]
+        types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    security-events: write
+    actions: read
+    pull-requests: write
+    issues: read
+    id-token: write
+
+jobs:
+    ci:
+        uses: arillso/.github/.github/workflows/ci-ansible-collection.yml@2026-06-14
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            python_version: "3.12"
+
+    molecule-alloy:
+        # alloy must run as a stable systemd service, which is unreliable
+        # under the docker driver — use the qemu (KVM) molecule driver.
+        # Roles keep molecule scenarios under roles/<role>/molecule/, so
+        # scenarios_root is set per role and the matrix is pinned to the
+        # single `default` scenario. concurrency-suffix keeps this nested
+        # call out of the caller's concurrency group.
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            driver: qemu
+            python_version: "3.12"
+            scenarios_root: roles/alloy/molecule
+            scenarios: '["default"]'
+            concurrency-suffix: molecule-alloy
+
+    molecule-do:
+        # do and tailscale converge fine under the docker driver (their
+        # molecule.yml uses driver: docker), so keep the default driver.
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            driver: docker
+            python_version: "3.12"
+            scenarios_root: roles/do/molecule
+            scenarios: '["default"]'
+            concurrency-suffix: molecule-do
+
+    molecule-tailscale:
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            driver: docker
+            python_version: "3.12"
+            scenarios_root: roles/tailscale/molecule
+            scenarios: '["default"]'
+            concurrency-suffix: molecule-tailscale
+
+    security-secrets:
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-14
+
+    claude-review:
+        uses: arillso/.github/.github/workflows/ai-claude-review.yml@2026-06-14
+        secrets:
+            CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

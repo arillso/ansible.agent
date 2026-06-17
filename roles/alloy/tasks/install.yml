@@ -3,6 +3,19 @@
 # Install Grafana Alloy package and repository setup using arillso.system.packages
 
 # Debian/Ubuntu installation with repository setup
+- name: Install package dependencies (Debian/Ubuntu)
+  # gnupg (for the GPG key dearmor below) and apt-transport-https are
+  # not guaranteed on minimal images; install them before the key setup.
+  ansible.builtin.apt:
+      name: "{{ alloy_package_dependencies }}"
+      state: present
+      update_cache: true
+  become: true
+  when:
+      - ansible_os_family == "Debian"
+      - not alloy_package_only
+  tags: [alloy, install, dependencies]
+
 - name: Setup Grafana GPG key
   ansible.builtin.include_role:
       name: arillso.system.packages
@@ -53,7 +66,11 @@
             state: "{{ alloy_package_state }}"
       packages_retry_count: 3
       packages_retry_delay: 10
-      packages_services_to_restart: ["alloy"]
+      # Do not start alloy here: configure.yml has not written
+      # config.alloy yet, so starting on the package's empty default
+      # config makes the unit crash. service.yml starts it after the
+      # config is in place.
+      packages_services_to_restart: []
   when:
       - ansible_os_family == "Debian"
       - not alloy_package_only
