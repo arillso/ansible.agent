@@ -9,4 +9,4 @@ do_package_dependencies:
 
 # DigitalOcean Repository Konfiguration
 do_gpg_key_url: "https://repos.insights.digitalocean.com/sonar-agent.asc"
-do_repository: "deb https://repos.insights.digitalocean.com/apt main main"
+do_repository: "deb https://repos.insights.digitalocean.com/apt/do-agent/ main main"

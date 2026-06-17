@@ -17,7 +17,7 @@
 
 - name: Add DigitalOcean repository (Debian/Ubuntu)
   ansible.builtin.apt_repository:
-      repo: "deb [signed-by=/usr/share/keyrings/digitalocean-agent.asc] https://repos.insights.digitalocean.com/apt main main"
+      repo: "deb [signed-by=/usr/share/keyrings/digitalocean-agent.asc] https://repos.insights.digitalocean.com/apt/do-agent/ main main"
       state: present
       update_cache: true
       filename: digitalocean-agent
