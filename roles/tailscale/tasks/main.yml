@@ -21,6 +21,7 @@
           - tailscale_auth_key | length > 0
       fail_msg: "tailscale_auth_key must be defined and not empty"
       success_msg: "Tailscale configuration is valid"
+  when: not tailscale_package_only
   tags: [tailscale, validation]
 
 - name: Install Tailscale repository and package
