@@ -990,9 +990,13 @@ argument_specs:
                 description: "Remote configuration using the remotecfg block (only one per config file)"
                 options:
                     url:
+                        # Not required at the spec level: alloy_remotecfg
+                        # defaults to {} and the remotecfg module is only
+                        # rendered when alloy_enable_remotecfg is true, so a
+                        # required url here would reject the empty default.
                         type: "str"
-                        required: true
-                        description: "The address of the API to poll for configuration"
+                        required: false
+                        description: "The address of the API to poll for configuration (required when alloy_enable_remotecfg is true)"
                     poll_frequency:
                         type: "str"
                         required: false

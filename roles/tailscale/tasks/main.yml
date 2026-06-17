@@ -40,4 +40,5 @@
 
 - name: Verify Tailscale connectivity
   ansible.builtin.include_tasks: verify.yml
+  when: tailscale_verify_connectivity | default(true) | bool
   tags: [tailscale, verify]
