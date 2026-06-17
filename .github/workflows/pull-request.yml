@@ -28,6 +28,41 @@ jobs:
             collection_name: agent
             python_version: "3.12"
 
+    molecule-alloy:
+        # Roles keep molecule scenarios under roles/<role>/molecule/ rather
+        # than extensions/molecule/, so scenarios_root is set per role and
+        # the matrix is pinned to the single `default` scenario. The
+        # concurrency-suffix keeps each role's nested call out of the
+        # caller's concurrency group (see ansible.system pull-request.yml).
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-14
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            python_version: "3.12"
+            scenarios_root: roles/alloy/molecule
+            scenarios: '["default"]'
+            concurrency-suffix: molecule-alloy
+
+    molecule-do:
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-14
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            python_version: "3.12"
+            scenarios_root: roles/do/molecule
+            scenarios: '["default"]'
+            concurrency-suffix: molecule-do
+
+    molecule-tailscale:
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-14
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            python_version: "3.12"
+            scenarios_root: roles/tailscale/molecule
+            scenarios: '["default"]'
+            concurrency-suffix: molecule-tailscale
+
     security-secrets:
         uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-14
 

@@ -67,9 +67,10 @@ Three-level testing strategy:
     - Location: `tests/unit/`
     - Run: `pytest tests/unit/`
 
-2. **Molecule Tests** - For individual roles (optional)
+2. **Molecule Tests** - For individual roles
     - Location: `roles/*/molecule/default/`
     - Run: `molecule test -s default`
+    - CI: one `molecule-<role>` job per role in `pull-request.yml`
 
 3. **Integration Tests** (ansible-test) - For role integration
     - Location: `tests/integration/targets/`
@@ -92,7 +93,7 @@ Tests run via the reusable CI (`arillso/.github`) on pull requests and merges.
 
 Event-focused workflows calling reusables from `arillso/.github`:
 
-- `pull-request.yml` - Lint, unit/integration tests, secret scan, and Claude review on PRs
+- `pull-request.yml` - Lint, unit/integration tests, per-role molecule, secret scan, and Claude review on PRs
 - `merge.yml` - Same CI plus secret scan on push to `main`
 - `nightly-security.yml` - Scheduled weekly secret scan
 - `tag.yml` - Publishes to Ansible Galaxy on tag push (e.g. `1.0.1`)
