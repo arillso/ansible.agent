@@ -51,19 +51,22 @@
         register: alloy_port_check
         ignore_errors: true
 
-      - name: Verify Alloy modules are configured
-        ansible.builtin.stat:
-            path: "{{ item }}"
-        register: alloy_module_files
-        loop:
-            - /etc/alloy/modules/prometheus.alloy
-            - /etc/alloy/modules/node_exporter.alloy
-            - /etc/alloy/modules/loki.alloy
+      # The role renders a single config.alloy with the per-feature
+      # modules included inline (config.alloy.j2 uses {% include %}),
+      # not separate files under /etc/alloy/modules/. Verify the enabled
+      # features by their components in config.alloy.
+      - name: Read generated Alloy config
+        ansible.builtin.slurp:
+            src: /etc/alloy/config.alloy
+        register: alloy_config_content
 
-      - name: Assert module files exist
+      - name: Assert enabled feature components are present in config
         ansible.builtin.assert:
             that:
-                - item.stat.exists
-            fail_msg: "Module file {{ item.item }} does not exist"
-            success_msg: "Module file {{ item.item }} exists"
-        loop: "{{ alloy_module_files.results }}"
+                - "'prometheus.scrape' in _alloy_config"
+                - "'prometheus.exporter.unix' in _alloy_config"
+                - "'loki.source' in _alloy_config"
+            fail_msg: "Expected feature components missing from config.alloy"
+            success_msg: "Prometheus, node exporter and Loki components are configured"
+        vars:
+            _alloy_config: "{{ alloy_config_content.content | b64decode }}"
