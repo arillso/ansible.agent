@@ -45,14 +45,17 @@ prometheus.exporter.unix "integrations_node_exporter" {
     {% if alloy_node_exporter_config.systemd.unit_exclude | default([]) | length > 0 %}
     unit_exclude = {{ alloy_node_exporter_config.systemd.unit_exclude | to_json }}
     {% endif %}
+    {# Alloy attribute names differ from the role's variable names:
+       start_time / task_metrics / enable_restarts (see
+       prometheus.exporter.unix systemd block reference). #}
     {% if alloy_node_exporter_config.systemd.enable_start_time_metrics | default('') != '' %}
-    enable_start_time_metrics = {{ alloy_node_exporter_config.systemd.enable_start_time_metrics | lower }}
+    start_time = {{ alloy_node_exporter_config.systemd.enable_start_time_metrics | lower }}
     {% endif %}
     {% if alloy_node_exporter_config.systemd.enable_task_metrics | default('') != '' %}
-    enable_task_metrics = {{ alloy_node_exporter_config.systemd.enable_task_metrics | lower }}
+    task_metrics = {{ alloy_node_exporter_config.systemd.enable_task_metrics | lower }}
     {% endif %}
     {% if alloy_node_exporter_config.systemd.enable_restarts_metrics | default('') != '' %}
-    enable_restarts_metrics = {{ alloy_node_exporter_config.systemd.enable_restarts_metrics | lower }}
+    enable_restarts = {{ alloy_node_exporter_config.systemd.enable_restarts_metrics | lower }}
     {% endif %}
   }
   {% endif %}
