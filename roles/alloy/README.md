@@ -34,6 +34,10 @@ For detailed documentation including all variables, examples, and usage instruct
 
 MIT
 
+## Changelog
+
+See [CHANGELOG.md](../../CHANGELOG.md) for the collection version history.
+
 ## Author Information
 
 This role was created by [arillso](https://github.com/arillso).

@@ -826,7 +826,8 @@ argument_specs:
             alloy_version: &alloy_version
                 type: "str"
                 required: false
-                default: "1.13.2"
+                # renovate: datasource=github-releases depName=grafana/alloy extractVersion=^v(?<version>.*)$
+                default: "1.17.0"
                 description: "Version of the Grafana Alloy package"
 
             # Node exporter configuration options
