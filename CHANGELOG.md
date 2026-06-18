@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Molecule (CI)**: run the alloy scenario on Debian 12 in addition to
+  Ubuntu 22.04 (was Ubuntu-only), matching the two-distro coverage of the
+  do and tailscale scenarios.
+
+
 - Raise the Python target to `3.13` (the highest version `ansible-test`
   supports): bump `python_version` in `pull-request.yml` and `merge.yml` so CI
   exercises the same interpreter the release artifact is built with, matching
