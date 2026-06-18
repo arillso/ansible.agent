@@ -7,13 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Molecule (all roles)**: add the missing `side_effect.yml` play to the
+  `alloy`, `do`, and `tailscale` default scenarios. Their `test_sequence`
+  referenced a `side_effect` step with no matching file, so `molecule test`
+  failed before reaching `verify`.
+- **Alloy argument_specs**: align the `alloy_version` default (`1.13.2`) with
+  `defaults/main.yml` (`1.17.0`) so the documented and effective defaults match.
+
 ### Changed
 
 - **Molecule (CI)**: run the alloy scenario on Debian 12 in addition to
   Ubuntu 22.04 (was Ubuntu-only), matching the two-distro coverage of the
   do and tailscale scenarios.
-
-
+- **Tailscale metadata**: drop EOL Ubuntu `focal`, add `noble`, and add the `EL`
+  platform (8, 9) to `galaxy_info.platforms`, matching the RedHat-family support
+  already shipped in `vars/main.yml`. (Galaxy's platform enum has no Alpine/Arch
+  entries, so those remain expressed via `vars/` only.)
+- **Role READMEs**: link the `alloy`, `do`, and `tailscale` READMEs to the
+  collection `CHANGELOG.md` so version history is discoverable from each role.
 - Raise the Python target to `3.13` (the highest version `ansible-test`
   supports): bump `python_version` in `pull-request.yml` and `merge.yml` so CI
   exercises the same interpreter the release artifact is built with, matching
