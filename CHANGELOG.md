@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Renovate**: the custom regex manager now also scans
+  `roles/*/meta/argument_specs.yml`, and the `*_version` defaults in the
+  `alloy`, `do`, and `tailscale` specs carry `# renovate:` comments, so future
+  upstream releases bump both `defaults/main.yml` and the argument spec in one
+  PR. The spec defaults had drifted because nothing tracked them — realigned
+  `do_version` (`3.18.8` → `3.18.14`) and `tailscale_version`
+  (`1.94.2` → `1.98.5`) to match `defaults/main.yml`.
+
 - **Molecule (CI)**: run the alloy scenario on Debian 12 in addition to
   Ubuntu 22.04 (was Ubuntu-only), matching the two-distro coverage of the
   do and tailscale scenarios.
