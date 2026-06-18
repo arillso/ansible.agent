@@ -18,6 +18,15 @@ platforms:
       vm_cpus: 2
       vm_memory: 2048
 
+    - name: alloy-debian12
+      image_url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2
+      image_arch: x86_64
+      network_mode: user
+      network_ssh_port: 2223
+      network_ssh_user: debian
+      vm_cpus: 2
+      vm_memory: 2048
+
 provisioner:
     name: ansible
     config_options:
@@ -30,6 +39,9 @@ provisioner:
         host_vars:
             alloy-ubuntu2204:
                 # cloud images log in as `ubuntu`; the role needs root.
+                ansible_become: true
+            alloy-debian12:
+                # debian cloud images log in as `debian`; the role needs root.
                 ansible_become: true
 
 verifier:
