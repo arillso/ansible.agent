@@ -20,11 +20,11 @@ permissions:
 
 jobs:
     ci:
-        uses: arillso/.github/.github/workflows/ci-ansible-collection.yml@2026-06-14
+        uses: arillso/.github/.github/workflows/ci-ansible-collection.yml@2026-06-18
         with:
             collection_namespace: arillso
             collection_name: agent
             python_version: "3.13"
 
     security-secrets:
-        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-14
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-18
