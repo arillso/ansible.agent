@@ -588,8 +588,11 @@ argument_specs:
                 required: false
                 default: "/var/lib/node_exporter/textfile_collector"
                 description: >-
-                    Directory the textfile collector of prometheus.exporter.unix reads
-                    .prom files from. Created unconditionally by the role.
+                    Directory the textfile collector scripts write .prom files to;
+                    created unconditionally by the role. Defaults to
+                    alloy_node_exporter_config.textfile_directory so it stays in sync
+                    with the path prometheus.exporter.unix actually scrapes. Override
+                    only if scripts must write somewhere other than what Alloy reads.
 
             alloy_textfile_script_directory: &alloy_textfile_script_directory
                 type: "str"
