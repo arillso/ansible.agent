@@ -96,6 +96,14 @@ argument_specs:
                 default: false
                 description: "Perform logout and re-authentication (WARNING: temporary disconnect)"
 
+            tailscale_no_log_auth_key:
+                type: "bool"
+                required: false
+                default: true
+                description: >-
+                    no_log toggle for the auth-key task; set false to surface
+                    a join error hidden as 'non-zero return code'.
+
             tailscale_verify_connectivity:
                 type: "bool"
                 required: false

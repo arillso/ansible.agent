@@ -15,6 +15,11 @@ tailscale_auth_key: ""
 tailscale_tags: []
 tailscale_reset_authentication: false
 
+# Censor the auth-key `tailscale up` command output. Keep true unless
+# debugging a join failure (set false for one run to surface the real
+# error, which no_log otherwise hides as "non-zero return code").
+tailscale_no_log_auth_key: true
+
 # Run the connectivity verification phase (verify.yml). Requires a
 # running, authenticated tailscaled; disable for install-only runs.
 tailscale_verify_connectivity: true

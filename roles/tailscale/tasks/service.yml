@@ -11,8 +11,13 @@
   become: true
   tags: [tailscale, service]
 
-- name: Wait for Tailscale service to be ready
+# Wait on the control socket rather than a bare `timeout:` — the latter
+# is an unconditional 30 s sleep on every run (including idempotent
+# re-runs where the socket already exists). Keying on the socket path
+# returns as soon as tailscaled is accepting CLI calls.
+- name: Wait for Tailscale CLI socket to be ready
   ansible.builtin.wait_for:
+      path: /run/tailscale/tailscaled.sock
       timeout: 30
   when: tailscale_service_state == "started"
   tags: [tailscale, service, wait]
