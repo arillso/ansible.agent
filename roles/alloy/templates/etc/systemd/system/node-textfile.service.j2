@@ -1,0 +1,15 @@
+[Unit]
+Description={{ item.description | default('Node textfile collector: ' + item.name) }}
+After=local-fs.target
+
+[Service]
+Type=oneshot
+Environment=TEXTFILE_DIR={{ alloy_textfile_collector_directory }}
+ExecStart={{ alloy_textfile_script_directory }}/{{ item.name }}.sh
+Nice=10
+IOSchedulingClass=idle
+ProtectSystem=strict
+ReadWritePaths={{ alloy_textfile_collector_directory }}
+ProtectHome=true
+PrivateTmp=true
+NoNewPrivileges=true

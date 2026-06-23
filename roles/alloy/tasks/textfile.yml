@@ -1,0 +1,97 @@
+---
+# Textfile-Script deployment for node_exporter / prometheus.exporter.unix.
+#
+# Architecture:
+# - alloy_textfile_collector_directory is created unconditionally so the Fleet-
+#   managed textfile collector never fires node_textfile_scrape_error on hosts
+#   that simply have no scripts.
+# - For each entry in alloy_textfile_scripts: script + .service (oneshot) +
+#   .timer get deployed; the timer is restarted only when its unit file
+#   actually changed, so OnBootSec=/OnUnitActiveSec= updates take effect
+#   without churning idempotence on re-runs.
+
+- name: Ensure textfile collector directory exists
+  ansible.builtin.file:
+      path: "{{ alloy_textfile_collector_directory }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+
+- name: Ensure textfile script directory exists
+  ansible.builtin.file:
+      path: "{{ alloy_textfile_script_directory }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+  when: alloy_textfile_scripts | length > 0
+
+- name: Deploy textfile collector scripts
+  ansible.builtin.copy:
+      src: "{{ item.src }}"
+      dest: "{{ alloy_textfile_script_directory }}/{{ item.name }}.sh"
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+  loop: "{{ alloy_textfile_scripts }}"
+  loop_control:
+      label: "{{ item.name }}"
+
+- name: Deploy textfile collector systemd .service units
+  ansible.builtin.template:
+      src: etc/systemd/system/node-textfile.service.j2
+      dest: "/etc/systemd/system/node-textfile-{{ item.name }}.service"
+      owner: root
+      group: root
+      mode: "0644"
+  become: true
+  loop: "{{ alloy_textfile_scripts }}"
+  loop_control:
+      label: "{{ item.name }}"
+  register: _alloy_textfile_service_units
+  notify: reload systemd
+
+- name: Deploy textfile collector systemd .timer units
+  ansible.builtin.template:
+      src: etc/systemd/system/node-textfile.timer.j2
+      dest: "/etc/systemd/system/node-textfile-{{ item.name }}.timer"
+      owner: root
+      group: root
+      mode: "0644"
+  become: true
+  loop: "{{ alloy_textfile_scripts }}"
+  loop_control:
+      label: "{{ item.name }}"
+  register: _alloy_textfile_timer_units
+  notify: reload systemd
+
+- name: Apply pending systemd daemon-reload before timer enable
+  ansible.builtin.meta: flush_handlers
+
+- name: Enable and start textfile collector timers
+  ansible.builtin.systemd_service:
+      name: "node-textfile-{{ item.name }}.timer"
+      enabled: true
+      state: started
+  become: true
+  loop: "{{ alloy_textfile_scripts }}"
+  loop_control:
+      label: "{{ item.name }}"
+
+# daemon-reload alone does not reapply OnBootSec=/OnUnitActiveSec= to an
+# already-running timer — only an actual restart picks up the new schedule.
+# Restart only the timers whose .service or .timer unit file changed in this
+# run, so unchanged hosts stay at changed=0.
+- name: Restart textfile collector timers when their unit files changed
+  ansible.builtin.systemd_service:
+      name: "node-textfile-{{ item.0.item.name }}.timer"
+      state: restarted
+  become: true
+  loop: "{{ _alloy_textfile_service_units.results | zip(_alloy_textfile_timer_units.results) | list }}"
+  loop_control:
+      label: "{{ item.0.item.name }}"
+  when: item.0.changed or item.1.changed

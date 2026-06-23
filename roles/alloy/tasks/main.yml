@@ -19,3 +19,9 @@
   tags:
       - alloy
       - service
+
+- name: Include textfile collector script deployment
+  ansible.builtin.include_tasks: textfile.yml
+  tags:
+      - alloy
+      - textfile

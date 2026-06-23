@@ -583,6 +583,52 @@ argument_specs:
                         description: "Metric relabel configurations"
                         elements: "dict"
 
+            alloy_textfile_collector_directory: &alloy_textfile_collector_directory
+                type: "str"
+                required: false
+                default: "/var/lib/node_exporter/textfile_collector"
+                description: >-
+                    Directory the textfile collector of prometheus.exporter.unix reads
+                    .prom files from. Created unconditionally by the role.
+
+            alloy_textfile_script_directory: &alloy_textfile_script_directory
+                type: "str"
+                required: false
+                default: "/usr/local/lib/node-textfile"
+                description: "Filesystem location for textfile-collector scripts deployed by this role."
+
+            alloy_textfile_scripts: &alloy_textfile_scripts
+                type: "list"
+                required: false
+                default: []
+                description: >-
+                    Scripts deployed as oneshot systemd .service + .timer pairs that
+                    write .prom files into alloy_textfile_collector_directory.
+                elements: "dict"
+                options:
+                    name:
+                        type: "str"
+                        required: true
+                        description: "Identifier; used as systemd unit suffix and script basename."
+                    src:
+                        type: "str"
+                        required: true
+                        description: "Script source path, resolved via Ansible's files/ search path."
+                    description:
+                        type: "str"
+                        required: false
+                        description: "Human-readable description for the systemd Unit Description= field."
+                    interval:
+                        type: "str"
+                        required: false
+                        default: "60s"
+                        description: "systemd OnUnitActiveSec= value (e.g. '30s')."
+                    on_boot_sec:
+                        type: "str"
+                        required: false
+                        default: "15s"
+                        description: "systemd OnBootSec= value."
+
             alloy_enable_loki: &alloy_enable_loki
                 type: "bool"
                 required: false
@@ -1212,6 +1258,9 @@ argument_specs:
             alloy_prometheus_remote_write: *alloy_prometheus_remote_write
             alloy_prometheus_relabel_configs: *alloy_prometheus_relabel_configs
             alloy_custom_exporters: *alloy_custom_exporters
+            alloy_textfile_collector_directory: *alloy_textfile_collector_directory
+            alloy_textfile_script_directory: *alloy_textfile_script_directory
+            alloy_textfile_scripts: *alloy_textfile_scripts
             alloy_enable_loki: *alloy_enable_loki
             alloy_loki_file_sources: *alloy_loki_file_sources
             alloy_loki_journal_enabled: *alloy_loki_journal_enabled

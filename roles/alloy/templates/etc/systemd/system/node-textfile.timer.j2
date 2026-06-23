@@ -1,0 +1,11 @@
+[Unit]
+Description=Schedule for {{ item.description | default('node-textfile-' + item.name) }}
+
+[Timer]
+OnBootSec={{ item.on_boot_sec | default('15s') }}
+OnUnitActiveSec={{ item.interval | default('60s') }}
+AccuracySec=1s
+Unit=node-textfile-{{ item.name }}.service
+
+[Install]
+WantedBy=timers.target
