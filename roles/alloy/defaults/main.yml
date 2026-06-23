@@ -102,6 +102,22 @@ alloy_prometheus_remote_write:
 # Custom exporters
 alloy_custom_exporters: []
 
+# Textfile collector scripts for node_exporter / prometheus.exporter.unix.
+# Each entry deploys a script plus a oneshot systemd .service and .timer.
+# Defaults to the same directory prometheus.exporter.unix actually scrapes
+# (alloy_node_exporter_config.textfile_directory) so scripts write where
+# Alloy reads — override that one var to move both in lockstep.
+alloy_textfile_collector_directory: "{{ alloy_node_exporter_config.textfile_directory }}"
+alloy_textfile_script_directory: "/usr/local/lib/node-textfile"
+alloy_textfile_scripts: []
+# Example:
+# alloy_textfile_scripts:
+#   - name: zram                                # systemd unit suffix + script basename
+#     src: node-textfile/zram.sh                # looked up via files/ search path
+#     description: "Export zram statistics"     # optional, used in unit Description
+#     interval: "30s"                           # systemd OnUnitActiveSec
+#     on_boot_sec: "15s"                        # systemd OnBootSec
+
 # Loki configuration
 alloy_enable_loki: false
 alloy_loki_file_sources: []
