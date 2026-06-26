@@ -13,7 +13,7 @@ ansible.agent/
 ├── .github/workflows/
 │   ├── pull-request.yml    # Lint, tests, secret scan, Claude review on PRs
 │   ├── merge.yml           # CI + secret scan on push to main
-│   ├── nightly-security.yml # Scheduled weekly secret scan
+│   ├── nightly-security.yml # Scheduled daily secret scan
 │   └── tag.yml             # Galaxy publishing (triggered by tag)
 ├── roles/
 │   ├── alloy/             # Grafana Alloy observability agent
