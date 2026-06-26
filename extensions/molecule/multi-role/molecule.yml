@@ -10,9 +10,12 @@
 # /dev/net/tun and a valid auth key). A TAILSCALE_AUTH_KEY can still be passed
 # via the environment in converge.yml when one is available.
 #
-# The roles are resolved via the collection layout: molecule runs from the
-# collection root, so arillso.agent.<role> is found automatically. No explicit
-# roles_path is required.
+# The roles are resolved via the collection layout. Because this scenario lives
+# under extensions/molecule (not roles/<role>/molecule), the syntax step's
+# static role pre-parse does not see the collection root, so converge.yml loads
+# arillso.agent.<role> with `ansible.builtin.include_role` (runtime FQCN
+# resolution) instead of a static `roles:` block. No explicit roles_path is
+# required.
 
 dependency:
     name: galaxy

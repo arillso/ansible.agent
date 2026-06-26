@@ -6,9 +6,20 @@
   hosts: all
   become: true
 
-  roles:
+  # The roles are loaded via `ansible.builtin.include_role` rather than a static
+  # `roles:` block. Under `scenarios_root: extensions/molecule` molecule runs
+  # `ansible-playbook --syntax-check` from the `extensions/` project directory,
+  # and Ansible's static role pre-parse does not add the collection root to the
+  # roles search path, so `arillso.agent.<role>` is not found at syntax time
+  # (it lists only the scenario-local `roles/` dir and the galaxy defaults).
+  # `include_role` defers FQCN resolution to converge runtime, where molecule's
+  # prerun has the collection on the finder path — exactly how the per-role
+  # default scenarios resolve their own `arillso.agent.<role>` FQCN.
+  tasks:
       # 1. Grafana Alloy
-      - role: arillso.agent.alloy
+      - name: Deploy Grafana Alloy
+        ansible.builtin.include_role:
+            name: arillso.agent.alloy
         vars:
             # Enable Prometheus scraping/remote-write (uses the role's default
             # localhost remote_write target).
@@ -25,7 +36,9 @@
             alloy_health_check_enabled: false
 
       # 2. DigitalOcean Agent
-      - role: arillso.agent.do
+      - name: Deploy DigitalOcean Agent
+        ansible.builtin.include_role:
+            name: arillso.agent.do
         vars:
             # Disable health checks for testing (no actual DO metadata service).
             do_health_check_enabled: false
@@ -37,7 +50,9 @@
                 - testing
 
       # 3. Tailscale
-      - role: arillso.agent.tailscale
+      - name: Deploy Tailscale
+        ansible.builtin.include_role:
+            name: arillso.agent.tailscale
         vars:
             # Auth key from the environment, never hardcoded. When unset the
             # lookup returns "" and the role skips `tailscale up` on its own
