@@ -1,0 +1,124 @@
+---
+# Molecule verify playbook for the combined multi-role scenario.
+# Asserts that, after deploying all three roles on one host, each agent is
+# actually functional: alloy daemon + port, do-agent service + config,
+# tailscaled daemon up with a live tailscale connection.
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+      - name: Gather installed package facts
+        ansible.builtin.package_facts:
+            manager: auto
+
+      # --- Grafana Alloy ---------------------------------------------------
+      - name: Assert Alloy package is installed
+        ansible.builtin.assert:
+            that:
+                - "'alloy' in ansible_facts.packages"
+            fail_msg: "Alloy package is not installed"
+            success_msg: "Alloy package is installed"
+
+      - name: Check Alloy service status
+        ansible.builtin.systemd_service:
+            name: alloy
+        register: alloy_service
+
+      - name: Assert Alloy service is running
+        ansible.builtin.assert:
+            that:
+                - alloy_service.status.ActiveState == "active"
+                - alloy_service.status.LoadState == "loaded"
+            fail_msg: "Alloy service is not running properly"
+            success_msg: "Alloy service is running"
+
+      - name: Assert Alloy is listening on its HTTP port
+        ansible.builtin.wait_for:
+            port: 12345
+            timeout: 30
+            state: started
+
+      # --- DigitalOcean Agent ----------------------------------------------
+      - name: Assert DO Agent package is installed
+        ansible.builtin.assert:
+            that:
+                - "'do-agent' in ansible_facts.packages"
+            fail_msg: "DO Agent package is not installed"
+            success_msg: "DO Agent package is installed"
+
+      - name: Check DO Agent service status
+        ansible.builtin.systemd_service:
+            name: do-agent
+        register: do_service
+
+      - name: Assert DO Agent service is enabled
+        ansible.builtin.assert:
+            that:
+                - do_service.status.LoadState == "loaded"
+                - do_service.status.UnitFileState == "enabled"
+            fail_msg: "DO Agent service is not properly configured"
+            success_msg: "DO Agent service is properly configured"
+
+      - name: Check if DO Agent config file exists
+        ansible.builtin.stat:
+            path: /etc/do-agent/do-agent.yaml
+        register: do_config_file
+
+      - name: Assert DO Agent config file exists
+        ansible.builtin.assert:
+            that:
+                - do_config_file.stat.exists
+                - do_config_file.stat.isreg
+            fail_msg: "DO Agent config file does not exist"
+            success_msg: "DO Agent config file exists"
+
+      # --- Tailscale -------------------------------------------------------
+      - name: Assert Tailscale package is installed
+        ansible.builtin.assert:
+            that:
+                - "'tailscale' in ansible_facts.packages"
+            fail_msg: "Tailscale package is not installed"
+            success_msg: "Tailscale package is installed"
+
+      - name: Check tailscaled service status
+        ansible.builtin.systemd_service:
+            name: tailscaled
+        register: tailscale_service
+
+      - name: Assert tailscaled service is running
+        ansible.builtin.assert:
+            that:
+                - tailscale_service.status.ActiveState == "active"
+                - tailscale_service.status.LoadState == "loaded"
+                - tailscale_service.status.UnitFileState == "enabled"
+            fail_msg: "Tailscaled service is not running properly"
+            success_msg: "Tailscaled service is running and enabled"
+
+      - name: Get tailscale connection status (JSON)
+        ansible.builtin.command: tailscale status --json
+        register: tailscale_status
+        changed_when: false
+
+      - name: Assert tailscale is authenticated and running
+        ansible.builtin.assert:
+            that:
+                - (tailscale_status.stdout | from_json).BackendState == "Running"
+            fail_msg: >-
+                Tailscale backend is not Running
+                (state: {{ (tailscale_status.stdout | from_json).BackendState }})
+            success_msg: "Tailscale backend is Running and authenticated"
+
+      - name: Check tailscale0 interface is up
+        ansible.builtin.command: ip -brief link show tailscale0
+        register: tailscale_iface
+        changed_when: false
+
+      - name: Assert tailscale0 interface exists and is up
+        ansible.builtin.assert:
+            that:
+                - "'tailscale0' in tailscale_iface.stdout"
+                - "'UP' in tailscale_iface.stdout or 'UNKNOWN' in tailscale_iface.stdout"
+            fail_msg: "tailscale0 interface is not up"
+            success_msg: "tailscale0 interface is up"

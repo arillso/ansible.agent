@@ -1,0 +1,13 @@
+---
+# Molecule prepare playbook for the combined multi-role scenario.
+# Ensures the package cache is fresh before the roles install their packages.
+- name: Prepare
+  hosts: all
+  become: true
+
+  tasks:
+      - name: Update apt cache (Debian/Ubuntu)
+        ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+        when: ansible_os_family == "Debian"
