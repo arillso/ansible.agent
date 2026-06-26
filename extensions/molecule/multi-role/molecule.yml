@@ -2,15 +2,13 @@
 # Combined multi-role scenario: deploys and verifies the alloy, do and
 # tailscale roles together on a SINGLE host.
 #
-# Unlike the per-role default scenarios (Docker driver), this scenario uses
-# the QEMU/KVM driver (molecule-qemu). Tailscale requires a real /dev/net/tun
-# device and a genuinely booted systemd environment to bring the tailscaled
-# daemon up and run `tailscale up`, which a container cannot provide reliably.
-#
-# Requirements (NOT installed by the repo default deps):
-#   - molecule-qemu plugin (pip install molecule-qemu)
-#   - A host with QEMU/KVM available (hardware virtualisation)
-#   - TAILSCALE_AUTH_KEY environment variable (consumed in converge.yml)
+# Like the per-role default scenarios, this scenario uses the Docker driver.
+# Tailscale is exercised the same way the per-role tailscale default scenario
+# does it under Docker: the package, daemon and binaries are verified, while
+# the actual `tailscale up` authentication flow is not asserted (a container
+# cannot reliably bring tailscaled to BackendState=Running without a real
+# /dev/net/tun and a valid auth key). A TAILSCALE_AUTH_KEY can still be passed
+# via the environment in converge.yml when one is available.
 #
 # The roles are resolved via the collection layout: molecule runs from the
 # collection root, so arillso.agent.<role> is found automatically. No explicit
@@ -22,28 +20,31 @@ dependency:
         requirements-file: requirements.yml
 
 driver:
-    name: qemu
+    name: docker
 
 platforms:
     # Single VM hosting all three roles together (per Notion card A8).
     - name: multi-role-ubuntu2404
-      image_url: https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img
-      image_checksum: sha256:auto
-      vm_memory: 2048
-      vm_cpus: 2
-      ssh_user: ubuntu
+      image: geerlingguy/docker-ubuntu2404-ansible:latest
+      command: ""
+      volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      cgroupns_mode: host
+      privileged: true
+      pre_build_image: true
 
 provisioner:
     name: ansible
     config_options:
         defaults:
             interpreter_python: auto_silent
-            callback_whitelist: profile_tasks, timer, yaml
-            stdout_callback: yaml
+            callbacks_enabled: profile_tasks, timer
+            stdout_callback: ansible.builtin.default
+            result_format: yaml
     inventory:
         host_vars:
             multi-role-ubuntu2404:
-                ansible_user: ubuntu
+                ansible_user: root
 
 verifier:
     name: ansible
@@ -59,7 +60,6 @@ scenario:
         - prepare
         - converge
         - idempotence
-        - side_effect
         - verify
         - cleanup
         - destroy

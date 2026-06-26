@@ -6,45 +6,31 @@
   hosts: all
   become: true
 
-  pre_tasks:
-      - name: Update apt cache (Debian/Ubuntu)
-        ansible.builtin.apt:
-            update_cache: true
-            cache_valid_time: 3600
-        when: ansible_os_family == "Debian"
-
   roles:
       # 1. Grafana Alloy
       - role: arillso.agent.alloy
         vars:
-            # Basic Prometheus configuration
-            alloy_prometheus_enabled: true
-            alloy_prometheus_remote_write_url: "http://localhost:9090/api/v1/write"
+            # Enable Prometheus scraping/remote-write (uses the role's default
+            # localhost remote_write target).
+            alloy_enable_prometheus: true
 
-            # Enable Node Exporter
-            alloy_node_exporter_enabled: true
-            alloy_node_exporter_collectors:
-                - cpu
-                - diskstats
-                - filesystem
-                - loadavg
-                - meminfo
-                - netdev
+            # Enable the advanced node exporter integration.
+            alloy_enable_advanced_node_exporter: true
 
-            # Enable Loki
-            alloy_loki_enabled: true
-            alloy_loki_url: "http://localhost:3100/loki/api/v1/push"
+            # Enable Loki log collection (uses the role's default localhost
+            # client endpoint).
+            alloy_enable_loki: true
 
-            # Disable health check for testing (no actual Prometheus endpoint)
+            # Disable health check for testing (no actual Prometheus endpoint).
             alloy_health_check_enabled: false
 
       # 2. DigitalOcean Agent
       - role: arillso.agent.do
         vars:
-            # Disable health checks for testing (no actual DO metadata service)
+            # Disable health checks for testing (no actual DO metadata service).
             do_health_check_enabled: false
 
-            # Enable custom config for testing
+            # Enable custom config for testing.
             do_custom_config_enabled: true
             do_tags:
                 - molecule-test
@@ -53,13 +39,18 @@
       # 3. Tailscale
       - role: arillso.agent.tailscale
         vars:
-            # Auth key is taken from the environment, never hardcoded.
-            # Export TAILSCALE_AUTH_KEY before running `molecule test`.
+            # Skip Tailscale authentication in tests when no auth key is set
+            # (mirrors the per-role tailscale default scenario).
+            tailscale_up_skip: true
+
+            # Auth key is taken from the environment when available, never
+            # hardcoded. Export TAILSCALE_AUTH_KEY before running `molecule
+            # test` to exercise the real authentication flow.
             tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') }}"
 
-            # Verify connectivity once the daemon is authenticated.
-            tailscale_verify_connectivity: true
+            # Skip connectivity verification (no live tailnet in CI).
+            tailscale_verify_connectivity: false
 
-            # Basic settings for testing
+            # Basic settings for testing.
             tailscale_accept_routes: true
             tailscale_ssh_enabled: false

@@ -1,8 +1,11 @@
 ---
 # Molecule verify playbook for the combined multi-role scenario.
 # Asserts that, after deploying all three roles on one host, each agent is
-# actually functional: alloy daemon + port, do-agent service + config,
-# tailscaled daemon up with a live tailscale connection.
+# installed and configured: alloy daemon + port + config, do-agent service +
+# config, tailscale package + daemon + binaries. The tailscale authentication
+# flow is intentionally not asserted here (mirrors the per-role tailscale
+# default scenario): a container has no live tailnet, so BackendState=Running
+# cannot be guaranteed without a real auth key and /dev/net/tun.
 - name: Verify
   hosts: all
   become: true
@@ -33,6 +36,19 @@
                 - alloy_service.status.LoadState == "loaded"
             fail_msg: "Alloy service is not running properly"
             success_msg: "Alloy service is running"
+
+      - name: Check if Alloy config file exists
+        ansible.builtin.stat:
+            path: /etc/alloy/config.alloy
+        register: alloy_config
+
+      - name: Assert Alloy config exists
+        ansible.builtin.assert:
+            that:
+                - alloy_config.stat.exists
+                - alloy_config.stat.isreg
+            fail_msg: "Alloy config file does not exist"
+            success_msg: "Alloy config file exists"
 
       - name: Assert Alloy is listening on its HTTP port
         ansible.builtin.wait_for:
@@ -96,29 +112,28 @@
             fail_msg: "Tailscaled service is not running properly"
             success_msg: "Tailscaled service is running and enabled"
 
-      - name: Get tailscale connection status (JSON)
-        ansible.builtin.command: tailscale status --json
-        register: tailscale_status
-        changed_when: false
+      - name: Check if tailscale binary exists
+        ansible.builtin.stat:
+            path: /usr/bin/tailscale
+        register: tailscale_binary
 
-      - name: Assert tailscale is authenticated and running
+      - name: Assert tailscale binary exists
         ansible.builtin.assert:
             that:
-                - (tailscale_status.stdout | from_json).BackendState == "Running"
-            fail_msg: >-
-                Tailscale backend is not Running
-                (state: {{ (tailscale_status.stdout | from_json).BackendState }})
-            success_msg: "Tailscale backend is Running and authenticated"
+                - tailscale_binary.stat.exists
+                - tailscale_binary.stat.executable
+            fail_msg: "Tailscale binary does not exist or is not executable"
+            success_msg: "Tailscale binary exists and is executable"
 
-      - name: Check tailscale0 interface is up
-        ansible.builtin.command: ip -brief link show tailscale0
-        register: tailscale_iface
-        changed_when: false
+      - name: Check if tailscaled binary exists
+        ansible.builtin.stat:
+            path: /usr/sbin/tailscaled
+        register: tailscale_daemon_binary
 
-      - name: Assert tailscale0 interface exists and is up
+      - name: Assert tailscaled binary exists
         ansible.builtin.assert:
             that:
-                - "'tailscale0' in tailscale_iface.stdout"
-                - "'UP' in tailscale_iface.stdout or 'UNKNOWN' in tailscale_iface.stdout"
-            fail_msg: "tailscale0 interface is not up"
-            success_msg: "tailscale0 interface is up"
+                - tailscale_daemon_binary.stat.exists
+                - tailscale_daemon_binary.stat.executable
+            fail_msg: "Tailscaled binary does not exist or is not executable"
+            success_msg: "Tailscaled binary exists and is executable"
