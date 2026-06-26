@@ -1,0 +1,54 @@
+---
+# Molecule converge playbook for the combined multi-role scenario.
+# Deploys all three agent roles (alloy, do, tailscale) on the SAME host,
+# in order, to verify they coexist on one VM.
+- name: Converge
+  hosts: all
+  become: true
+
+  roles:
+      # 1. Grafana Alloy
+      - role: arillso.agent.alloy
+        vars:
+            # Enable Prometheus scraping/remote-write (uses the role's default
+            # localhost remote_write target).
+            alloy_enable_prometheus: true
+
+            # Enable the advanced node exporter integration.
+            alloy_enable_advanced_node_exporter: true
+
+            # Enable Loki log collection (uses the role's default localhost
+            # client endpoint).
+            alloy_enable_loki: true
+
+            # Disable health check for testing (no actual Prometheus endpoint).
+            alloy_health_check_enabled: false
+
+      # 2. DigitalOcean Agent
+      - role: arillso.agent.do
+        vars:
+            # Disable health checks for testing (no actual DO metadata service).
+            do_health_check_enabled: false
+
+            # Enable custom config for testing.
+            do_custom_config_enabled: true
+            do_tags:
+                - molecule-test
+                - testing
+
+      # 3. Tailscale
+      - role: arillso.agent.tailscale
+        vars:
+            # Auth key from the environment, never hardcoded. When unset the
+            # lookup returns "" and the role skips `tailscale up` on its own
+            # (configure.yml gates it on tailscale_auth_key | length > 0), so
+            # CI runs without a key are a no-op. Export TAILSCALE_AUTH_KEY
+            # before `molecule test` to exercise the real auth flow.
+            tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') }}"
+
+            # Skip connectivity verification (no live tailnet in CI).
+            tailscale_verify_connectivity: false
+
+            # Basic settings for testing.
+            tailscale_accept_routes: true
+            tailscale_ssh_enabled: false
