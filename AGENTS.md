@@ -13,7 +13,7 @@ ansible.agent/
 ├── .github/workflows/
 │   ├── pull-request.yml    # Lint, tests, secret scan, Claude review on PRs
 │   ├── merge.yml           # CI + secret scan on push to main
-│   ├── nightly-security.yml # Scheduled weekly secret scan
+│   ├── nightly-security.yml # Scheduled daily secret scan
 │   └── tag.yml             # Galaxy publishing (triggered by tag)
 ├── roles/
 │   ├── alloy/             # Grafana Alloy observability agent
@@ -95,7 +95,7 @@ Event-focused workflows calling reusables from `arillso/.github`:
 
 - `pull-request.yml` - Lint, unit/integration tests, per-role molecule, secret scan, and Claude review on PRs
 - `merge.yml` - Same CI plus secret scan on push to `main`
-- `nightly-security.yml` - Scheduled weekly secret scan
+- `nightly-security.yml` - Scheduled daily secret scan
 - `tag.yml` - Publishes to Ansible Galaxy on tag push (e.g. `1.0.1`)
 
 ### Release Process
