@@ -48,10 +48,14 @@ provisioner:
         # (extensions, agent, arillso, ansible_collections) is the directory
         # that contains ansible_collections/, which is what
         # ANSIBLE_COLLECTIONS_PATH must point at. The path is relative to the
-        # process cwd (extensions/). NOTE: keep this file free of literal
-        # dollar signs in comments — molecule runs the YAML through string
-        # placeholder substitution and a bare "dollar-paren" breaks parsing.
-        ANSIBLE_COLLECTIONS_PATH: "../../../.."
+        # process cwd (extensions/). The default ~/.ansible/collections is kept
+        # second in the colon-separated list so galaxy-installed deps
+        # (community.docker, used by molecule's own create/destroy playbooks,
+        # and the runtime collection deps) are still found. NOTE: keep this
+        # file free of literal dollar signs in comments — molecule runs the
+        # YAML through string placeholder substitution and a bare
+        # "dollar-paren" breaks parsing.
+        ANSIBLE_COLLECTIONS_PATH: "../../../..:~/.ansible/collections"
     config_options:
         defaults:
             interpreter_python: auto_silent
