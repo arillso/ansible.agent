@@ -39,13 +39,11 @@
       # 3. Tailscale
       - role: arillso.agent.tailscale
         vars:
-            # Skip Tailscale authentication in tests when no auth key is set
-            # (mirrors the per-role tailscale default scenario).
-            tailscale_up_skip: true
-
-            # Auth key is taken from the environment when available, never
-            # hardcoded. Export TAILSCALE_AUTH_KEY before running `molecule
-            # test` to exercise the real authentication flow.
+            # Auth key from the environment, never hardcoded. When unset the
+            # lookup returns "" and the role skips `tailscale up` on its own
+            # (configure.yml gates it on tailscale_auth_key | length > 0), so
+            # CI runs without a key are a no-op. Export TAILSCALE_AUTH_KEY
+            # before `molecule test` to exercise the real auth flow.
             tailscale_auth_key: "{{ lookup('env', 'TAILSCALE_AUTH_KEY') }}"
 
             # Skip connectivity verification (no live tailnet in CI).
