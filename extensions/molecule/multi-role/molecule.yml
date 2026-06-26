@@ -38,6 +38,18 @@ platforms:
 
 provisioner:
     name: ansible
+    env:
+        # This scenario lives under extensions/molecule, not roles/<role>/molecule,
+        # so Ansible's cwd-based collection autodetection does not reach the
+        # collection root and `arillso.agent.<role>` is not found at runtime.
+        # The reusable CI runs molecule from `extensions/` (it does
+        # `cd "$(dirname extensions/molecule)"`), i.e. inside
+        # ansible_collections/arillso/agent/extensions. Four levels up
+        # (extensions -> agent -> arillso -> ansible_collections) is the
+        # directory that contains `ansible_collections/`, which is what
+        # ANSIBLE_COLLECTIONS_PATH must point at. The path is relative to the
+        # process cwd (extensions/).
+        ANSIBLE_COLLECTIONS_PATH: "../../../.."
     config_options:
         defaults:
             interpreter_python: auto_silent
