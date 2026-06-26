@@ -69,6 +69,20 @@ jobs:
             scenarios: '["default"]'
             concurrency-suffix: molecule-tailscale
 
+    molecule-multi-role:
+        # Combined scenario deploying alloy, do and tailscale on one host
+        # (extensions/molecule/multi-role). Docker driver like the do/tailscale
+        # default scenarios.
+        uses: arillso/.github/.github/workflows/ci-ansible-molecule.yml@2026-06-18
+        with:
+            collection_namespace: arillso
+            collection_name: agent
+            driver: docker
+            python_version: "3.13"
+            scenarios_root: extensions/molecule
+            scenarios: '["multi-role"]'
+            concurrency-suffix: molecule-multi-role
+
     security-secrets:
         uses: arillso/.github/.github/workflows/security-secrets.yml@2026-06-18
 

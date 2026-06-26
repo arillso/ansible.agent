@@ -67,10 +67,12 @@ Three-level testing strategy:
     - Location: `tests/unit/`
     - Run: `pytest tests/unit/`
 
-2. **Molecule Tests** - For individual roles
-    - Location: `roles/*/molecule/default/`
-    - Run: `molecule test -s default`
-    - CI: one `molecule-<role>` job per role in `pull-request.yml`
+2. **Molecule Tests** - Per-role and combined
+    - Per-role location: `roles/*/molecule/default/`
+    - Combined location: `extensions/molecule/multi-role/` (deploys alloy, do
+      and tailscale together on one host)
+    - Run: `molecule test -s default` (per role) / `molecule test -s multi-role`
+    - CI: one `molecule-<role>` job per role plus `molecule-multi-role` in `pull-request.yml`
 
 3. **Integration Tests** (ansible-test) - For role integration
     - Location: `tests/integration/targets/`
