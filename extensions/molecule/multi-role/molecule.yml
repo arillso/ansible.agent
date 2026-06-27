@@ -10,9 +10,12 @@
 # /dev/net/tun and a valid auth key). A TAILSCALE_AUTH_KEY can still be passed
 # via the environment in converge.yml when one is available.
 #
-# The roles are resolved via the collection layout: molecule runs from the
-# collection root, so arillso.agent.<role> is found automatically. No explicit
-# roles_path is required.
+# The roles are resolved via the collection layout. Because this scenario lives
+# under extensions/molecule (not roles/<role>/molecule), the syntax step's
+# static role pre-parse does not see the collection root, so converge.yml loads
+# arillso.agent.<role> with `ansible.builtin.include_role` (runtime FQCN
+# resolution) instead of a static `roles:` block. No explicit roles_path is
+# required.
 
 dependency:
     name: galaxy
@@ -35,6 +38,24 @@ platforms:
 
 provisioner:
     name: ansible
+    env:
+        # This scenario lives under extensions/molecule, not roles/<role>/molecule,
+        # so Ansible's cwd-based collection autodetection does not reach the
+        # collection root and arillso.agent.<role> is not found at converge
+        # runtime. molecule expands MOLECULE_PROJECT_DIRECTORY to the absolute
+        # collection root (.../ansible_collections/arillso/agent); three levels
+        # up (agent, arillso, ansible_collections) is the directory that
+        # contains ansible_collections/, which is what ANSIBLE_COLLECTIONS_PATH
+        # must point at. An absolute base is required because molecule changes
+        # cwd between phases, so a relative path would resolve differently per
+        # phase. The default galaxy path is kept second in the colon-separated
+        # list so installed deps (community.docker, used by molecule's own
+        # docker create/destroy playbooks) still resolve. NOTE: only
+        # MOLECULE_* placeholders are expanded here; keep any other literal
+        # dollar signs out of this file (comments included) — molecule runs the
+        # YAML through string placeholder substitution and an unknown
+        # placeholder breaks parsing.
+        ANSIBLE_COLLECTIONS_PATH: "${MOLECULE_PROJECT_DIRECTORY}/../../..:~/.ansible/collections"
     config_options:
         defaults:
             interpreter_python: auto_silent
