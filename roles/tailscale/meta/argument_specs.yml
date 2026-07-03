@@ -29,7 +29,7 @@ argument_specs:
                 type: "str"
                 required: false
                 # renovate: datasource=github-releases depName=tailscale/tailscale extractVersion=^v(?<version>.*)$
-                default: "1.98.5"
+                default: "1.98.8"
                 description: "Version of the Tailscale package"
 
             tailscale_service_state:
