@@ -4,7 +4,7 @@
 
 - name: "Enable and start Grafana Alloy service"
   # No daemon_reload here: it always reports changed and breaks
-  # idempotence. The `reload systemd` handler (notified by the service
+  # idempotence. The `alloy: reload systemd` handler (notified by the service
   # override) covers unit-file reloads.
   ansible.builtin.systemd_service:
       name: "{{ alloy_service_name }}"

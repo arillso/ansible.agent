@@ -10,7 +10,7 @@
       mode: "0644"
       backup: true
   become: true
-  notify: restart alloy
+  notify: "alloy: restart alloy"
 
 - name: Create systemd service override directory
   ansible.builtin.file:
@@ -30,8 +30,8 @@
       mode: "0644"
   become: true
   notify:
-      - reload systemd
-      - restart alloy
+      - "alloy: reload systemd"
+      - "alloy: restart alloy"
 
 - name: Create environment file
   ansible.builtin.template:
@@ -41,7 +41,7 @@
       group: root
       mode: "0600"
   become: true
-  notify: restart alloy
+  notify: "alloy: restart alloy"
   no_log: "{{ alloy_no_log_env_file | default(true) }}"
 
 - name: Ensure log directory exists with proper permissions

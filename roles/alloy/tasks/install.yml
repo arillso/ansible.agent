@@ -102,7 +102,7 @@
   when:
       - ansible_os_family == "RedHat"
       - not alloy_package_only
-  notify: restart alloy
+  notify: "alloy: restart alloy"
   tags: [alloy, install, package]
 
 # Package-only installation (Alpine, Arch, etc.)
@@ -115,7 +115,7 @@
   delay: 10
   until: _alloy_package_installed_simple is succeeded
   when: alloy_package_only
-  notify: restart alloy
+  notify: "alloy: restart alloy"
   tags: [alloy, install, package]
 
 # Generic installation for other OS families (fallback)
@@ -130,7 +130,7 @@
   when:
       - ansible_os_family not in ["Debian", "RedHat"]
       - not alloy_package_only
-  notify: restart alloy
+  notify: "alloy: restart alloy"
   tags: [alloy, install, package]
 
 - name: Create required directories

@@ -2,28 +2,28 @@
 # Tailscale Service Handlers
 # Handlers for Tailscale service restarts and systemd reload
 
-- name: Reload systemd
+- name: Reload systemd to pick up Tailscale unit changes
   ansible.builtin.systemd_service:
       daemon_reload: true
   become: true
-  listen: reload systemd
+  listen: "tailscale: reload systemd"
 
-- name: Restart tailscaled
+- name: Restart tailscaled to apply service changes
   ansible.builtin.systemd_service:
       name: tailscaled
       state: restarted
       daemon_reload: true
   become: true
-  listen: restart tailscaled
+  listen: "tailscale: restart tailscaled"
 
-- name: Reload tailscale config
+- name: Reload Tailscale configuration without restarting the daemon
   ansible.builtin.command:
       cmd: tailscale debug reload-config
   become: true
-  listen: reload tailscale config
+  listen: "tailscale: reload tailscale config"
   changed_when: true
 
-- name: Refresh ansible facts
+- name: Refresh Ansible facts after updating local fact scripts
   ansible.builtin.setup:
       filter: ansible_local
-  listen: refresh ansible facts
+  listen: "tailscale: refresh ansible facts"
