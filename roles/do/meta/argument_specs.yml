@@ -10,6 +10,12 @@ argument_specs:
             for monitoring and observability of DigitalOcean Droplets.
         author: "Simon Bärlocher"
         options:
+            do_enabled:
+                type: "bool"
+                required: false
+                default: true
+                description: "Master switch: set to false to skip the role entirely"
+
             do_package_name:
                 type: "str"
                 required: false

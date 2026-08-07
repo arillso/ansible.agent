@@ -2,26 +2,29 @@
 # Main tasks for DigitalOcean role
 # Diese Datei orchestriert die Installation und Konfiguration von DigitalOcean Agent
 
-- name: Load OS-specific variables
-  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
-  tags:
-      - do
-      - install
+- name: Run DigitalOcean Agent role tasks
+  when: do_enabled | bool
+  block:
+      - name: Load OS-specific variables
+        ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+        tags:
+            - do
+            - install
 
-- name: Include installation tasks
-  ansible.builtin.include_tasks: install.yml
-  tags:
-      - do
-      - install
+      - name: Include installation tasks
+        ansible.builtin.include_tasks: install.yml
+        tags:
+            - do
+            - install
 
-- name: Include configuration tasks
-  ansible.builtin.include_tasks: configure.yml
-  tags:
-      - do
-      - configure
+      - name: Include configuration tasks
+        ansible.builtin.include_tasks: configure.yml
+        tags:
+            - do
+            - configure
 
-- name: Include service management tasks
-  ansible.builtin.include_tasks: service.yml
-  tags:
-      - do
-      - service
+      - name: Include service management tasks
+        ansible.builtin.include_tasks: service.yml
+        tags:
+            - do
+            - service
