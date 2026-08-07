@@ -17,7 +17,7 @@
             # Prometheus: enable and define one scrape config so a
             # prometheus.scrape component is rendered. Forwards to the
             # default remote_write target shipped in role defaults.
-            alloy_enable_prometheus: true
+            alloy_prometheus_enabled: true
             alloy_prometheus_additional_scrape_configs:
                 - job_name: "self"
                   static_configs:
@@ -25,11 +25,11 @@
                   remote_write: "default"
 
             # Node exporter: renders prometheus.exporter.unix.
-            alloy_enable_advanced_node_exporter: true
+            alloy_advanced_node_exporter_enabled: true
 
             # Loki: enable and define one file source so a loki.source
             # component is rendered. Forwards to the default loki client.
-            alloy_enable_loki: true
+            alloy_loki_enabled: true
             alloy_loki_file_sources:
                 - name: "syslog"
                   targets:

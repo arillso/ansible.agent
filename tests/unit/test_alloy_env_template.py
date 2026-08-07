@@ -54,7 +54,7 @@ def render(**overrides):
 
 def test_prefixed_credentials_render():
     """The prefixed variables reach the rendered environment file."""
-    output = render(**CREDENTIAL_VARS, alloy_enable_remotecfg=True)
+    output = render(**CREDENTIAL_VARS, alloy_remotecfg_enabled=True)
 
     assert "GRAFANA_CLOUD_PROMETHEUS_TOKEN=rendered-prometheus-credential" in output
     assert "GRAFANA_CLOUD_PROMETHEUS_USER=rendered-prometheus-username" in output
@@ -74,14 +74,14 @@ def test_template_reads_no_unprefixed_names():
 def test_legacy_names_are_ignored():
     """Values supplied under the old names do not reach the output."""
     legacy_values = {name: f"legacy-{name}" for name in LEGACY_NAMES}
-    output = render(**legacy_values, alloy_enable_remotecfg=True)
+    output = render(**legacy_values, alloy_remotecfg_enabled=True)
 
     assert "legacy-" not in output
 
 
 def test_credentials_omitted_when_unset():
     """Without credentials the token keys are absent, not rendered empty."""
-    output = render(alloy_enable_remotecfg=True)
+    output = render(alloy_remotecfg_enabled=True)
 
     assert "GRAFANA_CLOUD_PROMETHEUS_TOKEN" not in output
     assert "GRAFANA_CLOUD_LOKI_TOKEN" not in output
@@ -110,15 +110,15 @@ def test_credentials_omitted_when_unset():
 )
 def test_placeholder_values_are_suppressed(variable, placeholder, key):
     """The shipped placeholder values never reach the environment file."""
-    output = render(**{variable: placeholder}, alloy_enable_remotecfg=True)
+    output = render(**{variable: placeholder}, alloy_remotecfg_enabled=True)
 
     assert key not in output
 
 
 def test_fleet_credentials_require_remotecfg():
     """Fleet credentials render only when remotecfg is enabled."""
-    disabled = render(**CREDENTIAL_VARS, alloy_enable_remotecfg=False)
-    enabled = render(**CREDENTIAL_VARS, alloy_enable_remotecfg=True)
+    disabled = render(**CREDENTIAL_VARS, alloy_remotecfg_enabled=False)
+    enabled = render(**CREDENTIAL_VARS, alloy_remotecfg_enabled=True)
 
     assert "GRAFANA_CLOUD_FLEET_TOKEN" not in disabled
     assert "GRAFANA_CLOUD_FLEET_TOKEN=rendered-fleet-credential" in enabled
@@ -127,7 +127,7 @@ def test_fleet_credentials_require_remotecfg():
 
 def test_base_settings_render_without_credentials():
     """The non-credential part of the file is independent of the migration."""
-    output = render(alloy_enable_remotecfg=False)
+    output = render(alloy_remotecfg_enabled=False)
 
     assert "ALLOY_LOG_LEVEL=info" in output
     assert "ALLOY_SERVER_HTTP_LISTEN_ADDRESS=127.0.0.1:12345" in output

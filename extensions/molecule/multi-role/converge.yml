@@ -23,14 +23,14 @@
         vars:
             # Enable Prometheus scraping/remote-write (uses the role's default
             # localhost remote_write target).
-            alloy_enable_prometheus: true
+            alloy_prometheus_enabled: true
 
             # Enable the advanced node exporter integration.
-            alloy_enable_advanced_node_exporter: true
+            alloy_advanced_node_exporter_enabled: true
 
             # Enable Loki log collection (uses the role's default localhost
             # client endpoint).
-            alloy_enable_loki: true
+            alloy_loki_enabled: true
 
             # Disable health check for testing (no actual Prometheus endpoint).
             alloy_health_check_enabled: false

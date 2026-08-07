@@ -1,6 +1,6 @@
 {# Grafana Remote Configuration Module #}
 
-{% if alloy_enable_remotecfg | default(false) and alloy_remotecfg is defined %}
+{% if alloy_remotecfg_enabled | default(false) and alloy_remotecfg is defined %}
 // Grafana Alloy remote configuration management
 remotecfg {
   url = "{{ alloy_remotecfg.url }}"
