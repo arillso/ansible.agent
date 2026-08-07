@@ -1,0 +1,14 @@
+---
+# Molecule converge playbook for the Tailscale master switch
+- name: Converge
+  hosts: all
+  become: true
+
+  roles:
+      - role: arillso.agent.tailscale
+        vars:
+            # The whole point of this scenario: with the master switch off
+            # the role must not touch the host at all. tailscale_auth_key is
+            # deliberately left unset — that the validation assert does not
+            # fire when the role is disabled is part of what this proves.
+            tailscale_enabled: false
