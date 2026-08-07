@@ -1,0 +1,50 @@
+---
+dependency:
+    name: galaxy
+
+driver:
+    name: docker
+
+# One platform only: this scenario asserts that nothing happens, which is
+# OS-independent.
+platforms:
+    - name: do-disabled-debian12
+      image: geerlingguy/docker-debian12-ansible:latest
+      command: ""
+      volumes:
+          - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      cgroupns_mode: host
+      privileged: true
+      pre_build_image: true
+
+provisioner:
+    name: ansible
+    config_options:
+        defaults:
+            interpreter_python: auto_silent
+            callbacks_enabled: profile_tasks, timer
+            stdout_callback: ansible.builtin.default
+            result_format: yaml
+    inventory:
+        host_vars:
+            do-disabled-debian12:
+                ansible_user: root
+
+verifier:
+    name: ansible
+
+scenario:
+    name: disabled
+    test_sequence:
+        - dependency
+        - cleanup
+        - destroy
+        - syntax
+        - create
+        - prepare
+        - converge
+        - idempotence
+        - side_effect
+        - verify
+        - cleanup
+        - destroy

@@ -1,0 +1,42 @@
+---
+# Molecule verify playbook for the DigitalOcean Agent master switch
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+      - name: Gather installed packages
+        ansible.builtin.package_facts:
+            manager: auto
+
+      - name: Assert DO Agent package is not installed
+        ansible.builtin.assert:
+            that:
+                - "'do-agent' not in ansible_facts.packages"
+            fail_msg: "DO Agent package was installed despite do_enabled: false"
+            success_msg: "DO Agent package is not installed"
+
+      - name: Check the DO Agent configuration directory
+        ansible.builtin.stat:
+            path: /etc/do-agent
+        register: do_disabled_config_dir
+
+      - name: Assert the DO Agent configuration directory was not created
+        ansible.builtin.assert:
+            that:
+                - not do_disabled_config_dir.stat.exists
+            fail_msg: "DO Agent config directory was created despite do_enabled: false"
+            success_msg: "DO Agent config directory was not created"
+
+      - name: Check the DO Agent environment file
+        ansible.builtin.stat:
+            path: /etc/default/do-agent
+        register: do_disabled_env_file
+
+      - name: Assert the DO Agent environment file was not written
+        ansible.builtin.assert:
+            that:
+                - not do_disabled_env_file.stat.exists
+            fail_msg: "DO Agent environment file was written despite do_enabled: false"
+            success_msg: "DO Agent environment file was not written"
