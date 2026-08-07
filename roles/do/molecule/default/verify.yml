@@ -54,8 +54,9 @@
             that:
                 - do_config_file.stat.exists
                 - do_config_file.stat.isreg
-            fail_msg: "DO Agent config file does not exist"
-            success_msg: "DO Agent config file exists"
+                - do_config_file.stat.mode == '0600'
+            fail_msg: "DO Agent config file missing or not mode 0600"
+            success_msg: "DO Agent config file exists with mode 0600"
         when: do_custom_config_enabled | default(false)
 
       - name: Verify required directories exist

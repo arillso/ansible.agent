@@ -16,10 +16,10 @@
       dest: /etc/do-agent/do-agent.yaml
       owner: root
       group: root
-      mode: "0644"
-      backup: true
+      mode: "0600"
   become: true
   notify: restart do agent
+  no_log: "{{ do_no_log_api_token | default(true) }}"
   when: do_custom_config_enabled | default(false)
 
 - name: Create environment file for custom settings
@@ -31,4 +31,5 @@
       mode: "0600"
   become: true
   notify: restart do agent
+  no_log: "{{ do_no_log_api_token | default(true) }}"
   when: do_api_token != "" or do_custom_config_enabled | default(false)

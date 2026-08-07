@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   failed before reaching `verify`.
 - **Alloy argument_specs**: align the `alloy_version` default (`1.13.2`) with
   `defaults/main.yml` (`1.17.0`) so the documented and effective defaults match.
+- **DO role token exposure**: the rendered agent config carried
+  `do_api_token` while being written world-readable (`0644`) and keeping
+  backup copies, and neither template task set `no_log`. The config is now
+  `0600`, backups are gone, both token-rendering tasks honour the new
+  `do_no_log_api_token` toggle (default `true`), and `do_api_token` carries
+  `no_log: true` in the argument spec again.
+  This also corrects the note under 1.0.1 claiming `no_log` is not permitted
+  in Ansible's `argument_specs` schema. It is: `ansible-lint` declares
+  `no_log` as a boolean role-arg-spec option, argument-spec validation passes
+  with it, and `ansible-galaxy collection build` succeeds.
 
 ### Changed
 
@@ -120,6 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Removed `no_log` from do role (do_api_token field)
     - Removed `no_log` from tailscale role (tailscale_auth_key field)
     - Note: The `no_log` field is not permitted in Ansible's argument_specs schema. Sensitive values are still protected via `no_log` in task definitions.
+    - Superseded (Unreleased): that note is no longer accurate. `no_log` is a valid role-arg-spec option, and it has been restored for `do_api_token`.
 
 ## [1.0.0] - 2026-01-17
 
