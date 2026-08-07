@@ -11,6 +11,12 @@ argument_specs:
             All configuration is persistent via /etc/tailscale/config.json daemon config file.
         author: "Simon Bärlocher"
         options:
+            tailscale_enabled:
+                type: "bool"
+                required: false
+                default: true
+                description: "Master switch: set to false to skip the role entirely"
+
             # Package and Service Configuration
             tailscale_package_name:
                 type: "str"
@@ -137,11 +143,11 @@ argument_specs:
                 default: ""
                 description: "Lock config to prevent CLI changes (true/false)"
 
-            tailscale_enabled:
+            tailscale_daemon_enabled:
                 type: "str"
                 required: false
                 default: ""
-                description: "Enable/disable Tailscale (true/false)"
+                description: "Daemon config key: sets 'enabled' in config.json (true/false)"
 
             tailscale_hostname:
                 type: "str"

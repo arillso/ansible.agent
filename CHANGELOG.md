@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Master switches (all roles)**: `alloy_enabled`, `do_enabled`, and
+  `tailscale_enabled` (all `bool`, default `true`) gate every dispatcher
+  include in the respective `tasks/main.yml`. Setting one to `false` skips
+  the whole role instead of requiring per-task `when` conditions.
+
 ### Removed
 
 - **Alloy (breaking)**: the six unprefixed Grafana Cloud variables the role read
@@ -84,7 +91,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     The `enable_start_time_metrics`, `enable_task_metrics` and
     `enable_restarts_metrics` keys inside `alloy_node_exporter_config.systemd`
     are upstream Alloy configuration and are unchanged. The `tailscale` role
-    already used the suffix form and is untouched.
+    already used the suffix form and is untouched by this rename — see the
+    separate `tailscale_daemon_enabled` entry below.
+
+- **BREAKING — Tailscale**: the daemon config key `tailscale_enabled` is
+  renamed to `tailscale_daemon_enabled`. It still sets `"enabled"` in
+  `/etc/tailscale/config.json` and keeps its `str` type and empty default.
+  The freed name `tailscale_enabled` is now the role master switch (`bool`,
+  default `true`). Anyone who set `tailscale_enabled` to control the daemon
+  config must rename it to `tailscale_daemon_enabled`; leaving it in place
+  no longer writes the daemon config and instead toggles the whole role.
 
 - **Renovate**: the custom regex manager now also scans
   `roles/*/meta/argument_specs.yml`, and the `*_version` defaults in the

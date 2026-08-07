@@ -4,6 +4,9 @@ tailscale_package_state: present
 # renovate: datasource=github-releases depName=tailscale/tailscale extractVersion=^v(?<version>.*)$
 tailscale_version: "1.102.1"
 
+# Master switch: set to false to skip the role entirely
+tailscale_enabled: true
+
 tailscale_service_state: started
 tailscale_service_enabled: true
 
@@ -37,7 +40,7 @@ tailscale_service_override:
 
 tailscale_server_url: ""
 tailscale_locked: ""
-tailscale_enabled: ""
+tailscale_daemon_enabled: ""
 tailscale_hostname: ""
 tailscale_operator_user: ""
 
