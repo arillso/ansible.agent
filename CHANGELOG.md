@@ -130,6 +130,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Removed `no_log` from do role (do_api_token field)
     - Removed `no_log` from tailscale role (tailscale_auth_key field)
     - Note: The `no_log` field is not permitted in Ansible's argument_specs schema. Sensitive values are still protected via `no_log` in task definitions.
+    - Superseded (Unreleased): that note is no longer accurate. `no_log` is a valid role-arg-spec option, and it has been restored for `do_api_token`.
 
 ## [1.0.0] - 2026-01-17
 
