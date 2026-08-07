@@ -45,6 +45,19 @@ alloy_config_file: "/etc/alloy/config.alloy"
 # Environment file path
 alloy_env_file: "/etc/default/alloy"
 
+# Grafana Cloud credentials, rendered into the environment file
+alloy_grafana_cloud_prometheus_user: ""
+alloy_grafana_cloud_prometheus_token: ""
+alloy_grafana_cloud_loki_user: ""
+alloy_grafana_cloud_loki_token: ""
+alloy_grafana_cloud_fleet_user: ""
+alloy_grafana_cloud_fleet_token: ""
+
+# Censor the environment file task, which renders the Grafana Cloud
+# credentials. Keep true unless debugging a template failure (set false
+# for one run to surface the real error, which no_log otherwise hides).
+alloy_no_log_env_file: true
+
 # User and group configuration
 alloy_user: "alloy"
 alloy_group: "alloy"
@@ -217,7 +230,7 @@ alloy_remotecfg: {}
 #     environment: "production"
 #     node_type: "gateway"
 #   basic_auth:
-#     username: "{{ grafana_cloud_fleet_user }}"
+#     username: "{{ alloy_grafana_cloud_fleet_user }}"
 #     password: "env:GRAFANA_CLOUD_FLEET_API_KEY"
 #   # Alternative authentication methods:
 #   # bearer_token: "env:GRAFANA_FLEET_TOKEN"
