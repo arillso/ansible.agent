@@ -1,0 +1,56 @@
+---
+dependency:
+    name: galaxy
+    options:
+        requirements-file: requirements.yml
+
+driver:
+    name: molecule-qemu
+
+# One platform only: this scenario asserts that nothing happens, which is
+# OS-independent, and qemu is the most expensive driver in this repo.
+# The SSH port differs from the default scenario (2222/2223) to avoid a
+# collision when both scenarios run on the same runner.
+platforms:
+    - name: alloy-disabled-debian12
+      image_url: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-genericcloud-amd64.qcow2
+      image_checksum: sha512:https://cloud.debian.org/images/cloud/bookworm/latest/SHA512SUMS
+      image_arch: x86_64
+      network_mode: user
+      network_ssh_port: 2224
+      network_ssh_user: debian
+      vm_cpus: 2
+      vm_memory: 2048
+
+provisioner:
+    name: ansible
+    config_options:
+        defaults:
+            interpreter_python: auto_silent
+            callbacks_enabled: profile_tasks, timer
+            stdout_callback: ansible.builtin.default
+            result_format: yaml
+    inventory:
+        host_vars:
+            alloy-disabled-debian12:
+                # debian cloud images log in as `debian`; the role needs root.
+                ansible_become: true
+
+verifier:
+    name: ansible
+
+scenario:
+    name: disabled
+    test_sequence:
+        - dependency
+        - cleanup
+        - destroy
+        - syntax
+        - create
+        - prepare
+        - converge
+        - idempotence
+        - side_effect
+        - verify
+        - cleanup
+        - destroy
