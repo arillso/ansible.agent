@@ -7,8 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- **Alloy (breaking)**: the six unprefixed Grafana Cloud variables the role read
+  are replaced by role-prefixed names. They were never declared in
+  `defaults/main.yml` or `meta/argument_specs.yml` and worked only through
+  `| default('')` guards in the template, so no documented interface changes.
+  Rename them in your inventory:
+
+    | Old                              | New                                    |
+    | -------------------------------- | -------------------------------------- |
+    | `grafana_cloud_prometheus_user`  | `alloy_grafana_cloud_prometheus_user`  |
+    | `grafana_cloud_prometheus_token` | `alloy_grafana_cloud_prometheus_token` |
+    | `grafana_cloud_loki_user`        | `alloy_grafana_cloud_loki_user`        |
+    | `grafana_cloud_loki_token`       | `alloy_grafana_cloud_loki_token`       |
+    | `grafana_cloud_fleet_user`       | `alloy_grafana_cloud_fleet_user`       |
+    | `grafana_cloud_fleet_token`      | `alloy_grafana_cloud_fleet_token`      |
+
+    The `GRAFANA_CLOUD_*` keys inside the environment file are unchanged — Alloy
+    itself reads those. All seven variables are now declared in
+    `defaults/main.yml` and `meta/argument_specs.yml`, the three tokens with
+    `no_log: true`.
+
 ### Fixed
 
+- **Alloy**: add `no_log` to the `Create environment file` task, which renders
+  the Grafana Cloud tokens. Without it the credentials appeared in the Ansible
+  output at raised verbosity. The new `alloy_no_log_env_file` toggle (default
+  `true`) allows disabling it for a single debugging run, mirroring
+  `tailscale_no_log_auth_key`.
+- **Alloy**: tighten `/etc/default/alloy` from mode `0640` to `0600`. The file
+  holds the Grafana Cloud credentials and is read by systemd as root, so group
+  read access was never needed.
 - **Molecule (all roles)**: add the missing `side_effect.yml` play to the
   `alloy`, `do`, and `tailscale` default scenarios. Their `test_sequence`
   referenced a `side_effect` step with no matching file, so `molecule test`

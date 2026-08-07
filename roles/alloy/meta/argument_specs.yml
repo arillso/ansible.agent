@@ -583,7 +583,8 @@ argument_specs:
                         description: "Metric relabel configurations"
                         elements: "dict"
 
-            alloy_textfile_collector_directory: &alloy_textfile_collector_directory
+            alloy_textfile_collector_directory:
+                &alloy_textfile_collector_directory
                 type: "str"
                 required: false
                 default: "/var/lib/node_exporter/textfile_collector"
@@ -1192,6 +1193,67 @@ argument_specs:
                 default: "/etc/systemd/system/alloy.service"
                 description: "Path to the systemd service file for Grafana Alloy"
 
+            alloy_grafana_cloud_prometheus_user:
+                &alloy_grafana_cloud_prometheus_user
+                type: "str"
+                required: false
+                default: ""
+                description: >-
+                    Grafana Cloud Prometheus username (instance ID), written to
+                    the environment file as GRAFANA_CLOUD_PROMETHEUS_USER.
+
+            alloy_grafana_cloud_prometheus_token:
+                &alloy_grafana_cloud_prometheus_token
+                type: "str"
+                required: false
+                default: ""
+                no_log: true
+                description: >-
+                    Grafana Cloud Prometheus API token. Supply through Ansible
+                    Vault or the CI environment, never in plain group_vars.
+
+            alloy_grafana_cloud_loki_user: &alloy_grafana_cloud_loki_user
+                type: "str"
+                required: false
+                default: ""
+                description: >-
+                    Grafana Cloud Loki username (instance ID), written to the
+                    environment file as GRAFANA_CLOUD_LOKI_USER.
+
+            alloy_grafana_cloud_loki_token: &alloy_grafana_cloud_loki_token
+                type: "str"
+                required: false
+                default: ""
+                no_log: true
+                description: >-
+                    Grafana Cloud Loki API token. Supply through Ansible Vault
+                    or the CI environment, never in plain group_vars.
+
+            alloy_grafana_cloud_fleet_user: &alloy_grafana_cloud_fleet_user
+                type: "str"
+                required: false
+                default: ""
+                description: >-
+                    Grafana Cloud Fleet Management username, rendered only when
+                    alloy_enable_remotecfg is true.
+
+            alloy_grafana_cloud_fleet_token: &alloy_grafana_cloud_fleet_token
+                type: "str"
+                required: false
+                default: ""
+                no_log: true
+                description: >-
+                    Grafana Cloud Fleet Management API token, rendered only when
+                    alloy_enable_remotecfg is true. Supply through Ansible Vault.
+
+            alloy_no_log_env_file: &alloy_no_log_env_file
+                type: "bool"
+                required: false
+                default: true
+                description: >-
+                    no_log toggle for the environment file task; set false to
+                    surface a template error the censored output otherwise hides.
+
     install:
         short_description: "Install Grafana Alloy package and dependencies"
         description: |
@@ -1286,6 +1348,13 @@ argument_specs:
             alloy_otel_exporters: *alloy_otel_exporters
             alloy_enable_remotecfg: *alloy_enable_remotecfg
             alloy_remotecfg: *alloy_remotecfg
+            alloy_grafana_cloud_prometheus_user: *alloy_grafana_cloud_prometheus_user
+            alloy_grafana_cloud_prometheus_token: *alloy_grafana_cloud_prometheus_token
+            alloy_grafana_cloud_loki_user: *alloy_grafana_cloud_loki_user
+            alloy_grafana_cloud_loki_token: *alloy_grafana_cloud_loki_token
+            alloy_grafana_cloud_fleet_user: *alloy_grafana_cloud_fleet_user
+            alloy_grafana_cloud_fleet_token: *alloy_grafana_cloud_fleet_token
+            alloy_no_log_env_file: *alloy_no_log_env_file
 
     service:
         short_description: "Manage Grafana Alloy systemd service"

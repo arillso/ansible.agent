@@ -39,9 +39,10 @@
       dest: "{{ alloy_env_file }}"
       owner: root
       group: root
-      mode: "0640"
+      mode: "0600"
   become: true
   notify: restart alloy
+  no_log: "{{ alloy_no_log_env_file | default(true) }}"
 
 - name: Ensure log directory exists with proper permissions
   ansible.builtin.file:

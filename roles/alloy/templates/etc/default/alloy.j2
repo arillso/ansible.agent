@@ -22,23 +22,23 @@ ALLOY_CLUSTER_ADVERTISE_ADDRESS={{ alloy_cluster_advertise_address }}
 
 # Grafana Cloud API credentials - loaded from Ansible variables
 # These must be provided via ansible-vault or CI/CD environment variables
-{% if grafana_cloud_prometheus_token | default('') | length > 0 and grafana_cloud_prometheus_token != 'your-grafana-cloud-prometheus-token' %}
-GRAFANA_CLOUD_PROMETHEUS_TOKEN={{ grafana_cloud_prometheus_token }}
-GRAFANA_CLOUD_PROMETHEUS_USER={{ grafana_cloud_prometheus_user | default('') }}
+{% if alloy_grafana_cloud_prometheus_token | default('') | length > 0 and alloy_grafana_cloud_prometheus_token != 'your-grafana-cloud-prometheus-token' %}
+GRAFANA_CLOUD_PROMETHEUS_TOKEN={{ alloy_grafana_cloud_prometheus_token }}
+GRAFANA_CLOUD_PROMETHEUS_USER={{ alloy_grafana_cloud_prometheus_user | default('') }}
 {% endif %}
 
-{% if grafana_cloud_loki_token | default('') | length > 0 and grafana_cloud_loki_token != 'your-grafana-cloud-loki-token' %}
-GRAFANA_CLOUD_LOKI_TOKEN={{ grafana_cloud_loki_token }}
-GRAFANA_CLOUD_LOKI_USER={{ grafana_cloud_loki_user | default('') }}
+{% if alloy_grafana_cloud_loki_token | default('') | length > 0 and alloy_grafana_cloud_loki_token != 'your-grafana-cloud-loki-token' %}
+GRAFANA_CLOUD_LOKI_TOKEN={{ alloy_grafana_cloud_loki_token }}
+GRAFANA_CLOUD_LOKI_USER={{ alloy_grafana_cloud_loki_user | default('') }}
 {% endif %}
 
 # Grafana Remote Configuration credentials
 {% if alloy_enable_remotecfg | default(false) %}
-{% if grafana_cloud_fleet_user | default('') | length > 0 %}
-GRAFANA_CLOUD_FLEET_USER={{ grafana_cloud_fleet_user }}
+{% if alloy_grafana_cloud_fleet_user | default('') | length > 0 %}
+GRAFANA_CLOUD_FLEET_USER={{ alloy_grafana_cloud_fleet_user }}
 {% endif %}
-{% if grafana_cloud_fleet_token | default('') | length > 0 and grafana_cloud_fleet_token != 'your-grafana-cloud-fleet-token' %}
-GRAFANA_CLOUD_FLEET_TOKEN={{ grafana_cloud_fleet_token }}
+{% if alloy_grafana_cloud_fleet_token | default('') | length > 0 and alloy_grafana_cloud_fleet_token != 'your-grafana-cloud-fleet-token' %}
+GRAFANA_CLOUD_FLEET_TOKEN={{ alloy_grafana_cloud_fleet_token }}
 {% endif %}
 {% endif %}
 
