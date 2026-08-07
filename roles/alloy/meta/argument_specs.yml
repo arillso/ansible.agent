@@ -10,6 +10,12 @@ argument_specs:
             for collecting, transforming, and forwarding telemetry data.
         author: "Simon Bärlocher"
         options:
+            alloy_enabled:
+                type: "bool"
+                required: false
+                default: true
+                description: "Master switch: set to false to skip the role entirely"
+
             # Common options
             alloy_user: &alloy_user
                 type: "str"
