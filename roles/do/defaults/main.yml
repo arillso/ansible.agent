@@ -24,6 +24,11 @@ do_enable_insights: true
 do_api_token: ""
 do_droplet_id: ""
 
+# Censor the token-rendering template tasks. Keep true unless debugging a
+# template failure (set false for one run to surface the real error, which
+# no_log otherwise hides as "non-zero return code").
+do_no_log_api_token: true
+
 # Prometheus integration
 do_prometheus_enabled: false
 do_prometheus_port: 9091

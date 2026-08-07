@@ -79,6 +79,14 @@ argument_specs:
                 default: ""
                 description: "ID of the DigitalOcean Droplet"
 
+            do_no_log_api_token:
+                type: "bool"
+                required: false
+                default: true
+                description: >-
+                    no_log toggle for the token-rendering tasks; set false to
+                    surface a template error hidden as 'non-zero return code'.
+
             do_enable_metrics:
                 type: "bool"
                 required: false
