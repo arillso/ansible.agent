@@ -58,6 +58,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING — handler topic namespacing (`alloy`, `do`, `tailscale`)**: all
+  handler `listen:` topics are now prefixed with their role. The three roles
+  each listened on the bare topic `reload systemd`, so loading them in one play
+  made a single `notify` fire the handlers of all three. A `notify` to a topic
+  with no matching handler is ignored rather than an error, so consumer plays
+  notifying the old bare topics silently stop triggering and must be updated.
+
+    | Role        | Old                       | New                                  |
+    | ----------- | ------------------------- | ------------------------------------ |
+    | `alloy`     | `reload systemd`          | `alloy: reload systemd`              |
+    | `alloy`     | `restart alloy`           | `alloy: restart alloy`               |
+    | `alloy`     | `restart grafana alloy`   | `alloy: restart grafana alloy`       |
+    | `alloy`     | `update apt cache`        | `alloy: update apt cache`            |
+    | `do`        | `reload systemd`          | `do: reload systemd`                 |
+    | `do`        | `restart do agent`        | `do: restart do agent`               |
+    | `tailscale` | `reload systemd`          | `tailscale: reload systemd`          |
+    | `tailscale` | `restart tailscaled`      | `tailscale: restart tailscaled`      |
+    | `tailscale` | `reload tailscale config` | `tailscale: reload tailscale config` |
+    | `tailscale` | `refresh ansible facts`   | `tailscale: refresh ansible facts`   |
+
+    Handler names stay descriptive sentences; only the `listen:` topics carry
+    the prefix, matching the convention in `arillso/ansible.system`. This also
+    resolves a case mismatch in the `tailscale` role, where one task notified
+    the handler by name (`Refresh ansible facts`) while every other call site
+    used the lowercase listen topic.
+
 - **BREAKING — boolean variable naming (`alloy`, `do`)**: 13 boolean variables
   moved from the `*_enable_*` prefix form to the `*_enabled` suffix form. The
   old names are gone; there is no deprecation alias, so playbooks setting them
