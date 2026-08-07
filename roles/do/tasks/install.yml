@@ -40,7 +40,7 @@
       name: "{{ do_package_name }}"
       state: present
   become: true
-  notify: restart do agent
+  notify: "do: restart do agent"
 
 - name: Create required directories
   ansible.builtin.file:

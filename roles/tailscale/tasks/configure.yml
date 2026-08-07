@@ -57,7 +57,7 @@
   when:
       - tailscale_config_enabled | default(true) | bool
       - _tailscale_has_config | bool
-  notify: reload tailscale config
+  notify: "tailscale: reload tailscale config"
   tags: [tailscale, config, daemon]
 
 - name: Create Tailscale systemd override directory
@@ -85,8 +85,8 @@
       (tailscale_config_enabled | default(true) | bool and _tailscale_has_config | bool) or
       (tailscale_service_override | length > 0)
   notify:
-      - reload systemd
-      - restart tailscaled
+      - "tailscale: reload systemd"
+      - "tailscale: restart tailscaled"
   tags: [tailscale, config, daemon, systemd]
 
 - name: Initial authentication with auth key
@@ -101,7 +101,7 @@
   when:
       - tailscale_auth_key | length > 0
       - not ansible_local.tailscale.authenticated | default(false)
-  notify: restart tailscaled
+  notify: "tailscale: restart tailscaled"
   no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
   tags: [tailscale, config, auth]
 

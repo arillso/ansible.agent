@@ -53,7 +53,7 @@
   loop_control:
       label: "{{ item.name }}"
   register: _alloy_textfile_service_units
-  notify: reload systemd
+  notify: "alloy: reload systemd"
 
 - name: Deploy textfile collector systemd .timer units
   ansible.builtin.template:
@@ -67,7 +67,7 @@
   loop_control:
       label: "{{ item.name }}"
   register: _alloy_textfile_timer_units
-  notify: reload systemd
+  notify: "alloy: reload systemd"
 
 - name: Apply pending systemd daemon-reload before timer enable
   ansible.builtin.meta: flush_handlers
