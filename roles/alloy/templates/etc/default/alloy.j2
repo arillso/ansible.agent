@@ -33,7 +33,7 @@ GRAFANA_CLOUD_LOKI_USER={{ alloy_grafana_cloud_loki_user | default('') }}
 {% endif %}
 
 # Grafana Remote Configuration credentials
-{% if alloy_enable_remotecfg | default(false) %}
+{% if alloy_remotecfg_enabled | default(false) %}
 {% if alloy_grafana_cloud_fleet_user | default('') | length > 0 %}
 GRAFANA_CLOUD_FLEET_USER={{ alloy_grafana_cloud_fleet_user }}
 {% endif %}

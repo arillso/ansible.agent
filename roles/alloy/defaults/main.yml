@@ -74,11 +74,11 @@ alloy_service_override_dir: "/etc/systemd/system/alloy.service.d"
 alloy_service_override_file: "/etc/systemd/system/alloy.service.d/override.conf"
 
 # Server configuration
-alloy_enable_web_server: true
-alloy_enable_grpc_server: false
+alloy_web_server_enabled: true
+alloy_grpc_server_enabled: false
 alloy_server_http_listen_address: "0.0.0.0"
 alloy_server_grpc_listen_address: "0.0.0.0"
-alloy_server_http_enable_pprof: false
+alloy_server_http_pprof_enabled: false
 alloy_server_grpc_max_recv_msg_size: ""
 alloy_server_grpc_max_send_msg_size: ""
 alloy_server_log_level: ""
@@ -94,7 +94,7 @@ alloy_cluster_discover_peers: ""
 alloy_cluster_rejoin_interval: ""
 
 # Prometheus configuration
-alloy_enable_prometheus: false
+alloy_prometheus_enabled: false
 alloy_prometheus_scrape_interval: ""
 alloy_prometheus_scrape_timeout: ""
 alloy_prometheus_metrics_path: ""
@@ -132,7 +132,7 @@ alloy_textfile_scripts: []
 #     on_boot_sec: "15s"                        # systemd OnBootSec
 
 # Loki configuration
-alloy_enable_loki: false
+alloy_loki_enabled: false
 alloy_loki_file_sources: []
 alloy_loki_journal_enabled: false
 alloy_loki_journal_matches: []
@@ -147,7 +147,7 @@ alloy_loki_clients:
       url: "http://localhost:3100/loki/api/v1/push"
 
 # OpenTelemetry configuration
-alloy_enable_otel: false
+alloy_otel_enabled: false
 alloy_otel_grpc_endpoint: "0.0.0.0:4317"
 alloy_otel_http_endpoint: "0.0.0.0:4318"
 alloy_otel_grpc_tls: {}
@@ -155,7 +155,7 @@ alloy_otel_http_tls: {}
 alloy_otel_traces_output: ""
 
 # OpenTelemetry processors
-alloy_enable_otel_processors: false
+alloy_otel_processors_enabled: false
 alloy_otel_processor_batch: {}
 alloy_otel_processor_attributes: {}
 alloy_otel_processor_resource: {}
@@ -164,8 +164,8 @@ alloy_otel_processor_resource: {}
 alloy_otel_exporters: []
 
 # Advanced node exporter and journal monitoring configuration
-alloy_enable_advanced_node_exporter: false
-alloy_enable_journal_monitoring: false
+alloy_advanced_node_exporter_enabled: false
+alloy_journal_monitoring_enabled: false
 alloy_node_exporter_metric_allowlist: []
 
 # Default node exporter configuration (can be overridden in group_vars)
@@ -213,7 +213,7 @@ alloy_journal_config:
           target_label: "level"
 
 # Grafana Remote Configuration
-alloy_enable_remotecfg: false
+alloy_remotecfg_enabled: false
 
 # Remote configuration using the remotecfg block
 # This is a single configuration object for the remotecfg block (can only appear once per config file)

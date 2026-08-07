@@ -8,7 +8,7 @@
 #}
 {% from 'etc/alloy/macros/alloy_macros.j2' import relabel_config, process_relabel_configs, external_labels %}
 
-{% if alloy_enable_advanced_node_exporter | default(false) %}
+{% if alloy_advanced_node_exporter_enabled | default(false) %}
 // Advanced Node Exporter with optimized configuration and relabeling
 
 // Node Exporter integration - embedded exporter with enterprise configuration

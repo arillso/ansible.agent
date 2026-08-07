@@ -148,13 +148,13 @@ argument_specs:
                 default: "0.0.0.0"
                 description: "HTTP listen address for Grafana Alloy server"
 
-            alloy_enable_web_server: &alloy_enable_web_server
+            alloy_web_server_enabled: &alloy_web_server_enabled
                 type: "bool"
                 required: false
                 default: true
                 description: "Enable HTTP web server for Alloy UI and API"
 
-            alloy_enable_grpc_server: &alloy_enable_grpc_server
+            alloy_grpc_server_enabled: &alloy_grpc_server_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -166,7 +166,7 @@ argument_specs:
                 default: "0.0.0.0"
                 description: "gRPC listen address for Grafana Alloy server"
 
-            alloy_server_http_enable_pprof: &alloy_server_http_enable_pprof
+            alloy_server_http_pprof_enabled: &alloy_server_http_pprof_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -241,7 +241,7 @@ argument_specs:
                 default: ""
                 description: "Interval for cluster rejoin attempts"
 
-            alloy_enable_prometheus: &alloy_enable_prometheus
+            alloy_prometheus_enabled: &alloy_prometheus_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -633,7 +633,7 @@ argument_specs:
                         default: "15s"
                         description: "systemd OnBootSec= value."
 
-            alloy_enable_loki: &alloy_enable_loki
+            alloy_loki_enabled: &alloy_loki_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -753,7 +753,7 @@ argument_specs:
                         required: false
                         description: "Tenant ID for multi-tenant Loki instances"
 
-            alloy_enable_otel: &alloy_enable_otel
+            alloy_otel_enabled: &alloy_otel_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -789,7 +789,7 @@ argument_specs:
                 default: ""
                 description: "Output target for OpenTelemetry traces"
 
-            alloy_enable_otel_processors: &alloy_enable_otel_processors
+            alloy_otel_processors_enabled: &alloy_otel_processors_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -881,8 +881,8 @@ argument_specs:
                 description: "Version of the Grafana Alloy package"
 
             # Node exporter configuration options
-            alloy_enable_advanced_node_exporter:
-                &alloy_enable_advanced_node_exporter
+            alloy_advanced_node_exporter_enabled:
+                &alloy_advanced_node_exporter_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -1028,7 +1028,7 @@ argument_specs:
                 description: "List of metrics to keep, filtering out all others to reduce network and storage usage"
 
             # Grafana Remote Configuration options
-            alloy_enable_remotecfg: &alloy_enable_remotecfg
+            alloy_remotecfg_enabled: &alloy_remotecfg_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -1043,11 +1043,11 @@ argument_specs:
                     url:
                         # Not required at the spec level: alloy_remotecfg
                         # defaults to {} and the remotecfg module is only
-                        # rendered when alloy_enable_remotecfg is true, so a
+                        # rendered when alloy_remotecfg_enabled is true, so a
                         # required url here would reject the empty default.
                         type: "str"
                         required: false
-                        description: "The address of the API to poll for configuration (required when alloy_enable_remotecfg is true)"
+                        description: "The address of the API to poll for configuration (required when alloy_remotecfg_enabled is true)"
                     poll_frequency:
                         type: "str"
                         required: false
@@ -1144,7 +1144,7 @@ argument_specs:
                 default: {}
                 description: "Default queue configuration to prevent undefined variable errors"
 
-            alloy_enable_journal_monitoring: &alloy_enable_journal_monitoring
+            alloy_journal_monitoring_enabled: &alloy_journal_monitoring_enabled
                 type: "bool"
                 required: false
                 default: false
@@ -1235,7 +1235,7 @@ argument_specs:
                 default: ""
                 description: >-
                     Grafana Cloud Fleet Management username, rendered only when
-                    alloy_enable_remotecfg is true.
+                    alloy_remotecfg_enabled is true.
 
             alloy_grafana_cloud_fleet_token: &alloy_grafana_cloud_fleet_token
                 type: "str"
@@ -1244,7 +1244,7 @@ argument_specs:
                 no_log: true
                 description: >-
                     Grafana Cloud Fleet Management API token, rendered only when
-                    alloy_enable_remotecfg is true. Supply through Ansible Vault.
+                    alloy_remotecfg_enabled is true. Supply through Ansible Vault.
 
             alloy_no_log_env_file: &alloy_no_log_env_file
                 type: "bool"
@@ -1298,10 +1298,10 @@ argument_specs:
             alloy_log_level: *alloy_log_level
             alloy_log_format: *alloy_log_format
             alloy_server_http_listen_address: *alloy_server_http_listen_address
-            alloy_enable_web_server: *alloy_enable_web_server
-            alloy_enable_grpc_server: *alloy_enable_grpc_server
+            alloy_web_server_enabled: *alloy_web_server_enabled
+            alloy_grpc_server_enabled: *alloy_grpc_server_enabled
             alloy_server_grpc_listen_address: *alloy_server_grpc_listen_address
-            alloy_server_http_enable_pprof: *alloy_server_http_enable_pprof
+            alloy_server_http_pprof_enabled: *alloy_server_http_pprof_enabled
             alloy_server_log_source_ips: *alloy_server_log_source_ips
             alloy_server_grpc_max_recv_msg_size: *alloy_server_grpc_max_recv_msg_size
             alloy_server_grpc_max_send_msg_size: *alloy_server_grpc_max_send_msg_size
@@ -1313,7 +1313,7 @@ argument_specs:
             alloy_cluster_advertise_port: *alloy_cluster_advertise_port
             alloy_cluster_discover_peers: *alloy_cluster_discover_peers
             alloy_cluster_rejoin_interval: *alloy_cluster_rejoin_interval
-            alloy_enable_prometheus: *alloy_enable_prometheus
+            alloy_prometheus_enabled: *alloy_prometheus_enabled
             alloy_prometheus_scrape_interval: *alloy_prometheus_scrape_interval
             alloy_prometheus_scrape_timeout: *alloy_prometheus_scrape_timeout
             alloy_prometheus_metrics_path: *alloy_prometheus_metrics_path
@@ -1326,7 +1326,7 @@ argument_specs:
             alloy_textfile_collector_directory: *alloy_textfile_collector_directory
             alloy_textfile_script_directory: *alloy_textfile_script_directory
             alloy_textfile_scripts: *alloy_textfile_scripts
-            alloy_enable_loki: *alloy_enable_loki
+            alloy_loki_enabled: *alloy_loki_enabled
             alloy_loki_file_sources: *alloy_loki_file_sources
             alloy_loki_journal_enabled: *alloy_loki_journal_enabled
             alloy_loki_journal_matches: *alloy_loki_journal_matches
@@ -1335,18 +1335,18 @@ argument_specs:
             alloy_loki_journal_write_to: *alloy_loki_journal_write_to
             alloy_loki_process_configs: *alloy_loki_process_configs
             alloy_loki_clients: *alloy_loki_clients
-            alloy_enable_otel: *alloy_enable_otel
+            alloy_otel_enabled: *alloy_otel_enabled
             alloy_otel_grpc_endpoint: *alloy_otel_grpc_endpoint
             alloy_otel_http_endpoint: *alloy_otel_http_endpoint
             alloy_otel_grpc_tls: *alloy_otel_grpc_tls
             alloy_otel_http_tls: *alloy_otel_http_tls
             alloy_otel_traces_output: *alloy_otel_traces_output
-            alloy_enable_otel_processors: *alloy_enable_otel_processors
+            alloy_otel_processors_enabled: *alloy_otel_processors_enabled
             alloy_otel_processor_batch: *alloy_otel_processor_batch
             alloy_otel_processor_attributes: *alloy_otel_processor_attributes
             alloy_otel_processor_resource: *alloy_otel_processor_resource
             alloy_otel_exporters: *alloy_otel_exporters
-            alloy_enable_remotecfg: *alloy_enable_remotecfg
+            alloy_remotecfg_enabled: *alloy_remotecfg_enabled
             alloy_remotecfg: *alloy_remotecfg
             alloy_grafana_cloud_prometheus_user: *alloy_grafana_cloud_prometheus_user
             alloy_grafana_cloud_prometheus_token: *alloy_grafana_cloud_prometheus_token

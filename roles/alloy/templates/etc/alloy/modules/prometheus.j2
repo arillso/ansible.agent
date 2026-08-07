@@ -7,7 +7,7 @@
 #}
 {% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options, external_labels, queue_config, metadata_config, endpoint_config, process_relabel_configs, relabel_config, authorization_block, basic_auth_block, oauth2_block, clustering_block %}
 
-{% if alloy_enable_prometheus | default(false) %}
+{% if alloy_prometheus_enabled | default(false) %}
 {% if alloy_prometheus_additional_scrape_configs | default([]) | length > 0 %}
 // Additional Prometheus scrape configurations
 {% for scrape_config in alloy_prometheus_additional_scrape_configs %}

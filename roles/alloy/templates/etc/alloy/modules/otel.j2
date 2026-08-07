@@ -1,7 +1,7 @@
 {# OpenTelemetry Configuration Module #}
 {% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options, output_config %}
 
-{% if alloy_enable_otel | default(false) %}
+{% if alloy_otel_enabled | default(false) %}
 // OpenTelemetry Receiver (optional)
 otelcol.receiver.otlp "default" {
   grpc {
@@ -12,10 +12,10 @@ otelcol.receiver.otlp "default" {
     endpoint = "{{ alloy_otel_http_endpoint | default('0.0.0.0:4318') }}"
     {{ tls_config(alloy_otel_http_tls) }}
   }
-  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+  {{ output_config(alloy_prometheus_enabled | default(false), alloy_loki_enabled | default(false), alloy_otel_traces_output | default('')) }}
 }
 
-{% if alloy_enable_otel_processors | default(false) %}
+{% if alloy_otel_processors_enabled | default(false) %}
 // OpenTelemetry Processors
 {% if alloy_otel_processor_batch | default('') | length > 0 %}
 otelcol.processor.batch "default" {
@@ -23,7 +23,7 @@ otelcol.processor.batch "default" {
   send_batch_size = {{ alloy_otel_processor_batch.send_batch_size | default(1024) }}
   send_batch_max_size = {{ alloy_otel_processor_batch.send_batch_max_size | default(2048) }}
 
-  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+  {{ output_config(alloy_prometheus_enabled | default(false), alloy_loki_enabled | default(false), alloy_otel_traces_output | default('')) }}
 }
 {% endif %}
 
@@ -42,7 +42,7 @@ otelcol.processor.attributes "default" {
   }
   {% endfor %}
 
-  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+  {{ output_config(alloy_prometheus_enabled | default(false), alloy_loki_enabled | default(false), alloy_otel_traces_output | default('')) }}
 }
 {% endif %}
 
@@ -56,7 +56,7 @@ otelcol.processor.resource "default" {
   }
   {% endfor %}
 
-  {{ output_config(alloy_enable_prometheus | default(false), alloy_enable_loki | default(false), alloy_otel_traces_output | default('')) }}
+  {{ output_config(alloy_prometheus_enabled | default(false), alloy_loki_enabled | default(false), alloy_otel_traces_output | default('')) }}
 }
 {% endif %}
 {% endif %}

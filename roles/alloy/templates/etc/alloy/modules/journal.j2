@@ -1,7 +1,7 @@
 {# Journal Monitoring Configuration Module #}
 {% from 'etc/alloy/macros/alloy_macros.j2' import relabel_rule %}
 
-{% if alloy_enable_journal_monitoring | default(false) %}
+{% if alloy_journal_monitoring_enabled | default(false) %}
 // Journal log collection with relabeling
 loki.relabel "integrations_node_exporter" {
   forward_to = [loki.write.{{ alloy_loki_clients[0].name | replace('-', '_') }}.receiver]

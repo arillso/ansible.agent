@@ -58,6 +58,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **BREAKING — boolean variable naming (`alloy`, `do`)**: 13 boolean variables
+  moved from the `*_enable_*` prefix form to the `*_enabled` suffix form. The
+  old names are gone; there is no deprecation alias, so playbooks setting them
+  silently lose the setting and must be updated. This also fixes the `alloy`
+  README Quick Start, which already documented the `*_enabled` names — none of
+  which existed, so copying it produced an Alloy with nothing enabled.
+
+    | Role    | Old                                   | New                                    |
+    | ------- | ------------------------------------- | -------------------------------------- |
+    | `alloy` | `alloy_enable_web_server`             | `alloy_web_server_enabled`             |
+    | `alloy` | `alloy_enable_grpc_server`            | `alloy_grpc_server_enabled`            |
+    | `alloy` | `alloy_server_http_enable_pprof`      | `alloy_server_http_pprof_enabled`      |
+    | `alloy` | `alloy_enable_prometheus`             | `alloy_prometheus_enabled`             |
+    | `alloy` | `alloy_enable_loki`                   | `alloy_loki_enabled`                   |
+    | `alloy` | `alloy_enable_otel`                   | `alloy_otel_enabled`                   |
+    | `alloy` | `alloy_enable_otel_processors`        | `alloy_otel_processors_enabled`        |
+    | `alloy` | `alloy_enable_advanced_node_exporter` | `alloy_advanced_node_exporter_enabled` |
+    | `alloy` | `alloy_enable_journal_monitoring`     | `alloy_journal_monitoring_enabled`     |
+    | `alloy` | `alloy_enable_remotecfg`              | `alloy_remotecfg_enabled`              |
+    | `do`    | `do_enable_metrics`                   | `do_metrics_enabled`                   |
+    | `do`    | `do_enable_logs`                      | `do_logs_enabled`                      |
+    | `do`    | `do_enable_insights`                  | `do_insights_enabled`                  |
+
+    The `enable_start_time_metrics`, `enable_task_metrics` and
+    `enable_restarts_metrics` keys inside `alloy_node_exporter_config.systemd`
+    are upstream Alloy configuration and are unchanged. The `tailscale` role
+    already used the suffix form and is untouched.
+
 - **Renovate**: the custom regex manager now also scans
   `roles/*/meta/argument_specs.yml`, and the `*_version` defaults in the
   `alloy`, `do`, and `tailscale` specs carry `# renovate:` comments, so future

@@ -1,7 +1,7 @@
 {# Loki Configuration Module #}
 {% from 'etc/alloy/macros/alloy_macros.j2' import tls_config, auth_options, external_labels, endpoint_config, relabel_rule, queue_config %}
 
-{% if alloy_enable_loki | default(false) %}
+{% if alloy_loki_enabled | default(false) %}
 // Loki Log Collection
 {% if alloy_loki_file_sources | default([]) | length > 0 %}
 {% for source in alloy_loki_file_sources %}

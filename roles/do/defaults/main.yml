@@ -16,9 +16,9 @@ do_storage_path: "/var/lib/do-agent"
 do_custom_config_enabled: false
 
 # Feature flags
-do_enable_metrics: true
-do_enable_logs: true
-do_enable_insights: true
+do_metrics_enabled: true
+do_logs_enabled: true
+do_insights_enabled: true
 
 # Optional API configuration
 do_api_token: ""
