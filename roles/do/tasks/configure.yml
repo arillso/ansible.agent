@@ -16,8 +16,7 @@
       dest: /etc/do-agent/do-agent.yaml
       owner: root
       group: root
-      mode: "0644"
-      backup: true
+      mode: "0600"
   become: true
   notify: restart do agent
   when: do_custom_config_enabled | default(false)
