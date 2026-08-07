@@ -2,26 +2,29 @@
 # Main tasks for Alloy role
 # This file orchestrates the installation and configuration of Grafana Alloy
 
-- name: Include installation tasks
-  ansible.builtin.include_tasks: install.yml
-  tags:
-      - alloy
-      - install
+- name: Run Alloy role tasks
+  when: alloy_enabled | bool
+  block:
+      - name: Include installation tasks
+        ansible.builtin.include_tasks: install.yml
+        tags:
+            - alloy
+            - install
 
-- name: Include configuration tasks
-  ansible.builtin.include_tasks: configure.yml
-  tags:
-      - alloy
-      - configure
+      - name: Include configuration tasks
+        ansible.builtin.include_tasks: configure.yml
+        tags:
+            - alloy
+            - configure
 
-- name: Include service management tasks
-  ansible.builtin.include_tasks: service.yml
-  tags:
-      - alloy
-      - service
+      - name: Include service management tasks
+        ansible.builtin.include_tasks: service.yml
+        tags:
+            - alloy
+            - service
 
-- name: Include textfile collector script deployment
-  ansible.builtin.include_tasks: textfile.yml
-  tags:
-      - alloy
-      - textfile
+      - name: Include textfile collector script deployment
+        ansible.builtin.include_tasks: textfile.yml
+        tags:
+            - alloy
+            - textfile

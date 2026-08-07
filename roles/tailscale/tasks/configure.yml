@@ -22,7 +22,7 @@
           {{
             (tailscale_server_url | default('') | string | length > 0) or
             (tailscale_locked | default('') | string | length > 0) or
-            (tailscale_enabled | default('') | string | length > 0) or
+            (tailscale_daemon_enabled | default('') | string | length > 0) or
             (tailscale_hostname | default('') | string | length > 0) or
             (tailscale_operator_user | default('') | string | length > 0) or
             (tailscale_accept_dns | default('') | string | length > 0) or

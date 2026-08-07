@@ -13,8 +13,8 @@
 {%- if tailscale_locked is defined and tailscale_locked != '' -%}
   {%- set _ = config.update({"locked": tailscale_locked | bool}) -%}
 {%- endif -%}
-{%- if tailscale_enabled is defined and tailscale_enabled != '' -%}
-  {%- set _ = config.update({"enabled": tailscale_enabled | bool}) -%}
+{%- if tailscale_daemon_enabled is defined and tailscale_daemon_enabled != '' -%}
+  {%- set _ = config.update({"enabled": tailscale_daemon_enabled | bool}) -%}
 {%- endif -%}
 {%- if tailscale_hostname | default('') | length > 0 -%}
   {%- set _ = config.update({"hostname": tailscale_hostname}) -%}

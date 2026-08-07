@@ -1,0 +1,42 @@
+---
+# Molecule verify playbook for the Grafana Alloy master switch
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+      - name: Gather installed packages
+        ansible.builtin.package_facts:
+            manager: auto
+
+      - name: Assert Alloy package is not installed
+        ansible.builtin.assert:
+            that:
+                - "'alloy' not in ansible_facts.packages"
+            fail_msg: "Alloy package was installed despite alloy_enabled: false"
+            success_msg: "Alloy package is not installed"
+
+      - name: Check the Alloy configuration file
+        ansible.builtin.stat:
+            path: /etc/alloy/config.alloy
+        register: alloy_disabled_config
+
+      - name: Assert the Alloy configuration file was not written
+        ansible.builtin.assert:
+            that:
+                - not alloy_disabled_config.stat.exists
+            fail_msg: "Alloy config was written despite alloy_enabled: false"
+            success_msg: "Alloy config was not written"
+
+      - name: Check the Alloy systemd override directory
+        ansible.builtin.stat:
+            path: /etc/systemd/system/alloy.service.d
+        register: alloy_disabled_override
+
+      - name: Assert the Alloy systemd override was not deployed
+        ansible.builtin.assert:
+            that:
+                - not alloy_disabled_override.stat.exists
+            fail_msg: "Alloy systemd override was deployed despite alloy_enabled: false"
+            success_msg: "Alloy systemd override was not deployed"

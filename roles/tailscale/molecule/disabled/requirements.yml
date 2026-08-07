@@ -1,0 +1,4 @@
+---
+collections:
+    - name: arillso.system
+      version: ">=1.0.0"

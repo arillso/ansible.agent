@@ -1,6 +1,9 @@
 ---
 # Default variables for DigitalOcean Agent role
 
+# Master switch: set to false to skip the role entirely
+do_enabled: true
+
 # Package configuration
 do_package_name: "do-agent"
 # renovate: datasource=github-releases depName=digitalocean/do-agent

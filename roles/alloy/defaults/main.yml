@@ -2,6 +2,9 @@
 # Default variables for Alloy role
 # These variables can be overridden in group_vars or host_vars
 
+# Master switch: set to false to skip the role entirely
+alloy_enabled: true
+
 # OS-specific variable mappings - these map internal vars to public API
 # Dynamic variable assignment based on OS family using hierarchical structure
 alloy_package_dependencies: "{{ _alloy_os[ansible_os_family].package_dependencies }}"

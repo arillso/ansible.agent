@@ -1,0 +1,12 @@
+---
+# Molecule converge playbook for the Grafana Alloy master switch
+- name: Converge
+  hosts: all
+  become: true
+
+  roles:
+      - role: arillso.agent.alloy
+        vars:
+            # The whole point of this scenario: with the master switch off
+            # the role must not touch the host at all.
+            alloy_enabled: false

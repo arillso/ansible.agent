@@ -25,3 +25,8 @@
             # Basic settings for testing
             tailscale_accept_routes: true
             tailscale_ssh_enabled: false
+
+            # Daemon config key (renamed from tailscale_enabled, which is
+            # now the role master switch): must render as "enabled" in
+            # /etc/tailscale/config.json.
+            tailscale_daemon_enabled: true

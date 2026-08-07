@@ -1,0 +1,42 @@
+---
+# Molecule verify playbook for the Tailscale master switch
+- name: Verify
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+      - name: Gather installed packages
+        ansible.builtin.package_facts:
+            manager: auto
+
+      - name: Assert Tailscale package is not installed
+        ansible.builtin.assert:
+            that:
+                - "'tailscale' not in ansible_facts.packages"
+            fail_msg: "Tailscale package was installed despite tailscale_enabled: false"
+            success_msg: "Tailscale package is not installed"
+
+      - name: Check the Tailscale configuration directory
+        ansible.builtin.stat:
+            path: /etc/tailscale
+        register: tailscale_disabled_config_dir
+
+      - name: Assert the Tailscale configuration directory was not created
+        ansible.builtin.assert:
+            that:
+                - not tailscale_disabled_config_dir.stat.exists
+            fail_msg: "Tailscale config directory was created despite tailscale_enabled: false"
+            success_msg: "Tailscale config directory was not created"
+
+      - name: Check the Tailscale local facts script
+        ansible.builtin.stat:
+            path: /etc/ansible/facts.d/tailscale.fact
+        register: tailscale_disabled_facts_script
+
+      - name: Assert the Tailscale local facts script was not deployed
+        ansible.builtin.assert:
+            that:
+                - not tailscale_disabled_facts_script.stat.exists
+            fail_msg: "Tailscale facts script was deployed despite tailscale_enabled: false"
+            success_msg: "Tailscale facts script was not deployed"
