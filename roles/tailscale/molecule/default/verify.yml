@@ -79,6 +79,18 @@
             fail_msg: "Systemd override directory does not exist"
             success_msg: "Systemd override directory exists"
 
+      - name: Read the Tailscale daemon configuration file
+        ansible.builtin.slurp:
+            src: /etc/tailscale/config.json
+        register: tailscale_daemon_config
+
+      - name: Assert tailscale_daemon_enabled rendered into the daemon config
+        ansible.builtin.assert:
+            that:
+                - (tailscale_daemon_config.content | b64decode | from_json).enabled | bool
+            fail_msg: 'tailscale_daemon_enabled did not render as "enabled" in config.json'
+            success_msg: 'tailscale_daemon_enabled rendered as "enabled" in config.json'
+
       - name: Check if Ansible facts script exists
         ansible.builtin.stat:
             path: /etc/ansible/facts.d/tailscale.fact
