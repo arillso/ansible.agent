@@ -62,6 +62,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in Ansible's `argument_specs` schema. It is: `ansible-lint` declares
   `no_log` as a boolean role-arg-spec option, argument-spec validation passes
   with it, and `ansible-galaxy collection build` succeeds.
+- **DO role leftover backups**: dropping `backup: true` stopped new plaintext
+  copies but left the existing ones in place, so hosts provisioned before that
+  fix still carried the token in world-readable `/etc/do-agent/do-agent.yaml.*`
+  files. `configure.yml` now finds and removes them on every run, independently
+  of `do_custom_config_enabled`, so the cleanup also reaches hosts where custom
+  config has since been turned off.
 
 ### Changed
 

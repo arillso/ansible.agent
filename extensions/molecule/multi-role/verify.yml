@@ -90,6 +90,23 @@
             fail_msg: "DO Agent config file does not exist"
             success_msg: "DO Agent config file exists"
 
+      - name: Find DO Agent configuration backup leftovers
+        ansible.builtin.find:
+            paths: /etc/do-agent
+            patterns: "do-agent.yaml.*"
+            excludes: "do-agent.yaml"
+            file_type: file
+        register: do_config_backup_leftovers
+
+      - name: Assert no DO Agent configuration backups remain
+        ansible.builtin.assert:
+            that:
+                - do_config_backup_leftovers.files | length == 0
+            fail_msg: >-
+                Leftover DO Agent config backups found:
+                {{ do_config_backup_leftovers.files | map(attribute='path') | list }}
+            success_msg: "No DO Agent config backups remain in /etc/do-agent"
+
       # --- Tailscale -------------------------------------------------------
       - name: Assert Tailscale package is installed
         ansible.builtin.assert:
