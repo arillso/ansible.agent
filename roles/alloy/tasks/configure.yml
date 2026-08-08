@@ -11,6 +11,7 @@
       backup: true
   become: true
   notify: "alloy: restart alloy"
+  no_log: "{{ alloy_no_log_config | default(true) }}"
 
 - name: Create systemd service override directory
   ansible.builtin.file:

@@ -61,6 +61,11 @@ alloy_grafana_cloud_fleet_token: ""
 # for one run to surface the real error, which no_log otherwise hides).
 alloy_no_log_env_file: true
 
+# Censor the main config task, which renders the alloy_remotecfg secrets
+# (basic_auth.password, authorization.credentials, bearer_token,
+# oauth2.client_secret) into config.alloy. Same debugging caveat.
+alloy_no_log_config: true
+
 # User and group configuration
 alloy_user: "alloy"
 alloy_group: "alloy"

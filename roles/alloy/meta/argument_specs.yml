@@ -321,10 +321,12 @@ argument_specs:
                             password:
                                 type: "str"
                                 required: true
+                                no_log: true
                                 description: "Password for basic auth"
                     bearer_token:
                         type: "str"
                         required: false
+                        no_log: true
                         description: "Bearer token for authentication"
                     bearer_token_file:
                         type: "str"
@@ -538,10 +540,12 @@ argument_specs:
                             password:
                                 type: "str"
                                 required: true
+                                no_log: true
                                 description: "Password"
                     bearer_token:
                         type: "str"
                         required: false
+                        no_log: true
                         description: "Bearer token"
                     bearer_token_file:
                         type: "str"
@@ -720,10 +724,12 @@ argument_specs:
                             password:
                                 type: "str"
                                 required: true
+                                no_log: true
                                 description: "Password for basic auth"
                     bearer_token:
                         type: "str"
                         required: false
+                        no_log: true
                         description: "Bearer token for authentication"
                     bearer_token_file:
                         type: "str"
@@ -1085,19 +1091,128 @@ argument_specs:
                             password:
                                 type: "str"
                                 required: false
+                                no_log: true
                                 description: "Basic auth password"
                             password_file:
                                 type: "str"
                                 required: false
                                 description: "File containing the basic auth password"
+                    authorization:
+                        type: "dict"
+                        required: false
+                        description: "Configure generic authorization for the endpoint"
+                        options:
+                            type:
+                                type: "str"
+                                required: false
+                                description: "Authorization type, for example Bearer"
+                            credentials:
+                                type: "str"
+                                required: false
+                                no_log: true
+                                description: "Secret value of the authorization credentials"
+                            credentials_file:
+                                type: "str"
+                                required: false
+                                description: "File containing the authorization credentials"
                     bearer_token:
                         type: "str"
                         required: false
+                        no_log: true
                         description: "Bearer token to authenticate with"
                     bearer_token_file:
                         type: "str"
                         required: false
                         description: "File containing a bearer token to authenticate with"
+                    oauth2:
+                        type: "dict"
+                        required: false
+                        description: "Configure OAuth2 for authenticating to the endpoint"
+                        options:
+                            client_id:
+                                type: "str"
+                                required: false
+                                description: "OAuth2 client ID"
+                            client_secret:
+                                type: "str"
+                                required: false
+                                no_log: true
+                                description: "OAuth2 client secret"
+                            client_secret_file:
+                                type: "str"
+                                required: false
+                                description: "File containing the OAuth2 client secret"
+                            token_url:
+                                type: "str"
+                                required: false
+                                description: "URL to fetch the OAuth2 token from"
+                            scopes:
+                                type: "list"
+                                elements: "str"
+                                required: false
+                                description: "List of scopes to authenticate with"
+                            endpoint_params:
+                                type: "dict"
+                                required: false
+                                description: "Optional parameters to append to the token URL"
+                            proxy_url:
+                                type: "str"
+                                required: false
+                                description: "HTTP proxy to send requests through"
+                            no_proxy:
+                                type: "str"
+                                required: false
+                                description: "Comma-separated hosts that bypass the proxy"
+                            proxy_from_environment:
+                                type: "bool"
+                                required: false
+                                description: "Use the proxy URL from the environment variables"
+                            proxy_connect_header:
+                                type: "dict"
+                                required: false
+                                description: "Specifies headers to send to proxies during CONNECT requests"
+                            tls_config:
+                                type: "dict"
+                                required: false
+                                description: "Configure TLS settings for the OAuth2 token request"
+                                options:
+                                    ca_file:
+                                        type: "str"
+                                        required: false
+                                        description: "CA certificate to validate the server with"
+                                    ca_pem:
+                                        type: "str"
+                                        required: false
+                                        description: "CA PEM-encoded text to validate the server with"
+                                    cert_file:
+                                        type: "str"
+                                        required: false
+                                        description: "Certificate file for client authentication"
+                                    cert_pem:
+                                        type: "str"
+                                        required: false
+                                        description: "Certificate PEM-encoded text for client authentication"
+                                    key_file:
+                                        type: "str"
+                                        required: false
+                                        description: "Key file for client authentication"
+                                    key_pem:
+                                        type: "str"
+                                        required: false
+                                        no_log: true
+                                        description: "Key PEM-encoded text for client authentication"
+                                    server_name:
+                                        type: "str"
+                                        required: false
+                                        description: "ServerName extension to indicate the name of the server"
+                                    insecure_skip_verify:
+                                        type: "bool"
+                                        required: false
+                                        description: "Disables validation of the server certificate"
+                                    min_version:
+                                        type: "str"
+                                        required: false
+                                        description: "Minimum acceptable TLS version"
                     tls_config:
                         type: "dict"
                         required: false
@@ -1107,10 +1222,39 @@ argument_specs:
                                 type: "str"
                                 required: false
                                 description: "CA certificate to validate the server with"
+                            ca_pem:
+                                type: "str"
+                                required: false
+                                description: "CA PEM-encoded text to validate the server with"
+                            cert_file:
+                                type: "str"
+                                required: false
+                                description: "Certificate file for client authentication"
+                            cert_pem:
+                                type: "str"
+                                required: false
+                                description: "Certificate PEM-encoded text for client authentication"
+                            key_file:
+                                type: "str"
+                                required: false
+                                description: "Key file for client authentication"
+                            key_pem:
+                                type: "str"
+                                required: false
+                                no_log: true
+                                description: "Key PEM-encoded text for client authentication"
+                            server_name:
+                                type: "str"
+                                required: false
+                                description: "ServerName extension to indicate the name of the server"
                             insecure_skip_verify:
                                 type: "bool"
                                 required: false
                                 description: "Disables validation of the server certificate"
+                            min_version:
+                                type: "str"
+                                required: false
+                                description: "Minimum acceptable TLS version"
                     enable_http2:
                         type: "bool"
                         required: false
@@ -1260,6 +1404,15 @@ argument_specs:
                     no_log toggle for the environment file task; set false to
                     surface a template error the censored output otherwise hides.
 
+            alloy_no_log_config: &alloy_no_log_config
+                type: "bool"
+                required: false
+                default: true
+                description: >-
+                    no_log toggle for the main config task, which renders the
+                    alloy_remotecfg secrets; set false to surface a template
+                    error the censored output otherwise hides.
+
     install:
         short_description: "Install Grafana Alloy package and dependencies"
         description: |
@@ -1361,6 +1514,7 @@ argument_specs:
             alloy_grafana_cloud_fleet_user: *alloy_grafana_cloud_fleet_user
             alloy_grafana_cloud_fleet_token: *alloy_grafana_cloud_fleet_token
             alloy_no_log_env_file: *alloy_no_log_env_file
+            alloy_no_log_config: *alloy_no_log_config
 
     service:
         short_description: "Manage Grafana Alloy systemd service"
