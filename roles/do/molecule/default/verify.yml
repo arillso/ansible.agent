@@ -62,8 +62,7 @@
       - name: Find DO Agent configuration backup leftovers
         ansible.builtin.find:
             paths: /etc/do-agent
-            patterns: "do-agent.yaml.*"
-            excludes: "do-agent.yaml"
+            patterns: "do-agent.yaml.*~"
             file_type: file
         register: do_config_backup_leftovers
 
@@ -75,6 +74,18 @@
                 Leftover DO Agent config backups found:
                 {{ do_config_backup_leftovers.files | map(attribute='path') | list }}
             success_msg: "No DO Agent config backups remain in /etc/do-agent"
+
+      - name: Check the package-manager artifact planted by side_effect
+        ansible.builtin.stat:
+            path: /etc/do-agent/do-agent.yaml.dpkg-dist
+        register: do_config_pkg_artifact
+
+      - name: Assert the cleanup left the package-manager artifact in place
+        ansible.builtin.assert:
+            that:
+                - do_config_pkg_artifact.stat.exists
+            fail_msg: "Cleanup removed do-agent.yaml.dpkg-dist, which is not an Ansible backup"
+            success_msg: "Cleanup left the package-manager artifact untouched"
 
       - name: Verify required directories exist
         ansible.builtin.stat:

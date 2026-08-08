@@ -16,5 +16,15 @@
             group: root
             mode: "0644"
 
+      # Not an Ansible backup and never carried the token, so the cleanup must
+      # leave it alone. verify.yml asserts it survives.
+      - name: Create a package-manager artifact the cleanup must not touch
+        ansible.builtin.copy:
+            content: "# packaged default, not an Ansible backup\n"
+            dest: /etc/do-agent/do-agent.yaml.dpkg-dist
+            owner: root
+            group: root
+            mode: "0644"
+
 - name: Converge again to trigger the backup cleanup
   ansible.builtin.import_playbook: converge.yml

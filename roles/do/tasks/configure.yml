@@ -25,8 +25,7 @@
 - name: Find leftover DigitalOcean Agent configuration backups
   ansible.builtin.find:
       paths: /etc/do-agent
-      patterns: "do-agent.yaml.*"
-      excludes: "do-agent.yaml"
+      patterns: "do-agent.yaml.*~"
       file_type: file
   register: do_config_backups
   become: true
