@@ -94,24 +94,6 @@ argument_specs:
                     no_log toggle for the token-rendering tasks; set false to
                     surface a template error hidden as 'non-zero return code'.
 
-            do_metrics_enabled:
-                type: "bool"
-                required: false
-                default: true
-                description: "Enables metrics collection"
-
-            do_logs_enabled:
-                type: "bool"
-                required: false
-                default: true
-                description: "Enables log collection"
-
-            do_insights_enabled:
-                type: "bool"
-                required: false
-                default: true
-                description: "Enables DigitalOcean Insights"
-
             do_prometheus_enabled:
                 type: "bool"
                 required: false

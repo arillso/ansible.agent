@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **DO**: the three feature flags `do_metrics_enabled`, `do_logs_enabled` and
+  `do_insights_enabled` are gone from `defaults/main.yml` and
+  `meta/argument_specs.yml`. They were declared and documented but read by no
+  task and no template, so setting one to `false` changed nothing and raised no
+  error. `do-agent` has no upstream switch for metrics, logs or insights as a
+  whole — only per-collector flags such as `no-collector.processes` — so there
+  is nothing to wire them to. Removing them has no effect on behaviour. The
+  master switch `do_enabled` is unaffected and still gates the whole role.
 - **Alloy (breaking)**: the six unprefixed Grafana Cloud variables the role read
   are replaced by role-prefixed names. They were never declared in
   `defaults/main.yml` or `meta/argument_specs.yml` and worked only through
@@ -129,7 +137,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     the handler by name (`Refresh ansible facts`) while every other call site
     used the lowercase listen topic.
 
-- **BREAKING — boolean variable naming (`alloy`, `do`)**: 13 boolean variables
+- **BREAKING — boolean variable naming (`alloy`)**: 10 boolean variables
   moved from the `*_enable_*` prefix form to the `*_enabled` suffix form. The
   old names are gone; there is no deprecation alias, so playbooks setting them
   silently lose the setting and must be updated. This also fixes the `alloy`
@@ -148,9 +156,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     | `alloy` | `alloy_enable_advanced_node_exporter` | `alloy_advanced_node_exporter_enabled` |
     | `alloy` | `alloy_enable_journal_monitoring`     | `alloy_journal_monitoring_enabled`     |
     | `alloy` | `alloy_enable_remotecfg`              | `alloy_remotecfg_enabled`              |
-    | `do`    | `do_enable_metrics`                   | `do_metrics_enabled`                   |
-    | `do`    | `do_enable_logs`                      | `do_logs_enabled`                      |
-    | `do`    | `do_enable_insights`                  | `do_insights_enabled`                  |
 
     The `enable_start_time_metrics`, `enable_task_metrics` and
     `enable_restarts_metrics` keys inside `alloy_node_exporter_config.systemd`
