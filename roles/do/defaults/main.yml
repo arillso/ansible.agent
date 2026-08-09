@@ -18,11 +18,6 @@ do_storage_path: "/var/lib/do-agent"
 # Custom configuration (usually not required)
 do_custom_config_enabled: false
 
-# Feature flags
-do_metrics_enabled: true
-do_logs_enabled: true
-do_insights_enabled: true
-
 # Optional API configuration
 do_api_token: ""
 do_droplet_id: ""
