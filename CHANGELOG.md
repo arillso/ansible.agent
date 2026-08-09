@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tailscale_enabled` (all `bool`, default `true`) gate every dispatcher
   include in the respective `tasks/main.yml`. Setting one to `false` skips
   the whole role instead of requiring per-task `when` conditions.
+- **Alloy**: `alloy_remotecfg` now declares the `authorization` and `oauth2`
+  blocks in `meta/argument_specs.yml`. Both were rendered by
+  `templates/etc/alloy/modules/remotecfg.j2` but undocumented, so their
+  secrets passed through validation undeclared and unmasked. The top-level
+  `tls_config` gains the `ca_pem`, `cert_file`, `cert_pem`, `key_file`,
+  `key_pem`, `server_name`, and `min_version` options the template already
+  renders.
 
 ### Removed
 
@@ -43,6 +50,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   output at raised verbosity. The new `alloy_no_log_env_file` toggle (default
   `true`) allows disabling it for a single debugging run, mirroring
   `tailscale_no_log_auth_key`.
+- **Alloy remotecfg secret exposure**: the main config task renders the
+  `alloy_remotecfg` secrets (`basic_auth.password`,
+  `authorization.credentials`, `bearer_token`, `oauth2.client_secret`) into
+  `config.alloy` and set no `no_log`, so the values appeared in the Ansible
+  output at raised verbosity. The task now honours the new
+  `alloy_no_log_config` toggle (default `true`), mirroring
+  `alloy_no_log_env_file`. The same options additionally carry `no_log: true`
+  in the argument spec, which marks them as sensitive for task output and
+  `--diff`. Note that this does **not** censor them in the failure output of
+  `validate_argument_spec`: that action plugin writes
+  `validation_result.error_messages` straight into `msg` and
+  `argument_errors` without calling `sanitize_keys`, so a value rejected by
+  type validation is echoed verbatim regardless of `no_log` (verified against
+  ansible-core 2.21.1). Closing that gap requires a fix upstream in
+  ansible-core, not in this collection.
+- **Alloy remaining secret options**: the `basic_auth.password` and
+  `bearer_token` options of `alloy_prometheus_remote_write`,
+  `alloy_loki_clients`, and `alloy_custom_exporters` now carry `no_log: true`
+  as well. They are rendered into `config.alloy` by the same task and are
+  covered by the `alloy_no_log_config` toggle above.
+- **Tailscale**: `tailscale_auth_key` carries `no_log: true` in the argument
+  spec. The key was declared sensitive at task level only, so the spec did
+  not mark it as such for the rest of the role.
 - **Alloy**: tighten `/etc/default/alloy` from mode `0640` to `0600`. The file
   holds the Grafana Cloud credentials and is read by systemd as root, so group
   read access was never needed.
