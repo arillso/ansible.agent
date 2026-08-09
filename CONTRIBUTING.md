@@ -95,8 +95,18 @@ This runs ansible-lint, yamllint, and Python linters (ruff, black).
 ### Unit Tests
 
 ```bash
-make test
+make test-unit
 ```
+
+### Molecule Tests
+
+```bash
+make test-molecule
+```
+
+This runs every molecule scenario serially and stops at the first failure.
+The alloy scenarios use the qemu driver, so they need KVM and your user in the
+`kvm` group.
 
 ### Auto-format
 
