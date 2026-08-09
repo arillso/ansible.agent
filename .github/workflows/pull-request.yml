@@ -27,6 +27,7 @@ jobs:
             collection_namespace: arillso
             collection_name: agent
             python_version: "3.13"
+            enable_unit_tests: true
 
     molecule-alloy:
         # alloy must run as a stable systemd service, which is unreliable
