@@ -88,19 +88,19 @@ tailscale_fallback:
 
 # Determine version key for lookup
 tailscale_version_key: >-
-    {{- ansible_distribution_version if ansible_distribution in ['Ubuntu'] else
-        ansible_distribution_major_version if ansible_distribution in ['Debian'] else
+    {{- ansible_facts['distribution_version'] if ansible_facts['distribution'] in ['Ubuntu'] else
+        ansible_facts['distribution_major_version'] if ansible_facts['distribution'] in ['Debian'] else
         'default' -}}
 
 # Get distribution configuration
 tailscale_distro_config: >-
-    {{- tailscale_distributions.get(ansible_distribution, {}).get(tailscale_version_key) or
-        tailscale_distributions.get(ansible_distribution, {}).get('default') or
+    {{- tailscale_distributions.get(ansible_facts['distribution'], {}).get(tailscale_version_key) or
+        tailscale_distributions.get(ansible_facts['distribution'], {}).get('default') or
         tailscale_fallback -}}
 
 # Final variables used by the role
 tailscale_gpg_key_url: "{{ tailscale_distro_config.gpg_key_url | default('') }}"
 tailscale_gpg_key_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
 tailscale_repo_url: "{{ tailscale_distro_config.repo_url | default('') }}"
-tailscale_repo_codename: "{{ tailscale_distro_config.codename | default(ansible_distribution_release) }}"
+tailscale_repo_codename: "{{ tailscale_distro_config.codename | default(ansible_facts['distribution_release']) }}"
 tailscale_package_only: "{{ tailscale_distro_config.package_only | default(false) }}"

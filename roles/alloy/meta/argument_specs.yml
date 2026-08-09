@@ -1029,7 +1029,7 @@ argument_specs:
                     instance:
                         type: "str"
                         required: false
-                        description: "Instance identifier override (defaults to ansible_hostname)"
+                        description: "Instance identifier override (defaults to ansible_facts['hostname'])"
 
             alloy_node_exporter_metric_allowlist:
                 &alloy_node_exporter_metric_allowlist

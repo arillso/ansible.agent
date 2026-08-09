@@ -12,7 +12,7 @@
       update_cache: true
   become: true
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
   tags: [alloy, install, dependencies]
 
@@ -28,7 +28,7 @@
             name: grafana
             dearmor: true
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
   tags: [alloy, install, keys]
 
@@ -43,7 +43,7 @@
             filename: grafana
             update_cache: false # We'll update cache separately
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
   tags: [alloy, install, repository]
 
@@ -52,7 +52,7 @@
       name: arillso.system.packages
       tasks_from: cache
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
   tags: [alloy, install, cache]
 
@@ -72,7 +72,7 @@
       # config is in place.
       packages_services_to_restart: []
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
   tags: [alloy, install, package]
 
@@ -87,7 +87,7 @@
       enabled: true
       state: present
   when:
-      - ansible_os_family == "RedHat"
+      - ansible_facts['os_family'] == "RedHat"
       - not alloy_package_only
   tags: [alloy, install, repository]
 
@@ -100,7 +100,7 @@
   delay: 10
   until: _alloy_package_installed is succeeded
   when:
-      - ansible_os_family == "RedHat"
+      - ansible_facts['os_family'] == "RedHat"
       - not alloy_package_only
   notify: "alloy: restart alloy"
   tags: [alloy, install, package]
@@ -128,7 +128,7 @@
   delay: 10
   until: _alloy_package_installed_generic is succeeded
   when:
-      - ansible_os_family not in ["Debian", "RedHat"]
+      - ansible_facts['os_family'] not in ["Debian", "RedHat"]
       - not alloy_package_only
   notify: "alloy: restart alloy"
   tags: [alloy, install, package]

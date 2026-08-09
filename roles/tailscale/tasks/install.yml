@@ -14,7 +14,7 @@
             keyring: "{{ tailscale_gpg_key_path }}"
             name: tailscale
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not tailscale_package_only
   tags: [tailscale, install, keys]
 
@@ -26,12 +26,12 @@
       packages_repositories:
           - repo: >-
                 deb [signed-by={{ tailscale_gpg_key_path }}] {{ tailscale_repo_url }}
-                {{ tailscale_repo_codename | default(ansible_distribution_release) }} main
+                {{ tailscale_repo_codename | default(ansible_facts['distribution_release']) }} main
             state: present
             filename: tailscale
             update_cache: false # We'll update cache separately
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not tailscale_package_only
   tags: [tailscale, install, repository]
 
@@ -40,7 +40,7 @@
       name: arillso.system.packages
       tasks_from: cache
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not tailscale_package_only
   tags: [tailscale, install, cache]
 
@@ -56,7 +56,7 @@
       packages_retry_delay: 10
       packages_services_to_restart: ["tailscaled"]
   when:
-      - ansible_os_family == "Debian"
+      - ansible_facts['os_family'] == "Debian"
       - not tailscale_package_only
   tags: [tailscale, install, package]
 
@@ -71,7 +71,7 @@
       enabled: true
       state: present
   when:
-      - ansible_os_family == "RedHat"
+      - ansible_facts['os_family'] == "RedHat"
       - not tailscale_package_only
   tags: [tailscale, install, repository]
 
@@ -84,7 +84,7 @@
   delay: 10
   until: _tailscale_package_installed is succeeded
   when:
-      - ansible_os_family == "RedHat"
+      - ansible_facts['os_family'] == "RedHat"
       - not tailscale_package_only
   tags: [tailscale, install, package]
 
@@ -110,7 +110,7 @@
   delay: 10
   until: _tailscale_package_installed_generic is succeeded
   when:
-      - ansible_os_family not in ["Debian", "RedHat"]
+      - ansible_facts['os_family'] not in ["Debian", "RedHat"]
       - not tailscale_package_only
   tags: [tailscale, install, package]
 

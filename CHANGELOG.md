@@ -21,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `key_pem`, `server_name`, and `min_version` options the template already
   renders.
 
+### Changed
+
+- **All roles**: every top-level fact reference is replaced by its
+  `ansible_facts` equivalent — `ansible_os_family` becomes
+  `ansible_facts['os_family']`, `ansible_hostname` becomes
+  `ansible_facts['hostname']`, and the `ansible_distribution*` family becomes
+  `ansible_facts['distribution*']`. `ansible-core` deprecated the
+  `INJECT_FACTS_AS_VARS` default of `True` and drops the automatic top-level
+  injection in version 2.24, which would leave the unprefixed names undefined
+  and break the roles. Variable names only, no behaviour change.
+  `ansible_local` keeps its name: it is exempt from the deprecation and stays
+  at the top level even when read from `ansible_facts`.
+
 ### Removed
 
 - **DO**: the three feature flags `do_metrics_enabled`, `do_logs_enabled` and

@@ -13,7 +13,7 @@
       dest: /usr/share/keyrings/digitalocean-agent.asc
       mode: "0644"
   become: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Add DigitalOcean repository (Debian/Ubuntu)
   ansible.builtin.apt_repository:
@@ -22,7 +22,7 @@
       update_cache: true
       filename: digitalocean-agent
   become: true
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"
 
 - name: Add DigitalOcean repository (RedHat/CentOS)
   ansible.builtin.yum_repository:
@@ -33,7 +33,7 @@
       gpgkey: "{{ do_gpg_key_url }}"
       enabled: true
   become: true
-  when: ansible_os_family == "RedHat"
+  when: ansible_facts['os_family'] == "RedHat"
 
 - name: Install DigitalOcean Agent package
   ansible.builtin.package:

@@ -7,10 +7,10 @@ alloy_enabled: true
 
 # OS-specific variable mappings - these map internal vars to public API
 # Dynamic variable assignment based on OS family using hierarchical structure
-alloy_package_dependencies: "{{ _alloy_os[ansible_os_family].package_dependencies }}"
-alloy_grafana_gpg_key_url: "{{ _alloy_os[ansible_os_family].grafana.gpg_key_url }}"
-alloy_grafana_keyring_path: "{{ _alloy_os[ansible_os_family].grafana.keyring_path | default(omit) }}"
-alloy_grafana_repository: "{{ _alloy_os[ansible_os_family].grafana.repository | default(omit) }}"
+alloy_package_dependencies: "{{ _alloy_os[ansible_facts['os_family']].package_dependencies }}"
+alloy_grafana_gpg_key_url: "{{ _alloy_os[ansible_facts['os_family']].grafana.gpg_key_url }}"
+alloy_grafana_keyring_path: "{{ _alloy_os[ansible_facts['os_family']].grafana.keyring_path | default(omit) }}"
+alloy_grafana_repository: "{{ _alloy_os[ansible_facts['os_family']].grafana.repository | default(omit) }}"
 
 # Package configuration
 alloy_package_name: "alloy"
@@ -230,8 +230,8 @@ alloy_remotecfg: {}
 # alloy_remotecfg:
 #   url: "https://fleet-management-prod-011.grafana.net/api/v1/config"
 #   poll_frequency: "30s"
-#   id: "{{ ansible_hostname }}"
-#   name: "Gateway Node {{ ansible_hostname }}"
+#   id: "{{ ansible_facts['hostname'] }}"
+#   name: "Gateway Node {{ ansible_facts['hostname'] }}"
 #   attributes:
 #     cluster: "hetzner-k3s"
 #     region: "nbg1"
