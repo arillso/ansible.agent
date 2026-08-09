@@ -21,7 +21,7 @@ For detailed documentation including all variables, examples, and usage instruct
 ```yaml
 - hosts: digitalocean_droplets
   roles:
-      - role: arillso.agent.do
+    - role: arillso.agent.do
 ```
 
 ## License

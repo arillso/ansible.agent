@@ -64,19 +64,19 @@ Each role follows standard Ansible role structure:
 Three-level testing strategy:
 
 1. **Unit Tests** (pytest) - For plugins
-    - Location: `tests/unit/`
-    - Run: `pytest tests/unit/`
+   - Location: `tests/unit/`
+   - Run: `pytest tests/unit/`
 
 2. **Molecule Tests** - Per-role and combined
-    - Per-role location: `roles/*/molecule/default/`
-    - Combined location: `extensions/molecule/multi-role/` (deploys alloy, do
-      and tailscale together on one host)
-    - Run: `molecule test -s default` (per role) / `molecule test -s multi-role`
-    - CI: one `molecule-<role>` job per role plus `molecule-multi-role` in `pull-request.yml`
+   - Per-role location: `roles/*/molecule/default/`
+   - Combined location: `extensions/molecule/multi-role/` (deploys alloy, do
+     and tailscale together on one host)
+   - Run: `molecule test -s default` (per role) / `molecule test -s multi-role`
+   - CI: one `molecule-<role>` job per role plus `molecule-multi-role` in `pull-request.yml`
 
 3. **Integration Tests** (ansible-test) - For role integration
-    - Location: `tests/integration/targets/`
-    - Run: `ansible-test integration`
+   - Location: `tests/integration/targets/`
+   - Run: `ansible-test integration`
 
 Tests run via the reusable CI (`arillso/.github`) on pull requests and merges.
 
@@ -105,20 +105,20 @@ Event-focused workflows calling reusables from `arillso/.github`:
 **IMPORTANT: Always update CHANGELOG.md before releasing!**
 
 1. **Update CHANGELOG.md** (REQUIRED)
-    - Move items from `## [Unreleased]` to new version section
-    - Document all changes under appropriate sections (Added, Changed, Fixed, etc.)
+   - Move items from `## [Unreleased]` to new version section
+   - Document all changes under appropriate sections (Added, Changed, Fixed, etc.)
 
 2. **Update galaxy.yml version**
-    - Use semantic versioning (MAJOR.MINOR.PATCH)
-    - Example: `version: "1.0.1"`
+   - Use semantic versioning (MAJOR.MINOR.PATCH)
+   - Example: `version: "1.0.1"`
 
 3. **Create and push git tag**
-    - Use version **without 'v' prefix** (e.g., `1.0.1` not `v1.0.1`)
-    - Command: `git tag 1.0.1 && git push origin 1.0.1`
+   - Use version **without 'v' prefix** (e.g., `1.0.1` not `v1.0.1`)
+   - Command: `git tag 1.0.1 && git push origin 1.0.1`
 
 4. **Automated workflow triggers**
-    - `tag.yml` publishes to Ansible Galaxy
-    - Creates GitHub Release with CHANGELOG notes
+   - `tag.yml` publishes to Ansible Galaxy
+   - Creates GitHub Release with CHANGELOG notes
 
 ## Do
 

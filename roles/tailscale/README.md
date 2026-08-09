@@ -25,10 +25,10 @@ For detailed documentation including all variables, examples, and usage instruct
 ```yaml
 - hosts: servers
   roles:
-      - role: arillso.agent.tailscale
-        vars:
-            tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
-            tailscale_accept_routes: true
+    - role: arillso.agent.tailscale
+      vars:
+        tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
+        tailscale_accept_routes: true
 ```
 
 ## License

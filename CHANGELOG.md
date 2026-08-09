@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tls_config` gains the `ca_pem`, `cert_file`, `cert_pem`, `key_file`,
   `key_pem`, `server_name`, and `min_version` options the template already
   renders.
+- `.python-version` pinning Python `3.13` (org-wide target, kept current by the
+  shared `renovate-ansible` preset); consumed by the release workflow.
 
 ### Removed
 
@@ -37,19 +39,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `| default('')` guards in the template, so no documented interface changes.
   Rename them in your inventory:
 
-    | Old                              | New                                    |
-    | -------------------------------- | -------------------------------------- |
-    | `grafana_cloud_prometheus_user`  | `alloy_grafana_cloud_prometheus_user`  |
-    | `grafana_cloud_prometheus_token` | `alloy_grafana_cloud_prometheus_token` |
-    | `grafana_cloud_loki_user`        | `alloy_grafana_cloud_loki_user`        |
-    | `grafana_cloud_loki_token`       | `alloy_grafana_cloud_loki_token`       |
-    | `grafana_cloud_fleet_user`       | `alloy_grafana_cloud_fleet_user`       |
-    | `grafana_cloud_fleet_token`      | `alloy_grafana_cloud_fleet_token`      |
+  | Old                              | New                                    |
+  | -------------------------------- | -------------------------------------- |
+  | `grafana_cloud_prometheus_user`  | `alloy_grafana_cloud_prometheus_user`  |
+  | `grafana_cloud_prometheus_token` | `alloy_grafana_cloud_prometheus_token` |
+  | `grafana_cloud_loki_user`        | `alloy_grafana_cloud_loki_user`        |
+  | `grafana_cloud_loki_token`       | `alloy_grafana_cloud_loki_token`       |
+  | `grafana_cloud_fleet_user`       | `alloy_grafana_cloud_fleet_user`       |
+  | `grafana_cloud_fleet_token`      | `alloy_grafana_cloud_fleet_token`      |
 
-    The `GRAFANA_CLOUD_*` keys inside the environment file are unchanged — Alloy
-    itself reads those. All seven variables are now declared in
-    `defaults/main.yml` and `meta/argument_specs.yml`, the three tokens with
-    `no_log: true`.
+  The `GRAFANA_CLOUD_*` keys inside the environment file are unchanged — Alloy
+  itself reads those. All seven variables are now declared in
+  `defaults/main.yml` and `meta/argument_specs.yml`, the three tokens with
+  `no_log: true`.
 
 ### Fixed
 
@@ -118,24 +120,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with no matching handler is ignored rather than an error, so consumer plays
   notifying the old bare topics silently stop triggering and must be updated.
 
-    | Role        | Old                       | New                                  |
-    | ----------- | ------------------------- | ------------------------------------ |
-    | `alloy`     | `reload systemd`          | `alloy: reload systemd`              |
-    | `alloy`     | `restart alloy`           | `alloy: restart alloy`               |
-    | `alloy`     | `restart grafana alloy`   | `alloy: restart grafana alloy`       |
-    | `alloy`     | `update apt cache`        | `alloy: update apt cache`            |
-    | `do`        | `reload systemd`          | `do: reload systemd`                 |
-    | `do`        | `restart do agent`        | `do: restart do agent`               |
-    | `tailscale` | `reload systemd`          | `tailscale: reload systemd`          |
-    | `tailscale` | `restart tailscaled`      | `tailscale: restart tailscaled`      |
-    | `tailscale` | `reload tailscale config` | `tailscale: reload tailscale config` |
-    | `tailscale` | `refresh ansible facts`   | `tailscale: refresh ansible facts`   |
+  | Role        | Old                       | New                                  |
+  | ----------- | ------------------------- | ------------------------------------ |
+  | `alloy`     | `reload systemd`          | `alloy: reload systemd`              |
+  | `alloy`     | `restart alloy`           | `alloy: restart alloy`               |
+  | `alloy`     | `restart grafana alloy`   | `alloy: restart grafana alloy`       |
+  | `alloy`     | `update apt cache`        | `alloy: update apt cache`            |
+  | `do`        | `reload systemd`          | `do: reload systemd`                 |
+  | `do`        | `restart do agent`        | `do: restart do agent`               |
+  | `tailscale` | `reload systemd`          | `tailscale: reload systemd`          |
+  | `tailscale` | `restart tailscaled`      | `tailscale: restart tailscaled`      |
+  | `tailscale` | `reload tailscale config` | `tailscale: reload tailscale config` |
+  | `tailscale` | `refresh ansible facts`   | `tailscale: refresh ansible facts`   |
 
-    Handler names stay descriptive sentences; only the `listen:` topics carry
-    the prefix, matching the convention in `arillso/ansible.system`. This also
-    resolves a case mismatch in the `tailscale` role, where one task notified
-    the handler by name (`Refresh ansible facts`) while every other call site
-    used the lowercase listen topic.
+  Handler names stay descriptive sentences; only the `listen:` topics carry
+  the prefix, matching the convention in `arillso/ansible.system`. This also
+  resolves a case mismatch in the `tailscale` role, where one task notified
+  the handler by name (`Refresh ansible facts`) while every other call site
+  used the lowercase listen topic.
 
 - **BREAKING — boolean variable naming (`alloy`)**: 10 boolean variables
   moved from the `*_enable_*` prefix form to the `*_enabled` suffix form. The
@@ -144,24 +146,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   README Quick Start, which already documented the `*_enabled` names — none of
   which existed, so copying it produced an Alloy with nothing enabled.
 
-    | Role    | Old                                   | New                                    |
-    | ------- | ------------------------------------- | -------------------------------------- |
-    | `alloy` | `alloy_enable_web_server`             | `alloy_web_server_enabled`             |
-    | `alloy` | `alloy_enable_grpc_server`            | `alloy_grpc_server_enabled`            |
-    | `alloy` | `alloy_server_http_enable_pprof`      | `alloy_server_http_pprof_enabled`      |
-    | `alloy` | `alloy_enable_prometheus`             | `alloy_prometheus_enabled`             |
-    | `alloy` | `alloy_enable_loki`                   | `alloy_loki_enabled`                   |
-    | `alloy` | `alloy_enable_otel`                   | `alloy_otel_enabled`                   |
-    | `alloy` | `alloy_enable_otel_processors`        | `alloy_otel_processors_enabled`        |
-    | `alloy` | `alloy_enable_advanced_node_exporter` | `alloy_advanced_node_exporter_enabled` |
-    | `alloy` | `alloy_enable_journal_monitoring`     | `alloy_journal_monitoring_enabled`     |
-    | `alloy` | `alloy_enable_remotecfg`              | `alloy_remotecfg_enabled`              |
+  | Role    | Old                                   | New                                    |
+  | ------- | ------------------------------------- | -------------------------------------- |
+  | `alloy` | `alloy_enable_web_server`             | `alloy_web_server_enabled`             |
+  | `alloy` | `alloy_enable_grpc_server`            | `alloy_grpc_server_enabled`            |
+  | `alloy` | `alloy_server_http_enable_pprof`      | `alloy_server_http_pprof_enabled`      |
+  | `alloy` | `alloy_enable_prometheus`             | `alloy_prometheus_enabled`             |
+  | `alloy` | `alloy_enable_loki`                   | `alloy_loki_enabled`                   |
+  | `alloy` | `alloy_enable_otel`                   | `alloy_otel_enabled`                   |
+  | `alloy` | `alloy_enable_otel_processors`        | `alloy_otel_processors_enabled`        |
+  | `alloy` | `alloy_enable_advanced_node_exporter` | `alloy_advanced_node_exporter_enabled` |
+  | `alloy` | `alloy_enable_journal_monitoring`     | `alloy_journal_monitoring_enabled`     |
+  | `alloy` | `alloy_enable_remotecfg`              | `alloy_remotecfg_enabled`              |
 
-    The `enable_start_time_metrics`, `enable_task_metrics` and
-    `enable_restarts_metrics` keys inside `alloy_node_exporter_config.systemd`
-    are upstream Alloy configuration and are unchanged. The `tailscale` role
-    already used the suffix form and is untouched by this rename — see the
-    separate `tailscale_daemon_enabled` entry below.
+  The `enable_start_time_metrics`, `enable_task_metrics` and
+  `enable_restarts_metrics` keys inside `alloy_node_exporter_config.systemd`
+  are upstream Alloy configuration and are unchanged. The `tailscale` role
+  already used the suffix form and is untouched by this rename — see the
+  separate `tailscale_daemon_enabled` entry below.
 
 - **BREAKING — Tailscale**: the daemon config key `tailscale_enabled` is
   renamed to `tailscale_daemon_enabled`. It still sets `"enabled"` in
@@ -194,11 +196,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `.python-version`.
 - Adopt the standard Keep a Changelog header.
 
-### Added
-
-- `.python-version` pinning Python `3.13` (org-wide target, kept current by the
-  shared `renovate-ansible` preset); consumed by the release workflow.
-
 ## [1.2.0] - 2026-03-18
 
 ### Added
@@ -223,57 +220,57 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - **Minimum Requirements** - Bumped minimum ansible-core from 2.15 to 2.18
-    - Versions 2.15, 2.16, and 2.17 are end-of-life
-    - Updated `requires_ansible` in `meta/runtime.yml` to `>=2.18.0`
-    - Updated `min_ansible_version` in all role metadata
-    - Updated Python minimum to 3.11 (required by ansible-core 2.18)
+  - Versions 2.15, 2.16, and 2.17 are end-of-life
+  - Updated `requires_ansible` in `meta/runtime.yml` to `>=2.18.0`
+  - Updated `min_ansible_version` in all role metadata
+  - Updated Python minimum to 3.11 (required by ansible-core 2.18)
 - **CI/CD** - Migrated to reusable workflows from `arillso/.github`
-    - Replaced inline CI workflow with shared `ci-ansible-collection.yml`
-    - Replaced inline publish workflow with shared `release-ansible-collection.yml`
-    - Added Claude Code AI review workflow
-    - Added security secrets scanning workflow
-    - Pinned Renovate preset to `2026-03-08` tag
+  - Replaced inline CI workflow with shared `ci-ansible-collection.yml`
+  - Replaced inline publish workflow with shared `release-ansible-collection.yml`
+  - Added Claude Code AI review workflow
+  - Added security secrets scanning workflow
+  - Pinned Renovate preset to `2026-03-08` tag
 - **Dependencies** - Updated development dependencies
-    - Excluded `ansible-core` from Renovate updates (compatibility constraint)
-    - Updated pytest, sphinx, ruff, yamllint, molecule, and other dev dependencies
+  - Excluded `ansible-core` from Renovate updates (compatibility constraint)
+  - Updated pytest, sphinx, ruff, yamllint, molecule, and other dev dependencies
 
 ## [1.0.3] - 2026-02-02
 
 ### Changed
 
 - **Tailscale Role** - Refactored systemd service override architecture
-    - Consolidated `config-override.conf.j2` and `override.conf.j2` into single unified template
-    - Moved ExecStart override logic from template to [defaults/main.yml](roles/tailscale/defaults/main.yml:19-27)
-    - Fixed Unit vs Service section directive handling in systemd overrides
-    - Added automatic cleanup task for legacy `config-override.conf` file
-    - Updated [argument_specs.yml](roles/tailscale/meta/argument_specs.yml:47-68) with detailed documentation and examples
-    - Improved YAML formatting with multiline syntax for better readability
+  - Consolidated `config-override.conf.j2` and `override.conf.j2` into single unified template
+  - Moved ExecStart override logic from template to [defaults/main.yml](roles/tailscale/defaults/main.yml:19-27)
+  - Fixed Unit vs Service section directive handling in systemd overrides
+  - Added automatic cleanup task for legacy `config-override.conf` file
+  - Updated [argument_specs.yml](roles/tailscale/meta/argument_specs.yml:47-68) with detailed documentation and examples
+  - Improved YAML formatting with multiline syntax for better readability
 
 ### Fixed
 
 - **Tailscale Role** - Fixed systemd directive placement errors
-    - Unit directives (After, Wants, PartOf, ReloadPropagatedFrom) now correctly placed in `[Unit]` section
-    - Service directives (ExecStart, Environment, etc.) correctly placed in `[Service]` section
-    - Resolves systemd warning: "Unknown key name in section 'Service'"
+  - Unit directives (After, Wants, PartOf, ReloadPropagatedFrom) now correctly placed in `[Unit]` section
+  - Service directives (ExecStart, Environment, etc.) correctly placed in `[Service]` section
+  - Resolves systemd warning: "Unknown key name in section 'Service'"
 
 ## [1.0.2] - 2026-02-02
 
 ### Fixed
 
 - **Tailscale Role** - Fixed systemd service variable expansion
-    - Changed PORT variable from `$PORT` to `${PORT}` in [tailscaled.service override template](roles/tailscale/templates/etc/systemd/system/tailscaled.service.d/config-override.conf.j2:8)
-    - Ensures proper Bash variable expansion in systemd ExecStart directive
+  - Changed PORT variable from `$PORT` to `${PORT}` in [tailscaled.service override template](roles/tailscale/templates/etc/systemd/system/tailscaled.service.d/config-override.conf.j2:8)
+  - Ensures proper Bash variable expansion in systemd ExecStart directive
 
 ## [1.0.1] - 2026-01-17
 
 ### Fixed
 
 - **Argument Specs Validation** - Fixed Galaxy publication errors by removing invalid `no_log` fields from `argument_specs.yml`
-    - Removed `no_log` from alloy role (8 nested password/token fields in basic_auth and bearer_token options)
-    - Removed `no_log` from do role (do_api_token field)
-    - Removed `no_log` from tailscale role (tailscale_auth_key field)
-    - Note: The `no_log` field is not permitted in Ansible's argument_specs schema. Sensitive values are still protected via `no_log` in task definitions.
-    - Superseded (Unreleased): that note is no longer accurate. `no_log` is a valid role-arg-spec option, and it has been restored for `do_api_token`.
+  - Removed `no_log` from alloy role (8 nested password/token fields in basic_auth and bearer_token options)
+  - Removed `no_log` from do role (do_api_token field)
+  - Removed `no_log` from tailscale role (tailscale_auth_key field)
+  - Note: The `no_log` field is not permitted in Ansible's argument_specs schema. Sensitive values are still protected via `no_log` in task definitions.
+  - Superseded (Unreleased): that note is no longer accurate. `no_log` is a valid role-arg-spec option, and it has been restored for `do_api_token`.
 
 ## [1.0.0] - 2026-01-17
 
@@ -306,37 +303,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Alloy Role (New)
 
 - **Grafana Alloy role** - Complete observability agent replacing Grafana Agent
-    - Prometheus metrics collection with advanced relabeling support
-    - Integrated Node Exporter with 50+ configurable collectors
-    - Loki log collection from files and systemd journal
-    - OpenTelemetry (OTLP) receiver and exporters for traces
-    - Custom exporters support including Tailscale metrics integration
-    - Grafana Cloud Fleet integration for remote configuration management
-    - Frontend Observability (Faro) for Real User Monitoring (RUM)
-    - Clustering support for high availability deployments
-    - Environment variable-based credential management for improved security
-    - Security-hardened systemd service configuration
-    - Modular configuration architecture with reusable components
-    - Health check validation with automatic retry logic
-    - Comprehensive argument specifications (1128 lines)
-    - Support for Ubuntu 20.04+, Debian 11+, RHEL/CentOS 8+
+  - Prometheus metrics collection with advanced relabeling support
+  - Integrated Node Exporter with 50+ configurable collectors
+  - Loki log collection from files and systemd journal
+  - OpenTelemetry (OTLP) receiver and exporters for traces
+  - Custom exporters support including Tailscale metrics integration
+  - Grafana Cloud Fleet integration for remote configuration management
+  - Frontend Observability (Faro) for Real User Monitoring (RUM)
+  - Clustering support for high availability deployments
+  - Environment variable-based credential management for improved security
+  - Security-hardened systemd service configuration
+  - Modular configuration architecture with reusable components
+  - Health check validation with automatic retry logic
+  - Comprehensive argument specifications (1128 lines)
+  - Support for Ubuntu 20.04+, Debian 11+, RHEL/CentOS 8+
 
 #### Tailscale Role (New)
 
 - **Tailscale VPN role** - Mesh networking and secure connectivity
-    - WireGuard-based VPN with automatic mesh network topology
-    - Exit node support for routing internet traffic
-    - Subnet routing for accessing private networks
-    - SSH over Tailscale for secure remote access
-    - Web UI and metrics endpoint (port 5252)
-    - App connector functionality for application-level access
-    - Stateful packet filtering support
-    - Local facts for status monitoring and automation
-    - Connectivity verification tasks
-    - Service overrides for systemd customization
-    - Multiple entry points (install, configure, service, verify, facts)
-    - Comprehensive argument specifications (432 lines)
-    - Support for Ubuntu 18.04+, Debian 10+, RHEL family, Alpine, Arch Linux
+  - WireGuard-based VPN with automatic mesh network topology
+  - Exit node support for routing internet traffic
+  - Subnet routing for accessing private networks
+  - SSH over Tailscale for secure remote access
+  - Web UI and metrics endpoint (port 5252)
+  - App connector functionality for application-level access
+  - Stateful packet filtering support
+  - Local facts for status monitoring and automation
+  - Connectivity verification tasks
+  - Service overrides for systemd customization
+  - Multiple entry points (install, configure, service, verify, facts)
+  - Comprehensive argument specifications (432 lines)
+  - Support for Ubuntu 18.04+, Debian 10+, RHEL family, Alpine, Arch Linux
 
 #### Collection Enhancements
 
@@ -371,17 +368,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 #### Old Roles and Structure
 
+- **Grafana Agent role** - Completely removed in favor of Grafana Alloy
+- **Old DO role structure** - Replaced with modular architecture
+
 #### DO Role (Restructured)
 
 - **Complete restructuring** of DigitalOcean Agent role with improved architecture
-    - Modular task organization (install.yml, configure.yml, service.yml)
-    - OS-specific variables (Debian.yml, RedHat.yml) for better maintainability
-    - Enhanced handlers for service management
-    - Security-hardened systemd service configuration
-    - Health check validation after installation
-    - Improved documentation with zero-configuration emphasis
-    - Support for optional advanced configuration
-    - Updated to Ansible 2.15+ requirements
+  - Modular task organization (install.yml, configure.yml, service.yml)
+  - OS-specific variables (Debian.yml, RedHat.yml) for better maintainability
+  - Enhanced handlers for service management
+  - Security-hardened systemd service configuration
+  - Health check validation after installation
+  - Improved documentation with zero-configuration emphasis
+  - Support for optional advanced configuration
+  - Updated to Ansible 2.15+ requirements
 
 #### Collection Metadata
 
@@ -396,11 +396,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Grafana Agent role** - Replaced by Grafana Alloy role (see Migration Guide)
 
-### Removed
-
-- **Grafana Agent role** - Completely removed in favor of Grafana Alloy
-- **Old DO role structure** - Replaced with modular architecture
-
 ### Migration Guide
 
 #### Migrating from Grafana Agent to Grafana Alloy
@@ -413,13 +408,13 @@ Grafana Alloy is the successor to Grafana Agent and provides enhanced features a
 # Old (Grafana Agent)
 - role: arillso.agent.grafana
   vars:
-      grafana_agent_prometheus_url: "https://prometheus.example.com"
+    grafana_agent_prometheus_url: "https://prometheus.example.com"
 
 # New (Grafana Alloy)
 - role: arillso.agent.alloy
   vars:
-      alloy_prometheus_enabled: true
-      alloy_prometheus_remote_write_url: "https://prometheus.example.com/api/v1/write"
+    alloy_prometheus_enabled: true
+    alloy_prometheus_remote_write_url: "https://prometheus.example.com/api/v1/write"
 ```
 
 **2. Key variable name changes:**
@@ -471,22 +466,22 @@ systemctl status alloy
   become: true
 
   tasks:
-      # Optional: Stop and disable old Grafana Agent
-      - name: Stop Grafana Agent
-        systemd:
-            name: grafana-agent
-            state: stopped
-            enabled: false
-        ignore_errors: true
+    # Optional: Stop and disable old Grafana Agent
+    - name: Stop Grafana Agent
+      systemd:
+        name: grafana-agent
+        state: stopped
+        enabled: false
+      ignore_errors: true
 
-      # Install Alloy
-      - include_role:
-            name: arillso.agent.alloy
-        vars:
-            alloy_prometheus_enabled: true
-            alloy_prometheus_remote_write_url: "{{ old_prometheus_url }}/api/v1/write"
-            alloy_loki_enabled: true
-            alloy_loki_url: "{{ old_loki_url }}/loki/api/v1/push"
+    # Install Alloy
+    - include_role:
+        name: arillso.agent.alloy
+      vars:
+        alloy_prometheus_enabled: true
+        alloy_prometheus_remote_write_url: "{{ old_prometheus_url }}/api/v1/write"
+        alloy_loki_enabled: true
+        alloy_loki_url: "{{ old_loki_url }}/loki/api/v1/push"
 ```
 
 For detailed configuration examples, see the [Alloy role README](roles/alloy/README.md).
