@@ -21,4 +21,4 @@
       update_cache: true
   become: true
   listen: "alloy: update apt cache"
-  when: ansible_os_family == "Debian"
+  when: ansible_facts['os_family'] == "Debian"

@@ -8,8 +8,8 @@
       - name: Display detected OS and Tailscale configuration
         ansible.builtin.debug:
             msg:
-                - "Detected OS: {{ ansible_distribution }} {{ ansible_distribution_version }}"
-                - "OS Family: {{ ansible_os_family }}"
+                - "Detected OS: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+                - "OS Family: {{ ansible_facts['os_family'] }}"
                 - "Version Key: {{ tailscale_version_key }}"
                 - "Repository URL: {{ tailscale_repo_url }}"
                 - "GPG Key URL: {{ tailscale_gpg_key_url }}"

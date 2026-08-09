@@ -102,7 +102,7 @@ discovery.relabel "integrations_node_exporter" {
   // Set consistent instance label to host identifier
   rule {
     target_label = "instance"
-    replacement  = "{{ ansible_hostname }}"
+    replacement  = "{{ ansible_facts['hostname'] }}"
   }
 
   // Set job label for proper service discovery

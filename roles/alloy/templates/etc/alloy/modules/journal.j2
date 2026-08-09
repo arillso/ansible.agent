@@ -11,7 +11,7 @@ loki.relabel "integrations_node_exporter" {
   }
   rule {
     target_label = "instance"
-    replacement  = "{{ ansible_hostname }}"
+    replacement  = "{{ ansible_facts['hostname'] }}"
   }
 }
 
