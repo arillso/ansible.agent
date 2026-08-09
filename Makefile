@@ -1,4 +1,4 @@
-.PHONY: help lint lint-ansible lint-yaml lint-python format test build clean install-dev
+.PHONY: help lint lint-ansible lint-yaml lint-python format test-unit test-molecule build clean install-dev
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -36,9 +36,13 @@ format: ## Auto-format Python code
 		echo "No Python plugins found, skipping..."; \
 	fi
 
-test: ## Run tests
-	@echo "Running pytest..."
-	@pytest tests/unit/
+test-unit: ## Run unit tests
+	@if [ -d tests/unit ]; then \
+		echo "Running pytest..."; \
+		pytest tests/unit/; \
+	else \
+		echo "No unit tests found, skipping..."; \
+	fi
 
 build: ## Build collection
 	@echo "Building collection..."
