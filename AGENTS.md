@@ -19,8 +19,9 @@ ansible.agent/
 │   ├── alloy/             # Grafana Alloy observability agent
 │   ├── do/                # DigitalOcean monitoring agent
 │   └── tailscale/         # Tailscale VPN mesh network
+├── extensions/molecule/
+│   └── multi-role/        # Combined molecule scenario (all three roles)
 ├── tests/
-│   ├── integration/       # Integration tests (ansible-test)
 │   └── unit/             # Unit tests (pytest)
 ├── AGENTS.md
 ├── CHANGELOG.md
@@ -61,22 +62,23 @@ Each role follows standard Ansible role structure:
 
 ### Testing
 
-Three-level testing strategy:
+Two-level testing strategy:
 
-1. **Unit Tests** (pytest) - For plugins
+1. **Unit Tests** (pytest) - For templates and role metadata
    - Location: `tests/unit/`
    - Run: `pytest tests/unit/`
 
-2. **Molecule Tests** - Per-role and combined
-   - Per-role location: `roles/*/molecule/default/`
+2. **Molecule Tests** - Role end-to-end, per-role and combined
+   - Per-role location: `roles/*/molecule/{default,disabled}/`
    - Combined location: `extensions/molecule/multi-role/` (deploys alloy, do
      and tailscale together on one host)
    - Run: `molecule test -s default` (per role) / `molecule test -s multi-role`
    - CI: one `molecule-<role>` job per role plus `molecule-multi-role` in `pull-request.yml`
 
-3. **Integration Tests** (ansible-test) - For role integration
-   - Location: `tests/integration/targets/`
-   - Run: `ansible-test integration`
+There is no `tests/integration/` (`ansible-test integration`): that level targets
+modules and plugins, and this collection ships none (`plugins/` holds only a
+README). Role end-to-end coverage belongs in molecule, which also gives the
+idempotence check and the multi-distro matrix that `ansible-test` would not.
 
 Tests run via the reusable CI (`arillso/.github`) on pull requests and merges.
 
@@ -95,7 +97,7 @@ Tests run via the reusable CI (`arillso/.github`) on pull requests and merges.
 
 Event-focused workflows calling reusables from `arillso/.github`:
 
-- `pull-request.yml` - Lint, unit/integration tests, per-role molecule, secret scan, and Claude review on PRs
+- `pull-request.yml` - Lint, unit tests, per-role molecule, secret scan, and Claude review on PRs
 - `merge.yml` - Same CI plus secret scan on push to `main`
 - `nightly-security.yml` - Scheduled daily secret scan
 - `tag.yml` - Publishes to Ansible Galaxy on tag push (e.g. `1.0.1`)
