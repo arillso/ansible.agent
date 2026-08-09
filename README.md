@@ -30,8 +30,8 @@ Or add it to your `requirements.yml`:
 ```yaml
 ---
 collections:
-    - name: arillso.agent
-      version: ">=1.0.0"
+  - name: arillso.agent
+    version: ">=1.0.0"
 ```
 
 ## Requirements

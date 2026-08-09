@@ -23,11 +23,11 @@ For detailed documentation including all variables, examples, and usage instruct
 ```yaml
 - hosts: servers
   roles:
-      - role: arillso.agent.alloy
-        vars:
-            alloy_prometheus_enabled: true
-            alloy_advanced_node_exporter_enabled: true
-            alloy_loki_enabled: true
+    - role: arillso.agent.alloy
+      vars:
+        alloy_prometheus_enabled: true
+        alloy_advanced_node_exporter_enabled: true
+        alloy_loki_enabled: true
 ```
 
 ## License
