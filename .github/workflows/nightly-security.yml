@@ -13,10 +13,29 @@ concurrency:
     cancel-in-progress: false
 
 permissions:
-    contents: read
+    contents: write # security-sbom.yml uploads the SBOM artifact
     actions: read
     pull-requests: read
+    security-events: write # security-config.yml uploads SARIF
 
 jobs:
     security-secrets:
         uses: arillso/.github/.github/workflows/security-secrets.yml@2026-08-14
+
+    security-config:
+        # Trivy `scan-type: config` for IaC misconfigurations. Complements the
+        # `scan-type: fs` run in ci-ansible-collection, which looks for
+        # dependency vulnerabilities instead. `scan-ansible` stays off: it only
+        # runs ansible-lint and yamllint with `|| true`, which the blocking
+        # `ci / Ansible Lint` and `ci / YAML Lint` jobs already cover.
+        uses: arillso/.github/.github/workflows/security-config.yml@2026-08-14
+        with:
+            scan-ansible: false
+
+    security-sbom:
+        # Inventory artifact, not a findings report — no overlap with the Trivy
+        # scans. No container image is built here, so scan the filesystem.
+        uses: arillso/.github/.github/workflows/security-sbom.yml@2026-08-14
+        with:
+            artifact-type: filesystem
+            artifact-ref: .
