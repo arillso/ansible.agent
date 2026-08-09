@@ -22,6 +22,23 @@
   no_log: "{{ do_no_log_api_token | default(true) }}"
   when: do_custom_config_enabled | default(false)
 
+- name: Find leftover DigitalOcean Agent configuration backups
+  ansible.builtin.find:
+      paths: /etc/do-agent
+      patterns: "do-agent.yaml.*~"
+      file_type: file
+  register: do_config_backups
+  become: true
+
+- name: Remove leftover DigitalOcean Agent configuration backups
+  ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+  loop: "{{ do_config_backups.files }}"
+  loop_control:
+      label: "{{ item.path }}"
+  become: true
+
 - name: Create environment file for custom settings
   ansible.builtin.template:
       src: etc/default/do-agent.j2

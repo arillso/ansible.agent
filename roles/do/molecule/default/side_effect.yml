@@ -1,9 +1,30 @@
 ---
+# Recreate the pre-fix state: a leftover backup copy of the agent config as
+# `backup: true` used to produce it, then re-run the role so verify can prove
+# the cleanup task actually removes it.
 - name: Side effect
   hosts: all
-  gather_facts: false
+  become: true
+  gather_facts: true
 
   tasks:
-      - name: No side-effect step required for this role
-        ansible.builtin.debug:
-            msg: "No side-effect step required."
+      - name: Create a leftover DO Agent configuration backup
+        ansible.builtin.copy:
+            content: "# stale backup left behind by a pre-fix role run\n"
+            dest: /etc/do-agent/do-agent.yaml.4242.2026-08-07@10:00:00~
+            owner: root
+            group: root
+            mode: "0644"
+
+      # Not an Ansible backup and never carried the token, so the cleanup must
+      # leave it alone. verify.yml asserts it survives.
+      - name: Create a package-manager artifact the cleanup must not touch
+        ansible.builtin.copy:
+            content: "# packaged default, not an Ansible backup\n"
+            dest: /etc/do-agent/do-agent.yaml.dpkg-dist
+            owner: root
+            group: root
+            mode: "0644"
+
+- name: Converge again to trigger the backup cleanup
+  ansible.builtin.import_playbook: converge.yml
