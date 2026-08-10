@@ -5,15 +5,13 @@ exclude_paths:
     - .venv/
     - venv/
 
+profile: production
+strict: true
+
 skip_list:
     - galaxy[version-incorrect]
-    - var-naming[no-role-prefix]
     - command-instead-of-module
     - no-handler
     - package-latest
-
-warn_list:
-    - name[casing]
-    - yaml[line-length]
 
 use_default_rules: true
