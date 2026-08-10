@@ -14,8 +14,4 @@ skip_list:
     - no-handler
     - package-latest
 
-warn_list:
-    - name[casing]
-    - yaml[line-length]
-
 use_default_rules: true
