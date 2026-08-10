@@ -1,4 +1,7 @@
-.PHONY: help lint lint-ansible lint-yaml lint-python format test build clean install-dev
+.PHONY: help lint lint-ansible lint-yaml lint-python format test-unit test-molecule build clean install-dev
+
+MOLECULE_SCENARIOS := $(sort $(wildcard roles/*/molecule/*/molecule.yml) \
+                            $(wildcard extensions/molecule/*/molecule.yml))
 
 help: ## Show this help message
 	@echo 'Usage: make [target]'
@@ -36,9 +39,23 @@ format: ## Auto-format Python code
 		echo "No Python plugins found, skipping..."; \
 	fi
 
-test: ## Run tests
-	@echo "Running pytest..."
-	@pytest tests/unit/
+test-unit: ## Run unit tests
+	@if [ -d tests/unit ]; then \
+		echo "Running pytest..."; \
+		pytest tests/unit/; \
+	else \
+		echo "No unit tests found, skipping..."; \
+	fi
+
+test-molecule: ## Run all molecule scenarios
+	@if [ -z "$(MOLECULE_SCENARIOS)" ]; then \
+		echo "No molecule scenarios found, skipping..."; \
+	fi
+	@for cfg in $(MOLECULE_SCENARIOS); do \
+		dir=$${cfg%/molecule.yml}; scenario=$${dir##*/}; base=$${dir%/molecule/*}; \
+		echo "Running molecule scenario $$scenario in $$base..."; \
+		( cd "$$base" && molecule test -s "$$scenario" ) || exit 1; \
+	done
 
 build: ## Build collection
 	@echo "Building collection..."
