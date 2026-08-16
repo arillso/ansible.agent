@@ -31,7 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   than the one CI exercises. Raising the CI jobs to `3.14` is tracked separately
   — `ansible-test` in ansible-core 2.18 lists `3.11`–`3.13` as controller
   versions, so that bump needs verifying against the reusable workflow first.
-
 - **CI — nightly security scanning**: `nightly-security.yml` runs daily at
   02:00 UTC and now carries three jobs instead of one. `security-config` adds a
   Trivy `scan-type: config` pass for IaC misconfigurations, complementing the
