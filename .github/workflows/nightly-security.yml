@@ -12,14 +12,17 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: false
 
+# Elevated scopes stay on the job that needs them. A called workflow can only
+# narrow the caller's permissions, never widen them, so each `uses:` job has to
+# carry at least what the reusable declares for itself.
 permissions:
-    contents: write # security-sbom.yml uploads the SBOM artifact
-    actions: read
-    pull-requests: read
-    security-events: write # security-config.yml uploads SARIF
+    contents: read
 
 jobs:
     security-secrets:
+        permissions:
+            contents: read
+            actions: read
         uses: arillso/.github/.github/workflows/security-secrets.yml@2026-08-15
 
     security-config:
@@ -28,6 +31,9 @@ jobs:
         # dependency vulnerabilities instead. `scan-ansible` stays off: it only
         # runs ansible-lint and yamllint with `|| true`, which the blocking
         # `ci / Ansible Lint` and `ci / YAML Lint` jobs already cover.
+        permissions:
+            contents: read
+            security-events: write # SARIF upload
         uses: arillso/.github/.github/workflows/security-config.yml@2026-08-15
         with:
             scan-ansible: false
@@ -35,6 +41,11 @@ jobs:
     security-sbom:
         # Inventory artifact, not a findings report — no overlap with the Trivy
         # scans. No container image is built here, so scan the filesystem.
+        #
+        # `contents: write` is what the reusable declares; its release-attaching
+        # step is gated behind `attach-to-release`, which stays off here.
+        permissions:
+            contents: write
         uses: arillso/.github/.github/workflows/security-sbom.yml@2026-08-15
         with:
             artifact-type: filesystem
