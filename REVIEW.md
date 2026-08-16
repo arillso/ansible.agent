@@ -24,7 +24,7 @@ Out of scope:
 - yamllint passes
 - Unit tests (pytest) pass for plugins
 - Molecule / integration tests pass for affected roles
-- Security scans pass (gitleaks, secretlint, trivy)
+- Security scans pass (gitleaks, trufflehog, trivy)
 - `argument_specs.yml` present and complete for any new or changed role
 
 ## Severity levels
