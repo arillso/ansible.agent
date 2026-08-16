@@ -20,8 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tls_config` gains the `ca_pem`, `cert_file`, `cert_pem`, `key_file`,
   `key_pem`, `server_name`, and `min_version` options the template already
   renders.
-- `.python-version` pinning Python `3.13` (org-wide target, kept current by the
-  shared `renovate-ansible` preset); consumed by the release workflow.
+- `.python-version` pinning Python `3.13` — the highest version `ansible-test`
+  supports, so the shared `renovate-ansible` preset is constrained to `<3.14`
+  and the pin does not follow newer releases; consumed by the release workflow,
+  which reads this file when no `python_version` input is passed.
 
 ### Removed
 
