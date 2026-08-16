@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-08-17
+
 ### Added
 
 - **Master switches (all roles)**: `alloy_enabled`, `do_enabled`, and
@@ -20,12 +22,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tls_config` gains the `ca_pem`, `cert_file`, `cert_pem`, `key_file`,
   `key_pem`, `server_name`, and `min_version` options the template already
   renders.
-- `.python-version` pinning Python `3.13` — the highest version `ansible-test`
-  supports, so the pin must not follow newer releases; consumed by the release
-  workflow, which reads this file when no `python_version` input is passed.
-  The shared `renovate-ansible` preset does not yet enforce that ceiling, so
-  Renovate can still propose a `3.14` bump — such a PR must be closed, not
-  merged.
+- `.python-version`, consumed by the release workflow, which reads this file
+  when no `python_version` input is passed — `tag.yml` passes none. It now
+  holds `3.14`, matching `arillso/ansible.system` and `arillso/ansible.container`,
+  which both pin `3.14.7`. Note that CI does not read this file: the `ci` and
+  molecule jobs in `pull-request.yml` and `merge.yml` pass a `python_version` of
+  `3.13` explicitly, so the release artifact is built on a newer interpreter
+  than the one CI exercises. Raising the CI jobs to `3.14` is tracked separately
+  — `ansible-test` in ansible-core 2.18 lists `3.11`–`3.13` as controller
+  versions, so that bump needs verifying against the reusable workflow first.
+
+- **CI — nightly security scanning**: `nightly-security.yml` runs daily at
+  02:00 UTC and now carries three jobs instead of one. `security-config` adds a
+  Trivy `scan-type: config` pass for IaC misconfigurations, complementing the
+  `scan-type: fs` dependency scan in `ci-ansible-collection`; `security-sbom`
+  generates a filesystem SBOM as an inventory artifact. Each job declares its
+  own permissions — a called workflow can only narrow the caller's scopes, never
+  widen them, so the elevated `security-events: write` and `contents: write`
+  stay on the jobs that need them instead of applying workflow-wide.
+- **CI — unit tests**: the `ci` job passes `enable_unit_tests: true` in both
+  `pull-request.yml` and `merge.yml`, so `tests/unit/` runs on pull requests and
+  on pushes to `main`.
+- **CI — combined molecule scenario**: `molecule-multi-role` runs the
+  `extensions/molecule/multi-role` scenario, which deploys `alloy`, `do` and
+  `tailscale` together on one host.
+- **Makefile**: the `test` target is split into `test-unit` and `test-molecule`,
+  so unit tests can run without spinning up molecule scenarios.
 
 ### Removed
 
@@ -550,7 +572,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/1.2.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.0.0...HEAD
+[2.0.0]: https://github.com/arillso/ansible.agent/compare/1.2.0...2.0.0
 [1.2.0]: https://github.com/arillso/ansible.agent/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/arillso/ansible.agent/compare/1.0.3...1.1.0
 [1.0.3]: https://github.com/arillso/ansible.agent/compare/1.0.2...1.0.3
