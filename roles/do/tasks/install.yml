@@ -1,11 +1,22 @@
 ---
 # Installation tasks for DigitalOcean Agent
 
-- name: Install package dependencies
+- name: Install package dependencies (Debian/Ubuntu)
+  # Minimal images ship without package lists, so the cache has to be
+  # refreshed here rather than relying on the caller to have done it.
+  ansible.builtin.apt:
+      name: "{{ do_package_dependencies }}"
+      state: present
+      update_cache: true
+  become: true
+  when: ansible_facts['os_family'] == "Debian"
+
+- name: Install package dependencies (RedHat/CentOS)
   ansible.builtin.package:
       name: "{{ do_package_dependencies }}"
       state: present
   become: true
+  when: ansible_facts['os_family'] == "RedHat"
 
 - name: Download DigitalOcean GPG key (Debian/Ubuntu)
   ansible.builtin.get_url:
