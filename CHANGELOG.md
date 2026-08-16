@@ -21,9 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `key_pem`, `server_name`, and `min_version` options the template already
   renders.
 - `.python-version` pinning Python `3.13` — the highest version `ansible-test`
-  supports, so the shared `renovate-ansible` preset is constrained to `<3.14`
-  and the pin does not follow newer releases; consumed by the release workflow,
-  which reads this file when no `python_version` input is passed.
+  supports, so the pin must not follow newer releases; consumed by the release
+  workflow, which reads this file when no `python_version` input is passed.
+  The shared `renovate-ansible` preset does not yet enforce that ceiling, so
+  Renovate can still propose a `3.14` bump — such a PR must be closed, not
+  merged.
 
 ### Removed
 
