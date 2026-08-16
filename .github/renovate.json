@@ -5,6 +5,11 @@
         {
             "matchPackageNames": ["ansible-core"],
             "enabled": false
+        },
+        {
+            "description": "Flagged as abandoned by release inactivity, not deprecated. Still in use and without an equivalent replacement: molecule-qemu drives the alloy scenarios, which need a real VM because alloy must run as a stable systemd service, unreliable under the docker driver, and molecule-plugins ships no qemu driver.",
+            "matchPackageNames": ["molecule-qemu"],
+            "enabled": false
         }
     ],
     "customManagers": [
