@@ -25,6 +25,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **Developer Tooling**: the seven scanner configs `.checkov.yml`, `.grype.yaml`,
+  `.jscpd.json`, `.kics.json`, `.markdown-link-check.json`, `.secretlintrc.json`
+  and `.trivy.yaml` are gone. None of the tools they configure runs in the
+  reusable CI: checkov, grype, jscpd, kics, markdown-link-check and secretlint
+  appear in no workflow of `arillso/.github`, and `security-secrets.yml` runs
+  Gitleaks, TruffleHog and pattern detection only. Trivy does run, but reads its
+  config through the `trivy_config` input, which defaults to an empty string and
+  is passed by no workflow here — and it auto-discovers `trivy.yaml`, not the
+  dotted `.trivy.yaml`. `.gitleaks.toml` stays, because Gitleaks auto-loads it.
 - **DO**: the three feature flags `do_metrics_enabled`, `do_logs_enabled` and
   `do_insights_enabled` are gone from `defaults/main.yml` and
   `meta/argument_specs.yml`. They were declared and documented but read by no

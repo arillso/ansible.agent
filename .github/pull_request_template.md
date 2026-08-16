@@ -103,7 +103,4 @@ Fixes #(issue number)
 
 ---
 
-<!--
-Thank you for contributing to arillso.agent!
-Generated with Claude Code - https://claude.com/claude-code
--->
+<!-- Thank you for contributing to arillso.agent! -->
