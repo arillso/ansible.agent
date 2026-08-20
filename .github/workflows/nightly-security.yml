@@ -23,7 +23,7 @@ jobs:
         permissions:
             contents: read
             actions: read
-        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-08-17
+        uses: arillso/.github/.github/workflows/security-secrets.yml@2026-08-18
 
     security-config:
         # Trivy `scan-type: config` for IaC misconfigurations. Complements the
@@ -34,7 +34,7 @@ jobs:
         permissions:
             contents: read
             security-events: write # SARIF upload
-        uses: arillso/.github/.github/workflows/security-config.yml@2026-08-17
+        uses: arillso/.github/.github/workflows/security-config.yml@2026-08-18
         with:
             scan-ansible: false
 
@@ -46,7 +46,7 @@ jobs:
         # step is gated behind `attach-to-release`, which stays off here.
         permissions:
             contents: write
-        uses: arillso/.github/.github/workflows/security-sbom.yml@2026-08-17
+        uses: arillso/.github/.github/workflows/security-sbom.yml@2026-08-18
         with:
             artifact-type: filesystem
             artifact-ref: .
