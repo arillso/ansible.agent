@@ -26,7 +26,7 @@ argument_specs:
                 type: "str"
                 required: false
                 # renovate: datasource=github-releases depName=digitalocean/do-agent
-                default: "3.18.14"
+                default: "3.18.16"
                 description: "Version of the DigitalOcean Agent package"
 
             do_port:
