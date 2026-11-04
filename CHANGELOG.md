@@ -7,9 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-11-04
+
 ### Changed
 
-- **CI**: the `arillso/.github` reusable workflows are pinned to `2026-08-17`
+- **alloy**: the default `alloy_version` moves from `1.18.1` to `1.21.3`.
+  Hosts that leave it unset are upgraded on the next run; the same applies to
+  the two entries below.
+- **tailscale**: the default `tailscale_version` moves from `1.102.2` to
+  `1.104.4`.
+- **do**: the default `do_version` moves from `3.18.14` to `3.18.16`.
+- **CI**: the `arillso/.github` reusable workflows are pinned to `2026-11-01`
   and every `python_version` input is raised from `3.13` to `3.14`. The new
   `ci-ansible-collection` derives the controller interpreter from the ansible
   branch (`stable-2.20` and `devel` on 3.14, older branches on 3.13) and
@@ -581,7 +589,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.0.1...HEAD
+[2.0.1]: https://github.com/arillso/ansible.agent/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/arillso/ansible.agent/compare/1.2.0...2.0.0
 [1.2.0]: https://github.com/arillso/ansible.agent/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/arillso/ansible.agent/compare/1.0.3...1.1.0
