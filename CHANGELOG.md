@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-05
+
 ### Added
 
 - **Version pinning (all roles)**: `alloy_version`, `tailscale_version` and
@@ -34,8 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `ansible.builtin.apt` instead of `arillso.system.packages`, which exposes no
   `allow_downgrade`. A pin combined with `*_package_state: latest` installs the
   pinned version, since apt rejects a version together with `latest`.
-
-- **CI**: the `arillso/.github` reusable workflows are pinned to `2026-08-17`
+- **CI**: the `arillso/.github` reusable workflows are pinned to `2026-11-04`
   and every `python_version` input is raised from `3.13` to `3.14`. The new
   `ci-ansible-collection` derives the controller interpreter from the ansible
   branch (`stable-2.20` and `devel` on 3.14, older branches on 3.13) and
@@ -607,7 +608,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.0.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.1.0...HEAD
+[2.1.0]: https://github.com/arillso/ansible.agent/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/arillso/ansible.agent/compare/1.2.0...2.0.0
 [1.2.0]: https://github.com/arillso/ansible.agent/compare/1.1.0...1.2.0
 [1.1.0]: https://github.com/arillso/ansible.agent/compare/1.0.3...1.1.0
