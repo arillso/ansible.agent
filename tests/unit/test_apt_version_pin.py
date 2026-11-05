@@ -22,7 +22,9 @@ TAILSCALE = [
     " tailscale | 1.104.4 | https://pkgs.tailscale.com/stable/debian bookworm/main amd64 Packages",
 ]
 
-EPOCH = [" pkg | 2:3.18.16~bpo12+1 | https://example.invalid main amd64 Packages"]
+EPOCH = [" pkg | 2:3.18.16+deb12u1 | https://example.invalid main amd64 Packages"]
+
+PRERELEASE = [" alloy | 1.21.3~rc.0-1 | https://apt.grafana.com stable/main amd64 Packages"]
 
 
 def test_revision_suffix():
@@ -33,8 +35,12 @@ def test_bare_version():
     assert apt_version_pin(TAILSCALE, "1.104.4") == "1.104.4"
 
 
-def test_epoch_and_tilde():
-    assert apt_version_pin(EPOCH, "3.18.16") == "2:3.18.16~bpo12+1"
+def test_epoch_and_plus():
+    assert apt_version_pin(EPOCH, "3.18.16") == "2:3.18.16+deb12u1"
+
+
+def test_prerelease_is_not_the_release():
+    assert apt_version_pin(PRERELEASE, "1.21.3") is None
 
 
 def test_no_prefix_match():

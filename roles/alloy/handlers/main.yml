@@ -12,6 +12,8 @@
       name: "{{ alloy_service_name }}"
       state: restarted
   become: true
+  # The install task notifies this too; after a removal there is no unit left.
+  when: alloy_package_state != 'absent'
   listen:
       - "alloy: restart alloy"
       - "alloy: restart grafana alloy"

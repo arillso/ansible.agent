@@ -27,5 +27,9 @@
           {{ do_package_name }} package in the configured apt repository. Set it to a
           version listed by `apt-cache madison {{ do_package_name }}`, or to an empty
           string to install whatever the repository offers.
-  when: _do_apt_version | length == 0
+  # In check mode the repository tasks above did not run on a fresh host, so
+  # madison finds nothing; the dry run then installs unpinned instead of failing.
+  when:
+      - _do_apt_version | length == 0
+      - not ansible_check_mode
   tags: [do, install, package]

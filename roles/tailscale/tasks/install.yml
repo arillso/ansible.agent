@@ -50,6 +50,7 @@
       - ansible_facts['os_family'] == "Debian"
       - not tailscale_package_only
       - tailscale_version | length > 0
+      - tailscale_package_state != 'absent'
   tags: [tailscale, install, package]
 
 # ansible.builtin.apt directly rather than arillso.system.packages: a pin has
@@ -60,11 +61,11 @@
   ansible.builtin.apt:
       name: >-
           {{ tailscale_package_name ~ ('=' ~ _tailscale_apt_version
-             if tailscale_version | length > 0 else '') }}
+             if _tailscale_apt_version | default('') | length > 0 and tailscale_package_state != 'absent' else '') }}
       state: >-
-          {{ 'present' if tailscale_version | length > 0 and tailscale_package_state == 'latest'
+          {{ 'present' if _tailscale_apt_version | default('') | length > 0 and tailscale_package_state != 'absent' and tailscale_package_state == 'latest'
              else tailscale_package_state }}
-      allow_downgrade: "{{ tailscale_version | length > 0 }}"
+      allow_downgrade: "{{ _tailscale_apt_version | default('') | length > 0 and tailscale_package_state != 'absent' }}"
   become: true
   register: _tailscale_package_installed_debian
   retries: 3
@@ -91,21 +92,23 @@
       - not tailscale_package_only
   tags: [tailscale, install, repository]
 
-# dnf takes "<name>-<version>*" and expands the glob over the RPM release part.
+# dnf takes "<name>-<version>-*" and expands the glob over the RPM release
+# part; the hyphen keeps 1.21.3 from matching 1.21.30.
 - name: Install Tailscale package (Red Hat family)
   ansible.builtin.package:
       name: >-
-          {{ tailscale_package_name ~ ('-' ~ tailscale_version ~ '*'
-             if tailscale_version | length > 0 else '') }}
+          {{ tailscale_package_name ~ ('-' ~ tailscale_version ~ '-*'
+             if tailscale_version | length > 0 and tailscale_package_state != 'absent' else '') }}
       state: >-
-          {{ 'present' if tailscale_version | length > 0 and tailscale_package_state == 'latest'
+          {{ 'present' if tailscale_version | length > 0 and tailscale_package_state != 'absent' and tailscale_package_state == 'latest'
              else tailscale_package_state }}
-      allow_downgrade: "{{ true if tailscale_version | length > 0 else omit }}"
+      allow_downgrade: "{{ true if tailscale_version | length > 0 and tailscale_package_state != 'absent' else omit }}"
   become: true
   register: _tailscale_package_installed
   retries: 3
   delay: 10
   until: _tailscale_package_installed is succeeded
+  notify: "tailscale: restart tailscaled"
   when:
       - ansible_facts['os_family'] == "RedHat"
       - not tailscale_package_only

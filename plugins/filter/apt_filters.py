@@ -30,8 +30,10 @@ options:
         description:
             - The upstream version to resolve, for example C(1.21.3).
             - Matched when it opens the string or follows an epoch colon, and is followed by the
-              end of the string or a C(-), C(~) or C(+) revision separator. C(1.21.3) therefore
-              takes C(1.21.3-1) but not C(1.21.30), and C(1.21) matches nothing.
+              end of the string or a C(-) or C(+) separator. C(1.21.3) therefore takes C(1.21.3-1)
+              but not C(1.21.30), and C(1.21) matches nothing.
+            - C(~) is not a separator: in Debian ordering it sorts before the release, so
+              C(1.21.3~rc.0-1) is a pre-release of 1.21.3 and never satisfies the pin.
         type: str
         required: true
 author:
@@ -70,7 +72,7 @@ def apt_version_pin(lines, version):
     if not lines or not version:
         return None
 
-    wanted = re.compile(r'(^|:)' + re.escape(str(version)) + r'($|[-~+])')
+    wanted = re.compile(r'(^|:)' + re.escape(str(version)) + r'($|[-+])')
 
     for line in lines:
         match = _MADISON_LINE.match(line)

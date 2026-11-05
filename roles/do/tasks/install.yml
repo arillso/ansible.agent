@@ -52,19 +52,24 @@
       - ansible_facts['os_family'] == "Debian"
       - do_version | length > 0
 
-# apt pins with "=<full string>", dnf with "-<version>*"; other families have
-# no repository here and install unpinned. allow_downgrade lets a pin move a
-# host back as well as forward.
+# apt pins with "=<full string>", dnf with "-<version>-*" (the hyphen keeps
+# 3.18.1 from matching 3.18.16); other families have no repository here and
+# install unpinned. allow_downgrade lets a pin move a host back as well as
+# forward.
 - name: Install DigitalOcean Agent package
   ansible.builtin.package:
       name: >-
-          {{ do_package_name ~ ('=' ~ _do_apt_version if (_do_pinned | bool) and ansible_facts['os_family'] == 'Debian'
-             else '-' ~ do_version ~ '*' if (_do_pinned | bool)
+          {{ do_package_name ~ (
+             '=' ~ _do_apt_version
+               if ansible_facts['os_family'] == 'Debian' and _do_apt_version | default('') | length > 0
+             else '-' ~ do_version ~ '-*'
+               if ansible_facts['os_family'] == 'RedHat' and do_version | length > 0
              else '') }}
       state: present
-      allow_downgrade: "{{ true if (_do_pinned | bool) else omit }}"
-  vars:
-      _do_pinned: "{{ do_version | length > 0 and ansible_facts['os_family'] in ['Debian', 'RedHat'] }}"
+      allow_downgrade: >-
+          {{ true if (ansible_facts['os_family'] == 'Debian' and _do_apt_version | default('') | length > 0)
+             or (ansible_facts['os_family'] == 'RedHat' and do_version | length > 0)
+             else omit }}
   become: true
   notify: "do: restart do agent"
 

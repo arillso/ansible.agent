@@ -62,6 +62,7 @@
       - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
       - alloy_version | length > 0
+      - alloy_package_state != 'absent'
   tags: [alloy, install, package]
 
 # ansible.builtin.apt directly rather than arillso.system.packages: a pin has
@@ -72,11 +73,11 @@
   ansible.builtin.apt:
       name: >-
           {{ alloy_package_name ~ ('=' ~ _alloy_apt_version
-             if alloy_version | length > 0 else '') }}
+             if _alloy_apt_version | default('') | length > 0 and alloy_package_state != 'absent' else '') }}
       state: >-
-          {{ 'present' if alloy_version | length > 0 and alloy_package_state == 'latest'
+          {{ 'present' if _alloy_apt_version | default('') | length > 0 and alloy_package_state != 'absent' and alloy_package_state == 'latest'
              else alloy_package_state }}
-      allow_downgrade: "{{ alloy_version | length > 0 }}"
+      allow_downgrade: "{{ _alloy_apt_version | default('') | length > 0 and alloy_package_state != 'absent' }}"
   become: true
   register: _alloy_package_installed_debian
   retries: 3
@@ -105,16 +106,17 @@
       - not alloy_package_only
   tags: [alloy, install, repository]
 
-# dnf takes "<name>-<version>*" and expands the glob over the RPM release part.
+# dnf takes "<name>-<version>-*" and expands the glob over the RPM release
+# part; the hyphen keeps 1.21.3 from matching 1.21.30.
 - name: Install Grafana Alloy package (Red Hat family)
   ansible.builtin.package:
       name: >-
-          {{ alloy_package_name ~ ('-' ~ alloy_version ~ '*'
-             if alloy_version | length > 0 else '') }}
+          {{ alloy_package_name ~ ('-' ~ alloy_version ~ '-*'
+             if alloy_version | length > 0 and alloy_package_state != 'absent' else '') }}
       state: >-
-          {{ 'present' if alloy_version | length > 0 and alloy_package_state == 'latest'
+          {{ 'present' if alloy_version | length > 0 and alloy_package_state != 'absent' and alloy_package_state == 'latest'
              else alloy_package_state }}
-      allow_downgrade: "{{ true if alloy_version | length > 0 else omit }}"
+      allow_downgrade: "{{ true if alloy_version | length > 0 and alloy_package_state != 'absent' else omit }}"
   become: true
   register: _alloy_package_installed
   retries: 3
