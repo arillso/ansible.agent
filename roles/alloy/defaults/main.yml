@@ -16,6 +16,7 @@ alloy_grafana_repository: "{{ _alloy_os[ansible_facts['os_family']].grafana.repo
 alloy_package_name: "alloy"
 alloy_package_state: "present"
 alloy_package_only: false
+# Pinned on apt and dnf hosts, downgrades included; "" installs unpinned
 # renovate: datasource=github-releases depName=grafana/alloy extractVersion=^v(?<version>.*)$
 alloy_version: "1.21.3"
 

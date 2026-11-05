@@ -17,6 +17,17 @@
             fail_msg: "DO Agent package is not installed"
             success_msg: "DO Agent package is installed"
 
+      - name: Read the pinned do_version from the role defaults
+        ansible.builtin.set_fact:
+            do_expected_version: "{{ (lookup('ansible.builtin.file', playbook_dir ~ '/../../defaults/main.yml') | from_yaml).do_version }}"
+
+      - name: Assert the installed do-agent matches do_version
+        ansible.builtin.assert:
+            that:
+                - ansible_facts.packages['do-agent'][0].version is match('(.*:)?' ~ (do_expected_version | regex_escape) ~ '([-+]|$)')
+            fail_msg: "do-agent is {{ ansible_facts.packages['do-agent'][0].version }}, expected {{ do_expected_version }}"
+            success_msg: "do-agent is pinned to {{ do_expected_version }}"
+
       - name: Check DO Agent service status
         ansible.builtin.systemd_service:
             name: do-agent

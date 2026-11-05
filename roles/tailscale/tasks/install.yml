@@ -44,17 +44,34 @@
       - not tailscale_package_only
   tags: [tailscale, install, cache]
 
+- name: Resolve the pinned tailscale version (Debian/Ubuntu)
+  ansible.builtin.include_tasks: resolve_version.yml
+  when:
+      - ansible_facts['os_family'] == "Debian"
+      - not tailscale_package_only
+      - tailscale_version | length > 0
+      - tailscale_package_state != 'absent'
+  tags: [tailscale, install, package]
+
+# ansible.builtin.apt directly rather than arillso.system.packages: a pin has
+# to move hosts in both directions, and only the apt module exposes
+# allow_downgrade. apt rejects a version together with state=latest, so a pin
+# turns latest into present.
 - name: Install Tailscale package (Debian/Ubuntu)
-  ansible.builtin.include_role:
-      name: arillso.system.packages
-      tasks_from: packages
-  vars:
-      packages_list:
-          - name: "{{ tailscale_package_name }}"
-            state: "{{ tailscale_package_state }}"
-      packages_retry_count: 3
-      packages_retry_delay: 10
-      packages_services_to_restart: ["tailscaled"]
+  ansible.builtin.apt:
+      name: >-
+          {{ tailscale_package_name ~ ('=' ~ _tailscale_apt_version
+             if _tailscale_apt_version | default('') | length > 0 and tailscale_package_state != 'absent' else '') }}
+      state: >-
+          {{ 'present' if _tailscale_apt_version | default('') | length > 0 and tailscale_package_state != 'absent' and tailscale_package_state == 'latest'
+             else tailscale_package_state }}
+      allow_downgrade: "{{ _tailscale_apt_version | default('') | length > 0 and tailscale_package_state != 'absent' }}"
+  become: true
+  register: _tailscale_package_installed_debian
+  retries: 3
+  delay: 10
+  until: _tailscale_package_installed_debian is succeeded
+  notify: "tailscale: restart tailscaled"
   when:
       - ansible_facts['os_family'] == "Debian"
       - not tailscale_package_only
@@ -75,14 +92,23 @@
       - not tailscale_package_only
   tags: [tailscale, install, repository]
 
+# dnf takes "<name>-<version>-*" and expands the glob over the RPM release
+# part; the hyphen keeps 1.21.3 from matching 1.21.30.
 - name: Install Tailscale package (Red Hat family)
   ansible.builtin.package:
-      name: "{{ tailscale_package_name }}"
-      state: "{{ tailscale_package_state }}"
+      name: >-
+          {{ tailscale_package_name ~ ('-' ~ tailscale_version ~ '-*'
+             if tailscale_version | length > 0 and tailscale_package_state != 'absent' else '') }}
+      state: >-
+          {{ 'present' if tailscale_version | length > 0 and tailscale_package_state != 'absent' and tailscale_package_state == 'latest'
+             else tailscale_package_state }}
+      allow_downgrade: "{{ true if tailscale_version | length > 0 and tailscale_package_state != 'absent' else omit }}"
+  become: true
   register: _tailscale_package_installed
   retries: 3
   delay: 10
   until: _tailscale_package_installed is succeeded
+  notify: "tailscale: restart tailscaled"
   when:
       - ansible_facts['os_family'] == "RedHat"
       - not tailscale_package_only

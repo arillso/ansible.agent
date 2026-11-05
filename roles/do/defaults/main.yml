@@ -6,6 +6,7 @@ do_enabled: true
 
 # Package configuration
 do_package_name: "do-agent"
+# Pinned on apt and dnf hosts, downgrades included; "" installs unpinned
 # renovate: datasource=github-releases depName=digitalocean/do-agent
 do_version: "3.18.16"
 

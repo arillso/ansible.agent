@@ -1,0 +1,35 @@
+---
+# apt matches an "=" pin against the full version string and does not expand
+# globs in it, so the string the repository publishes for do_version is
+# looked up on the host. Runs after the cache update so madison sees the
+# current repository index.
+
+- name: Look up the do versions the apt repository offers
+  ansible.builtin.command:
+      cmd: "apt-cache madison {{ do_package_name }}"
+  register: _do_madison
+  changed_when: false
+  check_mode: false
+  tags: [do, install, package]
+
+- name: Resolve the full apt version string for do_version
+  ansible.builtin.set_fact:
+      _do_apt_version: >-
+          {{ _do_madison.stdout_lines
+             | arillso.agent.apt_version_pin(do_version)
+             | default('', true) }}
+  tags: [do, install, package]
+
+- name: Fail when do_version is not in the repository
+  ansible.builtin.fail:
+      msg: >-
+          do_version {{ do_version }} is not available as a
+          {{ do_package_name }} package in the configured apt repository. Set it to a
+          version listed by `apt-cache madison {{ do_package_name }}`, or to an empty
+          string to install whatever the repository offers.
+  # In check mode the repository tasks above did not run on a fresh host, so
+  # madison finds nothing; the dry run then installs unpinned instead of failing.
+  when:
+      - _do_apt_version | length == 0
+      - not ansible_check_mode
+  tags: [do, install, package]

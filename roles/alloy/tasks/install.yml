@@ -56,24 +56,39 @@
       - not alloy_package_only
   tags: [alloy, install, cache]
 
-- name: Install Grafana Alloy package (Debian/Ubuntu)
-  ansible.builtin.include_role:
-      name: arillso.system.packages
-      tasks_from: packages
-  vars:
-      packages_list:
-          - name: "{{ alloy_package_name }}"
-            state: "{{ alloy_package_state }}"
-      packages_retry_count: 3
-      packages_retry_delay: 10
-      # Do not start alloy here: configure.yml has not written
-      # config.alloy yet, so starting on the package's empty default
-      # config makes the unit crash. service.yml starts it after the
-      # config is in place.
-      packages_services_to_restart: []
+- name: Resolve the pinned alloy version (Debian/Ubuntu)
+  ansible.builtin.include_tasks: resolve_version.yml
   when:
       - ansible_facts['os_family'] == "Debian"
       - not alloy_package_only
+      - alloy_version | length > 0
+      - alloy_package_state != 'absent'
+  tags: [alloy, install, package]
+
+# ansible.builtin.apt directly rather than arillso.system.packages: a pin has
+# to move hosts in both directions, and only the apt module exposes
+# allow_downgrade. apt rejects a version together with state=latest, so a pin
+# turns latest into present.
+- name: Install Grafana Alloy package (Debian/Ubuntu)
+  ansible.builtin.apt:
+      name: >-
+          {{ alloy_package_name ~ ('=' ~ _alloy_apt_version
+             if _alloy_apt_version | default('') | length > 0 and alloy_package_state != 'absent' else '') }}
+      state: >-
+          {{ 'present' if _alloy_apt_version | default('') | length > 0 and alloy_package_state != 'absent' and alloy_package_state == 'latest'
+             else alloy_package_state }}
+      allow_downgrade: "{{ _alloy_apt_version | default('') | length > 0 and alloy_package_state != 'absent' }}"
+  become: true
+  register: _alloy_package_installed_debian
+  retries: 3
+  delay: 10
+  until: _alloy_package_installed_debian is succeeded
+  when:
+      - ansible_facts['os_family'] == "Debian"
+      - not alloy_package_only
+  # The handler runs after configure.yml has written config.alloy, so an
+  # upgrade restarts alloy on the real config, not the package default.
+  notify: "alloy: restart alloy"
   tags: [alloy, install, package]
 
 # Red Hat family installation tasks
@@ -91,10 +106,18 @@
       - not alloy_package_only
   tags: [alloy, install, repository]
 
+# dnf takes "<name>-<version>-*" and expands the glob over the RPM release
+# part; the hyphen keeps 1.21.3 from matching 1.21.30.
 - name: Install Grafana Alloy package (Red Hat family)
   ansible.builtin.package:
-      name: "{{ alloy_package_name }}"
-      state: "{{ alloy_package_state }}"
+      name: >-
+          {{ alloy_package_name ~ ('-' ~ alloy_version ~ '-*'
+             if alloy_version | length > 0 and alloy_package_state != 'absent' else '') }}
+      state: >-
+          {{ 'present' if alloy_version | length > 0 and alloy_package_state != 'absent' and alloy_package_state == 'latest'
+             else alloy_package_state }}
+      allow_downgrade: "{{ true if alloy_version | length > 0 and alloy_package_state != 'absent' else omit }}"
+  become: true
   register: _alloy_package_installed
   retries: 3
   delay: 10

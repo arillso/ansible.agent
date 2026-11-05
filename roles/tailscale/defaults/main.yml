@@ -1,6 +1,7 @@
 ---
 tailscale_package_name: tailscale
 tailscale_package_state: present
+# Pinned on apt and dnf hosts, downgrades included; "" installs unpinned
 # renovate: datasource=github-releases depName=tailscale/tailscale extractVersion=^v(?<version>.*)$
 tailscale_version: "1.104.4"
 
