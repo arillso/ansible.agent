@@ -17,6 +17,17 @@
             fail_msg: "Alloy package is not installed"
             success_msg: "Alloy package is installed"
 
+      - name: Read the pinned alloy_version from the role defaults
+        ansible.builtin.set_fact:
+            _expected_version: "{{ (lookup('ansible.builtin.file', playbook_dir ~ '/../../defaults/main.yml') | from_yaml).alloy_version }}"
+
+      - name: Assert the installed alloy matches alloy_version
+        ansible.builtin.assert:
+            that:
+                - ansible_facts.packages['alloy'][0].version is match('(.*:)?' ~ (_expected_version | regex_escape) ~ '([-~+]|$)')
+            fail_msg: "alloy is {{ ansible_facts.packages['alloy'][0].version }}, expected {{ _expected_version }}"
+            success_msg: "alloy is pinned to {{ _expected_version }}"
+
       - name: Check Alloy service status
         ansible.builtin.systemd_service:
             name: alloy

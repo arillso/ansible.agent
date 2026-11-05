@@ -7,7 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Version pinning (all roles)**: `alloy_version`, `tailscale_version` and
+  `do_version` now pin the installed package. They were declared and bumped by
+  Renovate, but no task read them: every role installed with `state: present`
+  and no version, so a host kept whatever version it got on first install.
+  On apt hosts the exact repository string is resolved with
+  `apt-cache madison` (alloy publishes `1.21.3-1`, tailscale and do-agent the
+  bare version) through the new `arillso.agent.apt_version_pin` filter; on dnf
+  hosts the pin is `<package>-<version>*`. A version the repository does not
+  carry fails the run with a readable message. An empty string keeps the old
+  unpinned behaviour. `alloy_package_only` and `tailscale_package_only` hosts
+  (Alpine, Arch) stay unpinned. **Upgrade note:** with the defaults, the next
+  run moves every apt and dnf host to alloy `1.21.3`, tailscale `1.104.4` and
+  do-agent `3.18.16`, downgrades included, and restarts the service. Set the
+  variable to `""` to keep the previous behaviour.
+
 ### Changed
+
+- **alloy, tailscale (Debian/Ubuntu)**: the package is installed with
+  `ansible.builtin.apt` instead of `arillso.system.packages`, which exposes no
+  `allow_downgrade`. A pin combined with `*_package_state: latest` installs the
+  pinned version, since apt rejects a version together with `latest`.
 
 - **CI**: the `arillso/.github` reusable workflows are pinned to `2026-08-17`
   and every `python_version` input is raised from `3.13` to `3.14`. The new

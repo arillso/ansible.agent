@@ -17,6 +17,17 @@
             fail_msg: "Tailscale package is not installed"
             success_msg: "Tailscale package is installed"
 
+      - name: Read the pinned tailscale_version from the role defaults
+        ansible.builtin.set_fact:
+            _expected_version: "{{ (lookup('ansible.builtin.file', playbook_dir ~ '/../../defaults/main.yml') | from_yaml).tailscale_version }}"
+
+      - name: Assert the installed tailscale matches tailscale_version
+        ansible.builtin.assert:
+            that:
+                - ansible_facts.packages['tailscale'][0].version is match('(.*:)?' ~ (_expected_version | regex_escape) ~ '([-~+]|$)')
+            fail_msg: "tailscale is {{ ansible_facts.packages['tailscale'][0].version }}, expected {{ _expected_version }}"
+            success_msg: "tailscale is pinned to {{ _expected_version }}"
+
       - name: Check tailscaled service status
         ansible.builtin.systemd_service:
             name: tailscaled

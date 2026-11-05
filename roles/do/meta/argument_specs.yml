@@ -27,7 +27,7 @@ argument_specs:
                 required: false
                 # renovate: datasource=github-releases depName=digitalocean/do-agent
                 default: "3.18.16"
-                description: "Version of the DigitalOcean Agent package"
+                description: "Version of the DigitalOcean Agent package to pin on apt and dnf hosts. Every run moves the host to exactly this version, downgrades included. An empty string installs whatever the repository offers and leaves later upgrades to the host."
 
             do_port:
                 type: "int"

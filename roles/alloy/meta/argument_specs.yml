@@ -890,7 +890,7 @@ argument_specs:
                 required: false
                 # renovate: datasource=github-releases depName=grafana/alloy extractVersion=^v(?<version>.*)$
                 default: "1.21.3"
-                description: "Version of the Grafana Alloy package"
+                description: "Version of the Grafana Alloy package to pin on apt and dnf hosts. Every run moves the host to exactly this version, downgrades included. An empty string installs whatever the repository offers and leaves later upgrades to the host."
 
             # Node exporter configuration options
             alloy_advanced_node_exporter_enabled:

@@ -1,0 +1,31 @@
+---
+# apt matches an "=" pin against the full version string and does not expand
+# globs in it, so the string the repository publishes for alloy_version is
+# looked up on the host. Runs after the cache update so madison sees the
+# current repository index.
+
+- name: Look up the alloy versions the apt repository offers
+  ansible.builtin.command:
+      cmd: "apt-cache madison {{ alloy_package_name }}"
+  register: _alloy_madison
+  changed_when: false
+  check_mode: false
+  tags: [alloy, install, package]
+
+- name: Resolve the full apt version string for alloy_version
+  ansible.builtin.set_fact:
+      _alloy_apt_version: >-
+          {{ _alloy_madison.stdout_lines
+             | arillso.agent.apt_version_pin(alloy_version)
+             | default('', true) }}
+  tags: [alloy, install, package]
+
+- name: Fail when alloy_version is not in the repository
+  ansible.builtin.fail:
+      msg: >-
+          alloy_version {{ alloy_version }} is not available as a
+          {{ alloy_package_name }} package in the configured apt repository. Set it to a
+          version listed by `apt-cache madison {{ alloy_package_name }}`, or to an empty
+          string to install whatever the repository offers.
+  when: _alloy_apt_version | length == 0
+  tags: [alloy, install, package]

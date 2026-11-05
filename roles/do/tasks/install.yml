@@ -46,10 +46,25 @@
   become: true
   when: ansible_facts['os_family'] == "RedHat"
 
+- name: Resolve the pinned do-agent version (Debian/Ubuntu)
+  ansible.builtin.include_tasks: resolve_version.yml
+  when:
+      - ansible_facts['os_family'] == "Debian"
+      - do_version | length > 0
+
+# apt pins with "=<full string>", dnf with "-<version>*"; other families have
+# no repository here and install unpinned. allow_downgrade lets a pin move a
+# host back as well as forward.
 - name: Install DigitalOcean Agent package
   ansible.builtin.package:
-      name: "{{ do_package_name }}"
+      name: >-
+          {{ do_package_name ~ ('=' ~ _do_apt_version if (_do_pinned | bool) and ansible_facts['os_family'] == 'Debian'
+             else '-' ~ do_version ~ '*' if (_do_pinned | bool)
+             else '') }}
       state: present
+      allow_downgrade: "{{ true if (_do_pinned | bool) else omit }}"
+  vars:
+      _do_pinned: "{{ do_version | length > 0 and ansible_facts['os_family'] in ['Debian', 'RedHat'] }}"
   become: true
   notify: "do: restart do agent"
 
