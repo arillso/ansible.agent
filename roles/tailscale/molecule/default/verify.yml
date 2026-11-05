@@ -24,7 +24,7 @@
       - name: Assert the installed tailscale matches tailscale_version
         ansible.builtin.assert:
             that:
-                - ansible_facts.packages['tailscale'][0].version is match('(.*:)?' ~ (tailscale_expected_version | regex_escape) ~ '([-~+]|$)')
+                - ansible_facts.packages['tailscale'][0].version is match('(.*:)?' ~ (tailscale_expected_version | regex_escape) ~ '([-+]|$)')
             fail_msg: "tailscale is {{ ansible_facts.packages['tailscale'][0].version }}, expected {{ tailscale_expected_version }}"
             success_msg: "tailscale is pinned to {{ tailscale_expected_version }}"
 

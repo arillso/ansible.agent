@@ -24,7 +24,7 @@
       - name: Assert the installed do-agent matches do_version
         ansible.builtin.assert:
             that:
-                - ansible_facts.packages['do-agent'][0].version is match('(.*:)?' ~ (do_expected_version | regex_escape) ~ '([-~+]|$)')
+                - ansible_facts.packages['do-agent'][0].version is match('(.*:)?' ~ (do_expected_version | regex_escape) ~ '([-+]|$)')
             fail_msg: "do-agent is {{ ansible_facts.packages['do-agent'][0].version }}, expected {{ do_expected_version }}"
             success_msg: "do-agent is pinned to {{ do_expected_version }}"
 

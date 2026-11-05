@@ -24,7 +24,7 @@
       - name: Assert the installed alloy matches alloy_version
         ansible.builtin.assert:
             that:
-                - ansible_facts.packages['alloy'][0].version is match('(.*:)?' ~ (alloy_expected_version | regex_escape) ~ '([-~+]|$)')
+                - ansible_facts.packages['alloy'][0].version is match('(.*:)?' ~ (alloy_expected_version | regex_escape) ~ '([-+]|$)')
             fail_msg: "alloy is {{ ansible_facts.packages['alloy'][0].version }}, expected {{ alloy_expected_version }}"
             success_msg: "alloy is pinned to {{ alloy_expected_version }}"
 
