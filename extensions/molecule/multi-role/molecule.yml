@@ -28,7 +28,7 @@ driver:
 platforms:
     # Single VM hosting all three roles together (per Notion card A8).
     - name: multi-role-ubuntu2404
-      image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:3394e335df58c961c00b78ae601ef30cdd7463b112f21b0c5f78674a70526302
+      image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:c082ec70ba335195eb9ccdaa0aa0160e99a3861b070173a24d41e44a19fcf403
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw

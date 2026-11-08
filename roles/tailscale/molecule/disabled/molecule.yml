@@ -11,7 +11,7 @@ driver:
 # OS-independent.
 platforms:
     - name: tailscale-disabled-debian12
-      image: geerlingguy/docker-debian12-ansible:latest@sha256:a131e3b7a9a38dda40e98b49b39d6200ffab0ad853c714a513f5eea41bab9a25
+      image: geerlingguy/docker-debian12-ansible:latest@sha256:fc679fe5eb029c5ceeed3beb9c8a7ee116de371e7f62e3341d5a4dba79853004
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw

@@ -9,7 +9,7 @@ driver:
 
 platforms:
     - name: tailscale-ubuntu2204
-      image: geerlingguy/docker-ubuntu2204-ansible:latest@sha256:9ac75f2cd2b4fc6ddc9d5166a24adfe3d1cf6a49911ee5d75fd63a853bdaadf9
+      image: geerlingguy/docker-ubuntu2204-ansible:latest@sha256:11e943a042e44674fa57bbc41c666f8e663f4c4ae21ced8a0ae23e09a8112773
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -18,7 +18,7 @@ platforms:
       pre_build_image: true
 
     - name: tailscale-ubuntu2404
-      image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:3394e335df58c961c00b78ae601ef30cdd7463b112f21b0c5f78674a70526302
+      image: geerlingguy/docker-ubuntu2404-ansible:latest@sha256:c082ec70ba335195eb9ccdaa0aa0160e99a3861b070173a24d41e44a19fcf403
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -27,7 +27,7 @@ platforms:
       pre_build_image: true
 
     - name: tailscale-debian12
-      image: geerlingguy/docker-debian12-ansible:latest@sha256:a131e3b7a9a38dda40e98b49b39d6200ffab0ad853c714a513f5eea41bab9a25
+      image: geerlingguy/docker-debian12-ansible:latest@sha256:fc679fe5eb029c5ceeed3beb9c8a7ee116de371e7f62e3341d5a4dba79853004
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw
