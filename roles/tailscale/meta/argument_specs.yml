@@ -35,7 +35,7 @@ argument_specs:
                 type: "str"
                 required: false
                 # renovate: datasource=github-releases depName=tailscale/tailscale extractVersion=^v(?<version>.*)$
-                default: "1.104.5"
+                default: "1.104.6"
                 description: "Version of the Tailscale package to pin on apt and dnf hosts. Every run moves the host to exactly this version, downgrades included. An empty string installs whatever the repository offers and leaves later upgrades to the host."
 
             tailscale_service_state:
