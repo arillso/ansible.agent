@@ -7,7 +7,7 @@ driver:
 
 platforms:
     - name: do-ubuntu2204
-      image: geerlingguy/docker-ubuntu2204-ansible:latest@sha256:11e943a042e44674fa57bbc41c666f8e663f4c4ae21ced8a0ae23e09a8112773
+      image: geerlingguy/docker-ubuntu2204-ansible:latest@sha256:1b2b611ef15df811522e78281e529df6ee90710fe9b96186743b51133b1c2b2d
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw
@@ -16,7 +16,7 @@ platforms:
       pre_build_image: true
 
     - name: do-debian12
-      image: geerlingguy/docker-debian12-ansible:latest@sha256:fc679fe5eb029c5ceeed3beb9c8a7ee116de371e7f62e3341d5a4dba79853004
+      image: geerlingguy/docker-debian12-ansible:latest@sha256:39bdd16916ec475a12db0502550b72e4f4c2cc858a1939ad2a17f21f6eb51b65
       command: ""
       volumes:
           - /sys/fs/cgroup:/sys/fs/cgroup:rw
