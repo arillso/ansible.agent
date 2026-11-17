@@ -18,7 +18,7 @@ alloy_package_state: "present"
 alloy_package_only: false
 # Pinned on apt and dnf hosts, downgrades included; "" installs unpinned
 # renovate: datasource=github-releases depName=grafana/alloy extractVersion=^v(?<version>.*)$
-alloy_version: "1.21.3"
+alloy_version: "1.22.0"
 
 # Service configuration
 alloy_port: 12345
