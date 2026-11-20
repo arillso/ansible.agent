@@ -156,6 +156,18 @@
   notify: "alloy: restart alloy"
   tags: [alloy, install, package]
 
+# root-owned so the alloy process cannot replace config.alloy, which can
+# carry credentials; the group lets alloy traverse it.
+- name: Create Alloy configuration directory
+  ansible.builtin.file:
+      path: "{{ alloy_config_file | dirname }}"
+      state: directory
+      owner: root
+      group: "{{ alloy_group }}"
+      mode: "0750"
+  become: true
+  tags: [alloy, install, config]
+
 - name: Create required directories
   ansible.builtin.file:
       path: "{{ item }}"
@@ -165,7 +177,6 @@
       mode: "0755"
   become: true
   loop:
-      - "{{ alloy_config_file | dirname }}"
       - "{{ alloy_storage_path }}"
       - "{{ alloy_log_file | dirname if alloy_log_file else '/var/log/alloy' }}"
   tags: [alloy, install, config]
