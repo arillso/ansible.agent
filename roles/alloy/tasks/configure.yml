@@ -15,7 +15,8 @@
 - name: Find leftover Grafana Alloy configuration backups
   ansible.builtin.find:
       paths: "{{ alloy_config_file | dirname }}"
-      patterns: "{{ alloy_config_file | basename }}.*~"
+      patterns: "^{{ alloy_config_file | basename | regex_escape }}\\..*~$"
+      use_regex: true
       file_type: file
   register: alloy_config_backups
   become: true
