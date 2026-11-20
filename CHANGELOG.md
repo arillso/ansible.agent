@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Alloy config exposure**: `config.alloy` carries credentials whenever
+  `alloy_remotecfg`, remote-write, Loki or exporter auth is passed as a
+  literal instead of an `env:` reference, yet it was written world-readable
+  (`0644`), owned by `alloy`, and with a backup copy kept on every change. It
+  is now `root:{{ alloy_group }}` `0640` without backups, so alloy reads it
+  through its group but can no longer rewrite it. The config directory
+  (`alloy_config_file | dirname`) is now `root:{{ alloy_group }}` `0750`,
+  because a directory owned by `alloy` would still let the process replace the
+  file. Leftover `config.alloy.*~` backups are removed on every run; the
+  pattern is limited to Ansible's backup suffix, so package-manager artifacts
+  such as `.dpkg-dist` or `.rpmnew` stay. **Upgrade note:** the next run
+  changes the owner of the config file and directory to `root` and restarts
+  alloy once. A custom `alloy_config_file` placed directly in a shared
+  directory (for example `/etc/config.alloy`) sets that directory to
+  `root:{{ alloy_group }}` `0750`.
+
 ## [2.1.0] - 2026-11-05
 
 ### Added
