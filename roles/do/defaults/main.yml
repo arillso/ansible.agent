@@ -8,7 +8,7 @@ do_enabled: true
 do_package_name: "do-agent"
 # Pinned on apt and dnf hosts, downgrades included; "" installs unpinned
 # renovate: datasource=github-releases depName=digitalocean/do-agent
-do_version: "3.18.16"
+do_version: "3.18.17"
 
 # Service configuration
 do_port: 9090
