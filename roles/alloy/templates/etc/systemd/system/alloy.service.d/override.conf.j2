@@ -16,15 +16,17 @@ EnvironmentFile={{ alloy_env_file }}
 # Override security settings for custom paths
 ReadWritePaths={{ alloy_storage_path }} /var/log/alloy
 
-{% if alloy_log_file %}
-# Additional log directory access
+{% if alloy_log_file | default('') | length > 0 %}
+# Alloy logs to stderr; systemd appends it to the file instead of the journal
 ReadWritePaths={{ alloy_log_file | dirname }}
+StandardOutput=append:{{ alloy_log_file }}
+StandardError=append:{{ alloy_log_file }}
 {% endif %}
 
 # Resource limits
-{% if alloy_max_memory is defined %}
-MemoryLimit={{ alloy_max_memory }}
+{% if alloy_max_memory | default('') | length > 0 %}
+MemoryMax={{ alloy_max_memory }}
 {% endif %}
-{% if alloy_max_cpu is defined %}
+{% if alloy_max_cpu | default('') | length > 0 %}
 CPUQuota={{ alloy_max_cpu }}
 {% endif %}

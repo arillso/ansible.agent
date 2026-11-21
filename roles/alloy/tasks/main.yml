@@ -11,20 +11,24 @@
             - alloy
             - install
 
+      # After a removal there is no alloy user or unit left to configure.
       - name: Include configuration tasks
         ansible.builtin.include_tasks: configure.yml
+        when: alloy_package_state != 'absent'
         tags:
             - alloy
             - configure
 
       - name: Include service management tasks
         ansible.builtin.include_tasks: service.yml
+        when: alloy_package_state != 'absent'
         tags:
             - alloy
             - service
 
       - name: Include textfile collector script deployment
         ansible.builtin.include_tasks: textfile.yml
+        when: alloy_package_state != 'absent'
         tags:
             - alloy
             - textfile

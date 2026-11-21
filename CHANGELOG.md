@@ -24,6 +24,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   alloy once. A custom `alloy_config_file` placed directly in a shared
   directory (for example `/etc/config.alloy`) now fails the run instead of
   setting that directory to `root:{{ alloy_group }}` `0750`.
+- **alloy**: `alloy_log_file` no longer renders `write_to` pointing at a
+  `loki.write` component, which broke startup with Loki disabled. systemd now
+  appends Alloy's output to the file (`StandardOutput`/`StandardError=append:`);
+  the role does not rotate it. With Loki enabled, logs no longer go to Loki.
+- **alloy**: `config.alloy` is syntax-checked with `alloy fmt` before it is
+  written (unknown components or bad references still only fail the
+  readiness check).
+- **alloy**: the readiness check runs after the pending restart and queries the
+  address Alloy listens on (`alloy_server_http_listen_address`, or
+  `127.0.0.1:12345` with `alloy_web_server_enabled: false`).
+- **alloy**: empty `alloy_max_memory`/`alloy_max_cpu` no longer render empty
+  `MemoryLimit=`/`CPUQuota=` lines; the memory limit uses `MemoryMax=`.
+  Documented examples now use systemd units (`256M`, `50%`).
+- **alloy**: `alloy_package_state: absent` skips configuration, service and
+  directory tasks instead of failing on the removed `alloy` user.
+- **alloy**: the package-only and generic install tasks run with `become`.
+- **alloy (Debian/Ubuntu)**: the dependency install refreshes the apt cache only
+  when it is older than an hour, `software-properties-common` is no longer
+  installed, and the repository line comes from `alloy_grafana_repository`.
+
+### Removed
+
+- **alloy**: unused `alloy_service_file` and the never-installed RedHat
+  `package_dependencies`.
 
 ## [2.1.0] - 2026-11-05
 

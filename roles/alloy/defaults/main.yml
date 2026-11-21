@@ -7,7 +7,7 @@ alloy_enabled: true
 
 # OS-specific variable mappings - these map internal vars to public API
 # Dynamic variable assignment based on OS family using hierarchical structure
-alloy_package_dependencies: "{{ _alloy_os[ansible_facts['os_family']].package_dependencies }}"
+alloy_package_dependencies: "{{ _alloy_os[ansible_facts['os_family']].package_dependencies | default([]) }}"
 alloy_grafana_gpg_key_url: "{{ _alloy_os[ansible_facts['os_family']].grafana.gpg_key_url }}"
 alloy_grafana_keyring_path: "{{ _alloy_os[ansible_facts['os_family']].grafana.keyring_path | default(omit) }}"
 alloy_grafana_repository: "{{ _alloy_os[ansible_facts['os_family']].grafana.repository | default(omit) }}"
@@ -78,7 +78,6 @@ alloy_service_override_template: "etc/systemd/system/alloy.service.d/override.co
 
 # Service configuration
 alloy_service_name: "alloy"
-alloy_service_file: "/etc/systemd/system/alloy.service"
 alloy_service_override_dir: "/etc/systemd/system/alloy.service.d"
 alloy_service_override_file: "/etc/systemd/system/alloy.service.d/override.conf"
 

@@ -8,6 +8,7 @@
       owner: root
       group: "{{ alloy_group }}"
       mode: "0640"
+      validate: "alloy fmt %s"
   become: true
   notify: "alloy: restart alloy"
   no_log: "{{ alloy_no_log_config | default(true) }}"

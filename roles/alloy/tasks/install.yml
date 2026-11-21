@@ -10,6 +10,7 @@
       name: "{{ alloy_package_dependencies }}"
       state: present
       update_cache: true
+      cache_valid_time: 3600
   become: true
   when:
       - ansible_facts['os_family'] == "Debian"
@@ -38,7 +39,7 @@
       tasks_from: repositories
   vars:
       packages_repositories:
-          - repo: "deb [signed-by={{ alloy_grafana_keyring_path }}] https://apt.grafana.com stable main"
+          - repo: "{{ alloy_grafana_repository }}"
             state: present
             filename: grafana
             update_cache: false # We'll update cache separately
@@ -133,6 +134,7 @@
   ansible.builtin.package:
       name: "{{ alloy_package_name }}"
       state: "{{ alloy_package_state }}"
+  become: true
   register: _alloy_package_installed_simple
   retries: 3
   delay: 10
@@ -146,6 +148,7 @@
   ansible.builtin.package:
       name: "{{ alloy_package_name }}"
       state: "{{ alloy_package_state }}"
+  become: true
   register: _alloy_package_installed_generic
   retries: 3
   delay: 10
@@ -206,4 +209,5 @@
   loop:
       - "{{ alloy_storage_path }}"
       - "{{ alloy_log_file | dirname if alloy_log_file else '/var/log/alloy' }}"
+  when: alloy_package_state != 'absent'
   tags: [alloy, install, config]

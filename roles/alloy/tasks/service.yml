@@ -15,10 +15,15 @@
       - alloy
       - service
 
+# Restart on the new config now, so the readiness check below tests it and
+# not the process still running the old one.
+- name: "Apply pending Grafana Alloy restart before the readiness check"
+  ansible.builtin.meta: flush_handlers
+
 - name: "Wait for Grafana Alloy to be ready"
   ansible.builtin.uri:
-      # kics-scan ignore-line: localhost health check endpoint - no external network traffic
-      url: "http://localhost:{{ alloy_port }}/ready" # checkov:skip=CKV2_ANSIBLE_1: Localhost health check requires HTTP
+      # kics-scan ignore-line: host-local health check endpoint - no external network traffic
+      url: "http://{{ _alloy_ready_host }}:{{ alloy_port if alloy_web_server_enabled else 12345 }}/ready" # checkov:skip=CKV2_ANSIBLE_1: Local health check requires HTTP
       method: GET
       status_code: 200
   register: alloy_ready
@@ -26,6 +31,14 @@
   retries: 10
   delay: 5
   when: alloy_health_check_enabled | default(true)
+  vars:
+      # Without --server.http.listen-addr alloy listens on 127.0.0.1:12345;
+      # a wildcard bind answers on loopback too.
+      _alloy_ready_host: >-
+          {{ '127.0.0.1'
+             if not alloy_web_server_enabled or alloy_server_http_listen_address in ['', '0.0.0.0', '::']
+             else ('[' ~ alloy_server_http_listen_address ~ ']'
+                   if ':' in alloy_server_http_listen_address else alloy_server_http_listen_address) }}
   tags:
       - alloy
       - health-check
