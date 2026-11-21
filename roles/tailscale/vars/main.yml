@@ -77,7 +77,8 @@ tailscale_distributions:
         default:
             package_only: true
 
-# Fallback configuration
+# Fallback for distributions unknown by name and by os_family (via the
+# RedHat/Debian entries above, e.g. OracleLinux, Linux Mint)
 tailscale_fallback:
     codename: jammy
     gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg
@@ -93,6 +94,7 @@ tailscale_version_key: >-
 tailscale_distro_config: >-
     {{- tailscale_distributions.get(ansible_facts['distribution'], {}).get(tailscale_version_key) or
         tailscale_distributions.get(ansible_facts['distribution'], {}).get('default') or
+        tailscale_distributions.get(ansible_facts['os_family'], {}).get('default') or
         tailscale_fallback -}}
 
 # Cache written by the tailscale.fact script (templates/etc/ansible/facts.d)

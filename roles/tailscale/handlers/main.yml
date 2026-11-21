@@ -21,14 +21,22 @@
       - tailscale_service_state != 'stopped'
   listen: "tailscale: restart tailscaled"
 
+# A custom tailscale_service_override may start tailscaled without --config;
+# reload-config would then fail, so check the unit systemd actually runs.
 - name: Reload Tailscale configuration without restarting the daemon
-  ansible.builtin.command:
-      cmd: tailscale debug reload-config
+  ansible.builtin.shell:
+      cmd: |
+          set -e
+          unit=$(systemctl cat tailscaled)
+          case "$unit" in
+              *--config*) tailscale debug reload-config ;;
+              *) echo SKIPPED ;;
+          esac
   become: true
   # A stopped daemon has no socket; it reads config.json on its next start.
   when: tailscale_service_state != 'stopped'
   listen: "tailscale: reload tailscale config"
-  changed_when: true
+  changed_when: "'SKIPPED' not in _tailscale_reload_config.stdout"
   # Runs in the same flush as the restart handler, before the new socket
   # may be up.
   register: _tailscale_reload_config

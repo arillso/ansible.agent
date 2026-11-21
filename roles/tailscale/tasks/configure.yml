@@ -161,18 +161,9 @@
         notify: "tailscale: restart tailscaled"
         no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
 
-      # Preferences below need the authenticated state on this run; the
-      # fact script caches its output, so drop the pre-auth snapshot first.
-      - name: Drop cached Tailscale facts
-        ansible.builtin.file:
-            path: "{{ _tailscale_facts_cache_file }}"
-            state: absent
-        changed_when: false
-        become: true
-
+      # Preferences below need the authenticated state on this run.
       - name: Refresh Tailscale facts after authentication
-        ansible.builtin.setup:
-            filter: ansible_local
+        ansible.builtin.include_tasks: refresh_facts.yml
   always:
       - name: Remove temporary auth key file
         ansible.builtin.file:

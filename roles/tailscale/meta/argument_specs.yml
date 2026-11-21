@@ -112,6 +112,9 @@ argument_specs:
                     - Add dependencies: tailscale_service_override: {After: ["network.target"]}
                     - Disable config: tailscale_service_override: {} (empty dict)
 
+                    A custom ExecStart must pass --config itself, otherwise the daemon
+                    options in config.json are not read (reload-config is then skipped).
+
             # Authentication
             tailscale_auth_key:
                 type: "str"

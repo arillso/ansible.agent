@@ -1,0 +1,25 @@
+---
+# tailscale_package_state: absent removes the package in install.yml; this
+# removes what the role itself put on the host.
+
+- name: Remove Tailscale role-managed files
+  ansible.builtin.file:
+      path: "{{ item }}"
+      state: absent
+  loop:
+      - /etc/systemd/system/tailscaled.service.d/override.conf
+      - /etc/ansible/facts.d/tailscale.fact
+      - "{{ _tailscale_facts_cache_file }}"
+      - "{{ tailscale_config_file }}"
+  become: true
+  register: _tailscale_uninstall_files
+  tags: [tailscale, install]
+
+- name: Reload systemd after removing the Tailscale override
+  ansible.builtin.systemd_service:
+      daemon_reload: true
+  become: true
+  when:
+      - ansible_facts['service_mgr'] == 'systemd'
+      - _tailscale_uninstall_files is changed
+  tags: [tailscale, install]

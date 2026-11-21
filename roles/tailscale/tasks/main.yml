@@ -29,15 +29,24 @@
         ansible.builtin.include_tasks: install.yml
         tags: [tailscale, install]
 
-      # With tailscale_package_state: absent only the removal runs; there is
-      # no service left to start, configure or verify.
-      - name: Configure and verify Tailscale
-        when: tailscale_package_state != 'absent'
-        block:
-            - name: Manage Tailscale service state
-              ansible.builtin.include_tasks: service.yml
-              tags: [tailscale, service]
+      - name: Remove files the role wrote
+        ansible.builtin.include_tasks: uninstall.yml
+        when: tailscale_package_state == 'absent'
+        tags: [tailscale, install]
 
+      - name: Manage Tailscale service state
+        ansible.builtin.include_tasks: service.yml
+        when: tailscale_package_state != 'absent'
+        tags: [tailscale, service]
+
+      # The fact script needs systemctl, bash and jq, so authentication,
+      # preferences and verification are systemd-only; other hosts (Alpine)
+      # get the package and a running service.
+      - name: Configure and verify Tailscale
+        when:
+            - tailscale_package_state != 'absent'
+            - ansible_facts['service_mgr'] == 'systemd'
+        block:
             # Before configure.yml: the auth and preference tasks read
             # ansible_local.tailscale on the first run too.
             - name: Setup Tailscale local facts
