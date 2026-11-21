@@ -5,13 +5,30 @@
   ansible.builtin.template:
       src: "{{ alloy_config_template }}"
       dest: "{{ alloy_config_file }}"
-      owner: "{{ alloy_user }}"
+      owner: root
       group: "{{ alloy_group }}"
-      mode: "0644"
-      backup: true
+      mode: "0640"
   become: true
   notify: "alloy: restart alloy"
   no_log: "{{ alloy_no_log_config | default(true) }}"
+
+- name: Find leftover Grafana Alloy configuration backups
+  ansible.builtin.find:
+      paths: "{{ alloy_config_file | dirname }}"
+      patterns: "^{{ alloy_config_file | basename | regex_escape }}\\..*~$"
+      use_regex: true
+      file_type: file
+  register: alloy_config_backups
+  become: true
+
+- name: Remove leftover Grafana Alloy configuration backups
+  ansible.builtin.file:
+      path: "{{ item.path }}"
+      state: absent
+  loop: "{{ alloy_config_backups.files }}"
+  loop_control:
+      label: "{{ item.path }}"
+  become: true
 
 - name: Create systemd service override directory
   ansible.builtin.file:

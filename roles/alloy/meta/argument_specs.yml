@@ -33,7 +33,9 @@ argument_specs:
                 type: "str"
                 required: false
                 default: "/etc/alloy/config.alloy"
-                description: "Configuration file path for Grafana Alloy"
+                description:
+                    - "Configuration file path for Grafana Alloy"
+                    - "The file is written root:alloy_group 0640. Its parent directory is set to root:alloy_group 0750, and Ansible backups of the file (basename followed by .*~) in that directory are removed on every run, so keep it in a dedicated directory. The role fails if the parent is a shared directory such as /, /etc, /opt or /var."
 
             alloy_service_name: &alloy_service_name
                 type: "str"

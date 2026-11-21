@@ -156,6 +156,45 @@
   notify: "alloy: restart alloy"
   tags: [alloy, install, package]
 
+# The next task sets the parent directory to 0750; on a shared directory that
+# would lock unprivileged users and services out of it.
+- name: Ensure Alloy configuration directory is dedicated
+  ansible.builtin.assert:
+      that:
+          - (alloy_config_file | dirname | regex_replace('/+$', '')) not in _alloy_shared_dirs
+      fail_msg: >-
+          alloy_config_file ({{ alloy_config_file }}) must live in a dedicated
+          directory such as /etc/alloy; its parent directory is set to
+          root:{{ alloy_group }} 0750.
+      quiet: true
+  vars:
+      _alloy_shared_dirs:
+          - ""
+          - "/etc"
+          - "/opt"
+          - "/srv"
+          - "/usr"
+          - "/usr/local"
+          - "/usr/local/etc"
+          - "/var"
+          - "/var/lib"
+          - "/home"
+          - "/root"
+          - "/tmp"
+  tags: [alloy, install, config]
+
+# root-owned so the alloy process cannot replace config.alloy, which can
+# carry credentials; the group lets alloy traverse it.
+- name: Create Alloy configuration directory
+  ansible.builtin.file:
+      path: "{{ alloy_config_file | dirname }}"
+      state: directory
+      owner: root
+      group: "{{ alloy_group }}"
+      mode: "0750"
+  become: true
+  tags: [alloy, install, config]
+
 - name: Create required directories
   ansible.builtin.file:
       path: "{{ item }}"
@@ -165,7 +204,6 @@
       mode: "0755"
   become: true
   loop:
-      - "{{ alloy_config_file | dirname }}"
       - "{{ alloy_storage_path }}"
       - "{{ alloy_log_file | dirname if alloy_log_file else '/var/log/alloy' }}"
   tags: [alloy, install, config]

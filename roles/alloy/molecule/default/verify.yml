@@ -54,6 +54,64 @@
             fail_msg: "Alloy config file does not exist"
             success_msg: "Alloy config file exists"
 
+      # config.alloy can carry credentials: alloy reads it through the group,
+      # cannot write it, and other users cannot read it.
+      - name: Assert Alloy config is root:alloy 0640
+        ansible.builtin.assert:
+            that:
+                - alloy_config.stat.pw_name == 'root'
+                - alloy_config.stat.gr_name == 'alloy'
+                - alloy_config.stat.mode == '0640'
+            fail_msg: >-
+                config.alloy is {{ alloy_config.stat.pw_name }}:{{ alloy_config.stat.gr_name }}
+                {{ alloy_config.stat.mode }}, expected root:alloy 0640
+            success_msg: "config.alloy is root:alloy 0640"
+
+      - name: Check Alloy config directory
+        ansible.builtin.stat:
+            path: /etc/alloy
+        register: alloy_config_dir
+
+      - name: Assert Alloy config directory is root:alloy 0750
+        ansible.builtin.assert:
+            that:
+                - alloy_config_dir.stat.isdir
+                - alloy_config_dir.stat.pw_name == 'root'
+                - alloy_config_dir.stat.gr_name == 'alloy'
+                - alloy_config_dir.stat.mode == '0750'
+            fail_msg: >-
+                /etc/alloy is {{ alloy_config_dir.stat.pw_name }}:{{ alloy_config_dir.stat.gr_name }}
+                {{ alloy_config_dir.stat.mode }}, expected root:alloy 0750
+            success_msg: "/etc/alloy is root:alloy 0750"
+
+      - name: Find Alloy configuration backup leftovers
+        ansible.builtin.find:
+            paths: /etc/alloy
+            patterns: "config.alloy.*~"
+            file_type: file
+        register: alloy_config_backup_leftovers
+
+      - name: Assert no Alloy configuration backups remain
+        ansible.builtin.assert:
+            that:
+                - alloy_config_backup_leftovers.files | length == 0
+            fail_msg: >-
+                Leftover Alloy config backups found:
+                {{ alloy_config_backup_leftovers.files | map(attribute='path') | list }}
+            success_msg: "No Alloy config backups remain in /etc/alloy"
+
+      - name: Check the package-manager artifact planted by side_effect
+        ansible.builtin.stat:
+            path: /etc/alloy/config.alloy.dpkg-dist
+        register: alloy_config_dpkg_dist
+
+      - name: Assert the package-manager artifact survived the cleanup
+        ansible.builtin.assert:
+            that:
+                - alloy_config_dpkg_dist.stat.exists
+            fail_msg: "Cleanup removed config.alloy.dpkg-dist, which is not an Ansible backup"
+            success_msg: "config.alloy.dpkg-dist left untouched"
+
       - name: Check if Alloy is listening on port
         ansible.builtin.wait_for:
             port: 12345
