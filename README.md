@@ -41,7 +41,13 @@ collections:
     - role: arillso.agent.alloy
       vars:
         alloy_prometheus_enabled: true
+        alloy_prometheus_remote_write:
+          - name: default
+            url: https://prometheus.example.com/api/v1/write
         alloy_loki_enabled: true
+        alloy_loki_clients:
+          - name: default
+            url: https://loki.example.com/loki/api/v1/push
     - role: arillso.agent.do
     - role: arillso.agent.tailscale
       vars:

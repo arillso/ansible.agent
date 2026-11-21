@@ -55,7 +55,7 @@ git checkout -b fix/issue-description
 - **Idempotency**: All tasks must be idempotent
 - **Handlers**: Use handlers for service restarts and reloads
 - **FQCN**: Use Fully Qualified Collection Names for modules
-- **Variables**: Document all variables in `defaults/main.yml`
+- **Variables**: Document all variables in `meta/argument_specs.yml`
 - **Argument Specs**: Always provide `meta/argument_specs.yml`
 - **Tags**: Use meaningful tags for task organization
 
@@ -76,9 +76,8 @@ roles/ROLE_NAME/
 │   ├── configure.yml         # Configuration tasks
 │   └── service.yml           # Service management
 ├── templates/                # Jinja2 templates
-├── vars/
-│   ├── Debian.yml            # Debian-specific variables
-│   └── RedHat.yml            # RedHat-specific variables
+├── vars/                     # OS-specific values: Debian.yml/RedHat.yml (do)
+│   └── main.yml              # or a per-distribution dict (alloy, tailscale)
 └── README.md                 # Role documentation
 ```
 
@@ -136,8 +135,9 @@ Fixes #123
 ```
 
 - `type`: `feat`, `fix`, `docs`, `test`, `ci`, `refactor`, `chore`
-- `scope`: `alloy`, `do`, `tailscale`, or `deps` for dependency updates;
-  omit it for collection-wide changes
+- `scope`: the role (`alloy`, `do`, `tailscale`), `deps` for dependency
+  updates, `molecule` for test scenarios, `repo` for repository tooling;
+  omit it when no scope fits
 - Example: `fix(tailscale): fix RHEL repo, auth key exposure and service handling`
 
 The pull request title follows the same format.

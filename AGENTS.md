@@ -33,7 +33,8 @@ Ansible Galaxy as `arillso.agent`.
   looked up on the host with `apt-cache madison`.
 - **OS-specific values**: `do` uses `vars/Debian.yml` and `vars/RedHat.yml`;
   `alloy` and `tailscale` keep a per-distribution dict in `vars/main.yml`
-  (`_alloy_os`, …). Follow the pattern the role already uses.
+  (`_alloy_os`, `tailscale_distributions`). Follow the pattern the role already
+  uses.
 - **Tasks are split by function** (`install.yml`, `configure.yml`,
   `service.yml`, `resolve_version.yml`), included from `tasks/main.yml`.
 - **Every user-visible change gets an entry** under `## [Unreleased]` in
@@ -55,8 +56,11 @@ Ansible Galaxy as `arillso.agent`.
 - **`tag.yml`**: publishes to Galaxy and creates the GitHub release. It only
   triggers on tags matching `[0-9]+.[0-9]+.[0-9]+`, so a `v`-prefixed tag
   publishes nothing.
+- No further workflow files: new CI steps go into the reusables called from
+  `pull-request.yml` and `merge.yml`.
 - **Renovate** (`.github/renovate.json`): `ansible-core` and `molecule-qemu` are
-  disabled on purpose; the reason is in the rule's `description`.
+  disabled on purpose. `molecule-qemu` carries its reason in the rule's
+  `description`; `ansible-core` is held for compatibility (`CHANGELOG.md`, 1.1.0).
 
 ## Pitfalls
 
