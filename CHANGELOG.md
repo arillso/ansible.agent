@@ -24,8 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Agent versions**: the pinned defaults move to alloy `1.22.0`
   (`alloy_version`), tailscale `1.104.7` (`tailscale_version`) and do-agent
-  `3.18.17` (`do_version`). **Upgrade note:** the next run upgrades pinned
-  hosts and restarts the services; set the variable to keep a version.
+  `3.18.17` (`do_version`). **Upgrade note:** with the defaults, the next run
+  upgrades every apt and dnf host and restarts alloy, tailscaled and
+  do-agent. `alloy_package_only`/`tailscale_package_only` hosts (Alpine, Arch)
+  stay unpinned. Set the variable to the previous version (`1.21.3`,
+  `1.104.4`, `3.18.16`) to stay on it, or to `""` to leave the installed
+  version alone.
+- **CI**: the `arillso/.github` reusable workflows and the Renovate preset
+  are pinned to `2026-11-14`.
 
 ### Deprecated
 
@@ -93,7 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tailscale_package_only` moved from `vars/` to `defaults/`, and the
   duplicate `tailscale_package_name`/`tailscale_package_state` were removed
   from `vars/`, so inventory and group_vars can override them. The unused
-  `vars/Debian.yml` is gone.
+  `vars/Debian.yml` is gone. **Upgrade note:** values for these variables
+  already set in inventory or group_vars were ignored until now and take
+  effect on the next run.
 - **tailscale**: the auth key is passed as `--auth-key=file:<0600 tempfile>`
   instead of on the command line, where local users could read it from `ps`.
 - **tailscale**: `tailscale_reset_authentication` fails early without an auth
