@@ -206,6 +206,8 @@
                 tailscale up
                 --auth-key=file:{{ _tailscale_auth_key_file.path }}
                 {% if tailscale_tags | default([]) | length > 0 %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
+                {% if tailscale_advertise_routes | default([]) | length > 0 %}--advertise-routes={{ tailscale_advertise_routes | join(',') }}{% endif %}
+                {% if tailscale_advertise_exit_node | default('') | string | length > 0 and tailscale_advertise_exit_node | bool %}--advertise-exit-node{% endif %}
                 --reset
         become: true
         changed_when: true

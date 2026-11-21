@@ -224,7 +224,9 @@ argument_specs:
                 required: false
                 default: []
                 elements: "str"
-                description: "Subnet routes to advertise in CIDR format (e.g., '192.168.1.0/24')"
+                description: >-
+                    Subnet routes to advertise in CIDR format (e.g., '192.168.1.0/24'). Without
+                    config.json they are passed to the first `tailscale up` only.
 
             tailscale_snat_subnet_routes:
                 type: "str"
@@ -237,7 +239,9 @@ argument_specs:
                 type: "str"
                 required: false
                 default: ""
-                description: "Advertise this node as an exit node (true/false)"
+                description: >-
+                    Advertise this node as an exit node (true/false). Without config.json it is
+                    passed to the first `tailscale up` only.
 
             tailscale_exit_node:
                 type: "str"
