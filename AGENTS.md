@@ -51,7 +51,8 @@ Ansible Galaxy as `arillso.agent`.
 - **`pull-request.yml`**: lint and unit tests (`ci-ansible-collection`), one
   `molecule-<role>` job per role plus `molecule-multi-role`, secret scan and
   Claude review. All reusables come from `arillso/.github`, pinned to a date tag.
-- **`merge.yml`**: the same CI plus secret scan on push to `main`.
+- **`merge.yml`**: `ci-ansible-collection` and secret scan on push to `main`;
+  molecule runs on pull requests only.
 - **`nightly-security.yml`**: secret scan daily at 02:00 UTC.
 - **`tag.yml`**: publishes to Galaxy and creates the GitHub release. It only
   triggers on tags matching `[0-9]+.[0-9]+.[0-9]+`, so a `v`-prefixed tag
