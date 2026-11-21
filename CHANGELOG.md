@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-11-21
+
 ### Fixed
 
 - **tailscale**: hosts with a config.json never logged in. tailscaled refuses
@@ -17,15 +19,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   config.json; tailscaled logs in with it on start. `tailscale up` and
   `--advertise-tags` are only used without config.json, so config-file-mode
   nodes take their tags from the auth key. `tailscale_reset_authentication`
-  fails early in config-file mode.
+  fails early in config-file mode. **Upgrade note:** on config-file-mode
+  hosts with `tailscale_auth_key` set, the next run writes the key file and
+  restarts tailscaled once.
 - **tailscale**: without config.json, `tailscale_advertise_routes` and
   `tailscale_advertise_exit_node` were ignored, because they only went into
   config.json. The first `tailscale up` now passes them as
   `--advertise-routes` and `--advertise-exit-node`. Later runs leave them
   alone: setting either flag again discards the routes an app connector has
-  learned. **Upgrade note:** on config-file-mode
-  hosts with `tailscale_auth_key` set, the next run writes the key file and
-  restarts tailscaled once.
+  learned.
 - **tailscale**: the tasks that decide whether config.json is written were
   tagged `daemon`, so `--skip-tags daemon` failed on the undefined fact.
 
@@ -778,7 +780,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.2.1...HEAD
+[2.2.1]: https://github.com/arillso/ansible.agent/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/arillso/ansible.agent/compare/2.1.0...2.2.0
 [2.1.0]: https://github.com/arillso/ansible.agent/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/arillso/ansible.agent/compare/1.2.0...2.0.0
