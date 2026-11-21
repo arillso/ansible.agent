@@ -1,10 +1,20 @@
 ---
 # Main tasks for DigitalOcean role
-# Diese Datei orchestriert die Installation und Konfiguration von DigitalOcean Agent
 
 - name: Run DigitalOcean Agent role tasks
   when: do_enabled | bool
   block:
+      - name: Fail on an unsupported OS family
+        ansible.builtin.assert:
+            that:
+                - ansible_facts['os_family'] in ['Debian', 'RedHat']
+            fail_msg: >-
+                The do role supports Debian and RedHat families only;
+                {{ ansible_facts['os_family'] }} has no DigitalOcean Agent repository.
+            quiet: true
+        tags:
+            - always
+
       - name: Load OS-specific variables
         ansible.builtin.include_vars: "{{ ansible_facts['os_family'] }}.yml"
         tags:

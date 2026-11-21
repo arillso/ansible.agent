@@ -32,9 +32,12 @@ do_no_log_api_token: true
 do_prometheus_enabled: false
 do_prometheus_port: 9091
 
-# Logging configuration
+# Logging configuration ("debug" adds --debug)
 do_log_level: "info"
 do_log_format: "json"
+
+# Raw do-agent flags appended to ExecStart, e.g. ["--process-topk=50"]
+do_extra_flags: []
 
 # Tags and labels
 do_tags: []

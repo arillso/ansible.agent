@@ -9,16 +9,17 @@
       daemon_reload: true
   become: true
 
-- name: Check if DigitalOcean Agent is running
-  ansible.builtin.systemd_service:
-      name: do-agent
-      state: started
-  register: do_agent_status
-  when: do_health_check_enabled | default(true)
+# Run a pending restart now so the health check sees the process it leaves.
+# meta tasks ignore `when`, so this stays outside the health-check condition.
+- name: Apply pending DigitalOcean Agent restarts
+  ansible.builtin.meta: flush_handlers
 
-- name: Verify DigitalOcean Agent process is active
-  ansible.builtin.command: pgrep -f do-agent
-  register: do_agent_process
+- name: Wait for DigitalOcean Agent to report active
+  ansible.builtin.command: systemctl is-active do-agent
+  register: do_agent_active
+  until: do_agent_active.stdout == "active"
+  retries: 10
+  delay: 3
   changed_when: false
-  failed_when: do_agent_process.rc != 0
-  when: do_health_check_enabled | default(true)
+  failed_when: do_agent_active.stdout != "active"
+  when: do_health_check_enabled | bool

@@ -77,34 +77,23 @@
             fail_msg: "DO Agent service is not properly configured"
             success_msg: "DO Agent service is properly configured"
 
-      - name: Check if DO Agent config file exists
+      - name: Check legacy DO Agent configuration paths
         ansible.builtin.stat:
-            path: /etc/do-agent/do-agent.yaml
-        register: do_config_file
+            path: "{{ item }}"
+        register: do_legacy_paths
+        loop:
+            - /etc/do-agent
+            - /etc/default/do-agent
 
-      - name: Assert DO Agent config file exists
+      - name: Assert no legacy DO Agent configuration remains
         ansible.builtin.assert:
             that:
-                - do_config_file.stat.exists
-                - do_config_file.stat.isreg
-            fail_msg: "DO Agent config file does not exist"
-            success_msg: "DO Agent config file exists"
-
-      - name: Find DO Agent configuration backup leftovers
-        ansible.builtin.find:
-            paths: /etc/do-agent
-            patterns: "do-agent.yaml.*~"
-            file_type: file
-        register: do_config_backup_leftovers
-
-      - name: Assert no DO Agent configuration backups remain
-        ansible.builtin.assert:
-            that:
-                - do_config_backup_leftovers.files | length == 0
-            fail_msg: >-
-                Leftover DO Agent config backups found:
-                {{ do_config_backup_leftovers.files | map(attribute='path') | list }}
-            success_msg: "No DO Agent config backups remain in /etc/do-agent"
+                - not item.stat.exists
+            fail_msg: "Legacy DO Agent path {{ item.item }} is still on the host"
+            success_msg: "Legacy DO Agent path {{ item.item }} is gone"
+        loop: "{{ do_legacy_paths.results }}"
+        loop_control:
+            label: "{{ item.item }}"
 
       # --- Tailscale -------------------------------------------------------
       - name: Assert Tailscale package is installed

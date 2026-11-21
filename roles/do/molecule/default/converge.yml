@@ -10,8 +10,7 @@
             # Disable health checks for testing (no actual DO metadata service)
             do_health_check_enabled: false
 
-            # Enable custom config for testing
-            do_custom_config_enabled: true
-            do_tags:
-                - molecule-test
-                - testing
+            # Exercise the flag drop-in
+            do_prometheus_enabled: true
+            do_labels:
+                molecule: "true"

@@ -1,13 +1,32 @@
 ---
-# Recreate the pre-fix state: a leftover backup copy of the agent config as
-# `backup: true` used to produce it, then re-run the role so verify can prove
-# the cleanup task actually removes it.
+# Recreate what earlier role versions left on a host: the agent config, a
+# `backup: true` copy of it and the environment file, all carrying the API
+# token. Re-run the role so verify can prove the cleanup removes them.
 - name: Side effect
   hosts: all
   become: true
   gather_facts: true
 
   tasks:
+      - name: Create the legacy DO Agent configuration directory
+        ansible.builtin.file:
+            path: /etc/do-agent
+            state: directory
+            owner: root
+            group: root
+            mode: "0755"
+
+      - name: Create legacy DO Agent configuration files
+        ansible.builtin.copy:
+            content: "# written by an earlier role version\n"
+            dest: "{{ item }}"
+            owner: root
+            group: root
+            mode: "0600"
+        loop:
+            - /etc/do-agent/do-agent.yaml
+            - /etc/default/do-agent
+
       - name: Create a leftover DO Agent configuration backup
         ansible.builtin.copy:
             content: "# stale backup left behind by a pre-fix role run\n"
@@ -16,15 +35,5 @@
             group: root
             mode: "0644"
 
-      # Not an Ansible backup and never carried the token, so the cleanup must
-      # leave it alone. verify.yml asserts it survives.
-      - name: Create a package-manager artifact the cleanup must not touch
-        ansible.builtin.copy:
-            content: "# packaged default, not an Ansible backup\n"
-            dest: /etc/do-agent/do-agent.yaml.dpkg-dist
-            owner: root
-            group: root
-            mode: "0644"
-
-- name: Converge again to trigger the backup cleanup
+- name: Converge again to trigger the legacy config cleanup
   ansible.builtin.import_playbook: converge.yml

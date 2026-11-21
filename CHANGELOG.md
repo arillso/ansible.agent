@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **do**: settings now reach `do-agent` as command-line flags through a
+  systemd drop-in (`/etc/systemd/system/do-agent.service.d/ansible.conf`),
+  the only way the agent takes them. `do_prometheus_enabled` passes
+  `--web.listen` and `--web.listen-address=<do_listen_address>:<do_prometheus_port>`,
+  `do_labels` passes one `--additional-label=<key>:<value>` each,
+  `do_log_level: debug` passes `--debug`, and the new `do_extra_flags` list
+  appends any other flag (e.g. `--process-topk=50`). Without any of these the
+  drop-in is removed and the packaged unit runs unchanged.
+
+### Deprecated
+
+- **do**: `do-agent` has no flag for `do_api_token`, `do_droplet_id`,
+  `do_storage_path`, `do_port`, `do_log_format`, `do_tags`,
+  `do_custom_config_enabled`, `do_no_log_api_token` or the `warn`/`error`
+  log levels. They never had an effect: earlier versions wrote them to
+  `/etc/default/do-agent` and `/etc/do-agent/do-agent.yaml`, which the agent
+  does not read. The variables stay accepted, and the role now prints a
+  warning naming any that are set.
+
 ### Fixed
 
 - **Alloy config exposure**: `config.alloy` carries credentials whenever
@@ -88,11 +109,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   states and refreshes local facts with `become`, so an already-joined node
   is not re-authenticated. reload-config is skipped when the running unit
   does not pass `--config`.
+- **do**: earlier runs left `/etc/default/do-agent`,
+  `/etc/do-agent/do-agent.yaml` and their `backup: true` copies, holding the
+  API token, on the host. They stayed there even after the token was
+  removed from the inventory. The role now deletes `/etc/do-agent` (which
+  the package does not ship) and `/etc/default/do-agent`.
+- **do**: the health check no longer runs `systemd_service` with
+  `state: started` (which started the service without `become`) followed by
+  `pgrep -f do-agent` (which matched any command line containing the
+  string). It now flushes pending restarts and waits up to 30 seconds for
+  `systemctl is-active do-agent` to report `active`.
+- **do**: the apt source line comes from `do_repository` (now with
+  `signed-by`) instead of a hardcoded copy that ignored the variable.
+- **do**: an unsupported OS family fails with a clear message instead of
+  "Could not find or access Suse.yml".
+- **do**: check mode on a Debian host where `do_version` cannot be
+  resolved prints a note that the dry run shows an unpinned install, and
+  what the real run will do.
 
 ### Removed
 
 - **alloy**: unused `alloy_service_file` and the never-installed RedHat
   `package_dependencies`.
+- **do**: `software-properties-common` and `apt-transport-https` are no
+  longer installed on Debian/Ubuntu. `apt_repository` with `signed-by` and an
+  https source does not need either. `python3-apt`, which
+  `apt_repository` needs and `software-properties-common` used to pull in,
+  is now listed directly.
+- **do**: the `do: reload systemd` handler, which no task notified.
 
 ## [2.1.0] - 2026-11-05
 

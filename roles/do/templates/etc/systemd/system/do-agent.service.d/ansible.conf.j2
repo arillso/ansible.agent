@@ -1,0 +1,13 @@
+{#- Each argument is double-quoted for systemd; `%` and `$` are doubled so
+    systemd passes them through literally instead of expanding them. -#}
+{%- macro arg(value) %} "{{ value | string | replace('\\', '\\\\') | replace('"', '\\"') | replace('%', '%%') | replace('$', '$$') }}"{% endmacro -%}
+# Managed by Ansible (arillso.agent.do). Settings reach do-agent only as
+# command-line flags; the base command matches the packaged unit.
+[Service]
+ExecStart=
+ExecStart=/opt/digitalocean/bin/do-agent --syslog
+{%- if do_prometheus_enabled | bool %}{{ arg('--web.listen') }}{{ arg('--web.listen-address=' ~ do_listen_address ~ ':' ~ do_prometheus_port) }}{% endif %}
+{%- if do_log_level == 'debug' %}{{ arg('--debug') }}{% endif %}
+{%- for key, value in do_labels | dictsort %}{{ arg('--additional-label=' ~ key ~ ':' ~ value) }}{% endfor %}
+{%- for flag in do_extra_flags %}{{ arg(flag) }}{% endfor %}
+
