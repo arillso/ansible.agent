@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-21
+
 ### Added
 
 - **do**: settings now reach `do-agent` as command-line flags through a
@@ -17,6 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `do_log_level: debug` passes `--debug`, and the new `do_extra_flags` list
   appends any other flag (e.g. `--process-topk=50`). Without any of these the
   drop-in is removed and the packaged unit runs unchanged.
+
+### Changed
+
+- **Agent versions**: the pinned defaults move to alloy `1.22.0`
+  (`alloy_version`), tailscale `1.104.7` (`tailscale_version`) and do-agent
+  `3.18.17` (`do_version`). **Upgrade note:** with the defaults, the next run
+  upgrades every apt and dnf host and restarts alloy, tailscaled and
+  do-agent. `alloy_package_only`/`tailscale_package_only` hosts (Alpine, Arch)
+  stay unpinned. Set the variable to the previous version (`1.21.3`,
+  `1.104.4`, `3.18.16`) to stay on it, or to `""` to leave the installed
+  version alone.
+- **CI**: the `arillso/.github` reusable workflows and the Renovate preset
+  are pinned to `2026-11-14`.
 
 ### Deprecated
 
@@ -84,7 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `tailscale_package_only` moved from `vars/` to `defaults/`, and the
   duplicate `tailscale_package_name`/`tailscale_package_state` were removed
   from `vars/`, so inventory and group_vars can override them. The unused
-  `vars/Debian.yml` is gone.
+  `vars/Debian.yml` is gone. **Upgrade note:** values for these variables
+  already set in inventory or group_vars were ignored until now and take
+  effect on the next run.
 - **tailscale**: the auth key is passed as `--auth-key=file:<0600 tempfile>`
   instead of on the command line, where local users could read it from `ps`.
 - **tailscale**: `tailscale_reset_authentication` fails early without an auth
@@ -739,7 +756,8 @@ For detailed configuration examples, see the [Alloy role README](roles/alloy/REA
 
 See: <https://github.com/arillso/ansible.agent/releases>
 
-[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.1.0...HEAD
+[Unreleased]: https://github.com/arillso/ansible.agent/compare/2.2.0...HEAD
+[2.2.0]: https://github.com/arillso/ansible.agent/compare/2.1.0...2.2.0
 [2.1.0]: https://github.com/arillso/ansible.agent/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/arillso/ansible.agent/compare/1.2.0...2.0.0
 [1.2.0]: https://github.com/arillso/ansible.agent/compare/1.1.0...1.2.0
