@@ -127,7 +127,10 @@ argument_specs:
                 required: false
                 default: []
                 elements: "str"
-                description: "List of Tailscale tags for ACL-based access control (e.g., 'tag:gateway')"
+                description: >-
+                    List of Tailscale tags for ACL-based access control (e.g., 'tag:gateway').
+                    Applied via --advertise-tags only without config.json; in config-file mode
+                    the tags come from the auth key.
 
             tailscale_reset_authentication:
                 type: "bool"
@@ -161,6 +164,15 @@ argument_specs:
                 required: false
                 default: "/etc/tailscale/config.json"
                 description: "Path to Tailscale daemon configuration file"
+
+            tailscale_auth_key_file:
+                type: "str"
+                required: false
+                default: "/etc/tailscale/authkey"
+                description: >-
+                    Config-file mode only: tailscale_auth_key is written to this file (0600)
+                    and referenced as authKey in config.json, where tailscaled reads it on
+                    start until the node is logged in.
 
             # Authentication (Daemon Config)
             tailscale_server_url:
@@ -212,7 +224,9 @@ argument_specs:
                 required: false
                 default: []
                 elements: "str"
-                description: "Subnet routes to advertise in CIDR format (e.g., '192.168.1.0/24')"
+                description: >-
+                    Subnet routes to advertise in CIDR format (e.g., '192.168.1.0/24'). Without
+                    config.json they are passed to the first `tailscale up` only.
 
             tailscale_snat_subnet_routes:
                 type: "str"
@@ -225,7 +239,9 @@ argument_specs:
                 type: "str"
                 required: false
                 default: ""
-                description: "Advertise this node as an exit node (true/false)"
+                description: >-
+                    Advertise this node as an exit node (true/false). Without config.json it is
+                    passed to the first `tailscale up` only.
 
             tailscale_exit_node:
                 type: "str"

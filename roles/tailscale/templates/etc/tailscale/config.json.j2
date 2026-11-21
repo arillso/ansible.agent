@@ -5,6 +5,9 @@
 {%- set _ = config.update({"version": "alpha0"}) -%}
 
 {# Authentication #}
+{%- if tailscale_auth_key | default('') | length > 0 -%}
+  {%- set _ = config.update({"authKey": "file:" ~ tailscale_auth_key_file}) -%}
+{%- endif -%}
 {%- if tailscale_server_url | default('') | length > 0 -%}
   {%- set _ = config.update({"serverURL": tailscale_server_url}) -%}
 {%- endif -%}

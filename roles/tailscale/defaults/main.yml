@@ -24,6 +24,8 @@ tailscale_config_enabled: true
 tailscale_config_file: /etc/tailscale/config.json
 
 tailscale_auth_key: ""
+# Config-file mode only: the key is written here and referenced as authKey.
+tailscale_auth_key_file: /etc/tailscale/authkey
 tailscale_tags: []
 tailscale_reset_authentication: false
 
