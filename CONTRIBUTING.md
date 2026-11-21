@@ -124,16 +124,23 @@ make build
 
 ### Commit Messages
 
-Write clear, descriptive commit messages:
+Use [Conventional Commits](https://www.conventionalcommits.org/), scoped to
+the role when the change touches one:
 
 ```text
-Brief summary (50 chars or less)
+<type>(<scope>): <summary in imperative mood>
 
-- Detailed description with bullet points
-- Reference related issues
+Optional body explaining what changed and why.
 
 Fixes #123
 ```
+
+- `type`: `feat`, `fix`, `docs`, `test`, `ci`, `refactor`, `chore`
+- `scope`: `alloy`, `do`, `tailscale`, or `deps` for dependency updates;
+  omit it for collection-wide changes
+- Example: `fix(tailscale): fix RHEL repo, auth key exposure and service handling`
+
+The pull request title follows the same format.
 
 ### Pull Request Process
 

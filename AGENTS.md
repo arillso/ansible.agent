@@ -1,144 +1,73 @@
-# Ansible Collection: arillso.agent
+# arillso.agent
 
-## Context
+Ansible collection with three roles that install and configure host agents:
+`alloy` (Grafana Alloy), `do` (DigitalOcean Agent) and `tailscale`. Published to
+Ansible Galaxy as `arillso.agent`.
 
-This is an Ansible collection that provides production-ready roles for deploying and configuring monitoring, observability, and networking agents. The collection includes Grafana Alloy for comprehensive observability, DigitalOcean Agent for Droplet monitoring, and Tailscale for secure mesh VPN networking.
+## Commands
 
-## Structure
+`make help` lists the lint, test and build targets. Beyond those:
 
-### Collection Structure
-
-```text
-ansible.agent/
-├── .github/workflows/
-│   ├── pull-request.yml    # Lint, tests, secret scan, Claude review on PRs
-│   ├── merge.yml           # CI + secret scan on push to main
-│   ├── nightly-security.yml # Scheduled daily secret scan
-│   └── tag.yml             # Galaxy publishing (triggered by tag)
-├── roles/
-│   ├── alloy/             # Grafana Alloy observability agent
-│   ├── do/                # DigitalOcean monitoring agent
-│   └── tailscale/         # Tailscale VPN mesh network
-├── extensions/molecule/
-│   └── multi-role/        # Combined molecule scenario (all three roles)
-├── tests/
-│   └── unit/             # Unit tests (pytest)
-├── AGENTS.md
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── galaxy.yml
-├── pytest.ini
-└── requirements.txt
-```
-
-### Role Structure
-
-Each role follows standard Ansible role structure:
-
-- `tasks/` - Main task files organized by function (install.yml, configure.yml, service.yml)
-- `defaults/` - Default variables (minimal comments, examples in comments)
-- `vars/` - OS-specific variables (Debian.yml, RedHat.yml)
-- `handlers/` - Handlers for service restarts
-- `templates/` - Jinja2 templates for configuration files
-- `meta/` - Role metadata with `argument_specs.yml` (required)
-
-### Roles
-
-- **alloy** - Grafana Alloy for metrics, logs, and traces collection
-- **do** - DigitalOcean Agent for Droplet monitoring
-- **tailscale** - Tailscale VPN for secure mesh networking
+- One molecule scenario: `cd roles/<role> && molecule test -s <default|disabled>`.
+- Combined scenario (all three roles on one host): `cd extensions && molecule test -s multi-role`.
+- The alloy scenarios use the `molecule-qemu` driver and need KVM with your user
+  in the `kvm` group. alloy must run as a stable systemd service, which the
+  docker driver does not give. do, tailscale and multi-role use docker.
 
 ## Conventions
 
-### Code Style
+- **Variables are documented in `meta/argument_specs.yml` only.** The guide at
+  `guide.arillso.io` renders role docs from it (antsibull-docs in `arillso/guide`),
+  so role READMEs carry features and a quick start, no variable table.
+- **Secret options carry `no_log: true`** in `argument_specs.yml`.
+  `tests/unit/test_argument_spec_no_log.py` fails when one is missing; add new
+  secret option names to its `SECRET_OPTION_NAMES`.
+- **Agent versions are pinned** in `<role>_version`, in both
+  `defaults/main.yml` and `meta/argument_specs.yml`, each with a
+  `# renovate: datasource=… depName=…` comment on the line above. The regex
+  manager in `.github/renovate.json` only bumps values that carry this comment.
+- **apt pins go through the `arillso.agent.apt_version_pin` filter**
+  (`plugins/filter/apt_filters.py`, called from `tasks/resolve_version.yml`).
+  apt matches `=` pins against the full version string: Grafana publishes
+  `1.21.3-1`, Tailscale and DigitalOcean the bare version, so the string is
+  looked up on the host with `apt-cache madison`.
+- **OS-specific values**: `do` uses `vars/Debian.yml` and `vars/RedHat.yml`;
+  `alloy` and `tailscale` keep a per-distribution dict in `vars/main.yml`
+  (`_alloy_os`, …). Follow the pattern the role already uses.
+- **Tasks are split by function** (`install.yml`, `configure.yml`,
+  `service.yml`, `resolve_version.yml`), included from `tasks/main.yml`.
+- **Every user-visible change gets an entry** under `## [Unreleased]` in
+  `CHANGELOG.md` (Keep a Changelog). Deprecations are announced there.
+- **Each role ships two molecule scenarios**: `default` and `disabled`. The
+  latter sets the master switch (`<role>_enabled: false`) and verifies the role
+  leaves the host untouched.
 
-- Use 4 spaces for indentation in YAML files
-- Follow Ansible best practices and naming conventions
-- Use descriptive variable names with role prefixes
-- Minimal comments in defaults/main.yml (keep it clean)
-- Examples in comments for complex variables
-- Use handlers for service management
-- Organize tasks by function (install, configure, service)
+## Automation
 
-### Testing
+- **Git hooks** (`lefthook.yml`, enable with `lefthook install`): pre-commit runs
+  prettier, yamllint, markdownlint, `ansible-lint --profile=production`,
+  actionlint and gitleaks on staged files; pre-push runs a full gitleaks scan.
+- **`pull-request.yml`**: lint and unit tests (`ci-ansible-collection`), one
+  `molecule-<role>` job per role plus `molecule-multi-role`, secret scan and
+  Claude review. All reusables come from `arillso/.github`, pinned to a date tag.
+- **`merge.yml`**: the same CI plus secret scan on push to `main`.
+- **`nightly-security.yml`**: secret scan daily at 02:00 UTC.
+- **`tag.yml`**: publishes to Galaxy and creates the GitHub release. It only
+  triggers on tags matching `[0-9]+.[0-9]+.[0-9]+`, so a `v`-prefixed tag
+  publishes nothing.
+- **Renovate** (`.github/renovate.json`): `ansible-core` and `molecule-qemu` are
+  disabled on purpose; the reason is in the rule's `description`.
 
-Two-level testing strategy:
+## Pitfalls
 
-1. **Unit Tests** (pytest) - For templates and role metadata
-   - Location: `tests/unit/`
-   - Run: `pytest tests/unit/`
+- `plugins/README.md` is Ansible's boilerplate; the real plugin lives in
+  `plugins/filter/`.
+- There is no `tests/integration/`: the collection ships no modules, and role
+  end-to-end coverage (idempotence, distro matrix) lives in molecule.
+- `do-agent` reads settings only as command-line flags. The `do` role passes
+  them through a systemd drop-in; config files are not read by the agent.
 
-2. **Molecule Tests** - Role end-to-end, per-role and combined
-   - Per-role location: `roles/*/molecule/{default,disabled}/`
-   - Combined location: `extensions/molecule/multi-role/` (deploys alloy, do
-     and tailscale together on one host)
-   - Run: `molecule test -s default` (per role) / `molecule test -s multi-role`
-   - CI: one `molecule-<role>` job per role plus `molecule-multi-role` in `pull-request.yml`
+## More docs
 
-There is no `tests/integration/` (`ansible-test integration`): that level targets
-modules and plugins, and this collection ships none (`plugins/` holds only a
-README). Role end-to-end coverage belongs in molecule, which also gives the
-idempotence check and the multi-distro matrix that `ansible-test` would not.
-
-Tests run via the reusable CI (`arillso/.github`) on pull requests and merges.
-
-### Documentation
-
-**Keep documentation DRY:**
-
-1. **Collection README** - Overview + all roles listed with features
-2. **Role README** - Features + Quick Start + link to guide (if available)
-3. **argument_specs.yml** - Complete variable documentation
-4. **CONTRIBUTING.md** - Development guidelines and standards
-
-## Workflows
-
-### CI/CD
-
-Event-focused workflows calling reusables from `arillso/.github`:
-
-- `pull-request.yml` - Lint, unit tests, per-role molecule, secret scan, and Claude review on PRs
-- `merge.yml` - Same CI plus secret scan on push to `main`
-- `nightly-security.yml` - Scheduled daily secret scan
-- `tag.yml` - Publishes to Ansible Galaxy on tag push (e.g. `1.0.1`)
-
-### Release Process
-
-**IMPORTANT: Always update CHANGELOG.md before releasing!**
-
-1. **Update CHANGELOG.md** (REQUIRED)
-   - Move items from `## [Unreleased]` to new version section
-   - Document all changes under appropriate sections (Added, Changed, Fixed, etc.)
-
-2. **Update galaxy.yml version**
-   - Use semantic versioning (MAJOR.MINOR.PATCH)
-   - Example: `version: "1.0.1"`
-
-3. **Create and push git tag**
-   - Use version **without 'v' prefix** (e.g., `1.0.1` not `v1.0.1`)
-   - Command: `git tag 1.0.1 && git push origin 1.0.1`
-
-4. **Automated workflow triggers**
-   - `tag.yml` publishes to Ansible Galaxy
-   - Creates GitHub Release with CHANGELOG notes
-
-## Do
-
-- ✅ Always use argument_specs.yml for all roles
-- ✅ Keep defaults/main.yml clean (minimal comments)
-- ✅ Test with ansible-lint before committing
-- ✅ Update CHANGELOG.md before releasing
-- ✅ Use MIT license with copyright years 2022-2026
-- ✅ Organize tasks by function (install, configure, service)
-- ✅ Use OS-specific variables in vars/ directory
-
-## Do Not
-
-- ❌ Do not commit secrets or sensitive data
-- ❌ Do not create roles without argument_specs.yml
-- ❌ Do not use deprecated Ansible syntax
-- ❌ Do not hardcode values that should be variables
-- ❌ Do not add excessive comments to defaults/main.yml
-- ❌ Do not create separate test workflows (CI runs via the reusable in `pull-request.yml`/`merge.yml`)
-- ❌ Do not skip CHANGELOG.md updates before releases
-- ❌ Do not use 'v' prefix in Ansible Collection tags
+- Before a release: `CONTRIBUTING.md`, section "Release Process".
+- Before reviewing a PR: `REVIEW.md` for scope and severity levels.

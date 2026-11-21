@@ -1,61 +1,74 @@
 # Ansible Collection: arillso.agent
 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg?style=popout-square)](LICENSE) [![Ansible Galaxy](http://img.shields.io/badge/ansible--galaxy-arillso.agent-blue.svg?style=popout-square)](https://galaxy.ansible.com/arillso/agent)
+[![License](https://img.shields.io/github/license/arillso/ansible.agent?style=popout-square)](LICENSE)
+[![Ansible Galaxy](https://img.shields.io/badge/ansible--galaxy-arillso.agent-blue.svg?style=popout-square)](https://galaxy.ansible.com/arillso/agent)
+[![CI](https://img.shields.io/github/actions/workflow/status/arillso/ansible.agent/merge.yml?branch=main&style=popout-square&label=ci)](https://github.com/arillso/ansible.agent/actions/workflows/merge.yml)
 
-## Description
-
-This Ansible collection provides production-ready roles for deploying and
-configuring monitoring, observability, and networking agents across Linux
-infrastructure.
+Ansible roles that install and configure monitoring, observability and
+networking agents on Linux hosts.
 
 ## Roles
 
-- **[alloy](roles/alloy/README.md)** - Grafana Alloy for metrics, logs, and
-  traces collection with Node Exporter and OpenTelemetry support
-- **[do](roles/do/README.md)** - DigitalOcean Agent for automatic Droplet
-  monitoring with zero-configuration setup
-- **[tailscale](roles/tailscale/README.md)** - Tailscale VPN for secure mesh
-  networking with exit nodes and subnet routing
+- **[alloy](roles/alloy/README.md)**: Grafana Alloy for metrics, logs and
+  traces, with Node Exporter and OpenTelemetry support
+- **[do](roles/do/README.md)**: DigitalOcean Agent for Droplet monitoring
+- **[tailscale](roles/tailscale/README.md)**: Tailscale mesh VPN with exit
+  nodes and subnet routing
 
 ## Installation
-
-Install this collection from Ansible Galaxy:
 
 ```bash
 ansible-galaxy collection install arillso.agent
 ```
 
-Or add it to your `requirements.yml`:
+Or in `requirements.yml`:
 
 ```yaml
 ---
 collections:
   - name: arillso.agent
-    version: ">=1.0.0"
+    version: ">=2.0.0"
 ```
+
+## Quickstart
+
+```yaml
+---
+- name: Install agents
+  hosts: servers
+  become: true
+  roles:
+    - role: arillso.agent.alloy
+      vars:
+        alloy_prometheus_enabled: true
+        alloy_loki_enabled: true
+    - role: arillso.agent.do
+    - role: arillso.agent.tailscale
+      vars:
+        tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
+```
+
+Each role has an `<role>_enabled` switch; set it to `false` to skip the role on
+a host.
+
+## Configuration
+
+Every role variable is described in the role's `meta/argument_specs.yml`. The
+rendered reference with examples is in the
+[guide](https://guide.arillso.io/collections/arillso/agent/).
 
 ## Requirements
 
-- Ansible >= 2.18
-- systemd on target systems
+- ansible-core >= 2.18
+- systemd on the target hosts
+- the `arillso.system` collection (installed as a dependency)
 
-## Dependencies
+## Contributing
 
-This collection depends on `arillso.system` for package management:
-
-```bash
-ansible-galaxy collection install arillso.system
-```
-
-## Documentation
-
-Full documentation is available at:
-<https://guide.arillso.io/collections/arillso/agent/>
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and the release process.
 
 ## License
 
-This project is under the MIT License. See the [LICENSE](LICENSE) file for the full license text.
-
-## Copyright
+MIT, see [LICENSE](LICENSE).
 
 (c) 2022-2026, Arillso
