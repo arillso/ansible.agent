@@ -7,8 +7,13 @@ User={{ alloy_user }}
 Group={{ alloy_group }}
 
 # Override configuration file path
+{# IPv6 addresses need brackets in host:port, or alloy rejects the flag #}
+{% set _http_addr = alloy_server_http_listen_address | default('0.0.0.0') %}
+{% set _grpc_addr = alloy_server_grpc_listen_address | default('0.0.0.0') %}
+{% set _http_addr = ('[' ~ _http_addr ~ ']') if ':' in _http_addr and not _http_addr.startswith('[') else _http_addr %}
+{% set _grpc_addr = ('[' ~ _grpc_addr ~ ']') if ':' in _grpc_addr and not _grpc_addr.startswith('[') else _grpc_addr %}
 ExecStart=
-ExecStart=/usr/bin/alloy run {{ alloy_config_file }} --storage.path={{ alloy_storage_path }}{% if alloy_web_server_enabled | default(true) %} --server.http.listen-addr={{ alloy_server_http_listen_address | default('0.0.0.0') }}:{{ alloy_port | default('12345') }}{% endif %}{% if alloy_grpc_server_enabled | default(false) %} --server.grpc.listen-addr={{ alloy_server_grpc_listen_address | default('0.0.0.0') }}:{{ alloy_grpc_port | default('12346') }}{% endif %}
+ExecStart=/usr/bin/alloy run {{ alloy_config_file }} --storage.path={{ alloy_storage_path }}{% if alloy_web_server_enabled | default(true) %} --server.http.listen-addr={{ _http_addr }}:{{ alloy_port | default('12345') }}{% endif %}{% if alloy_grpc_server_enabled | default(false) %} --server.grpc.listen-addr={{ _grpc_addr }}:{{ alloy_grpc_port | default('12346') }}{% endif %}
 
 # Override environment file
 EnvironmentFile={{ alloy_env_file }}

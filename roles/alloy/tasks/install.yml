@@ -208,6 +208,32 @@
   become: true
   loop:
       - "{{ alloy_storage_path }}"
-      - "{{ alloy_log_file | dirname if alloy_log_file else '/var/log/alloy' }}"
+      - /var/log/alloy
   when: alloy_package_state != 'absent'
+  tags: [alloy, install, config]
+
+# systemd opens alloy_log_file as root, so its directory only has to exist.
+# Never chown it to alloy: alloy_log_file=/var/log/alloy.log would hand
+# /var/log to the alloy user.
+- name: Check the alloy_log_file directory
+  ansible.builtin.stat:
+      path: "{{ alloy_log_file | dirname }}"
+  register: _alloy_log_dir
+  when:
+      - alloy_package_state != 'absent'
+      - alloy_log_file | length > 0
+  tags: [alloy, install, config]
+
+- name: Create the alloy_log_file directory
+  ansible.builtin.file:
+      path: "{{ alloy_log_file | dirname }}"
+      state: directory
+      owner: root
+      group: root
+      mode: "0755"
+  become: true
+  when:
+      - alloy_package_state != 'absent'
+      - alloy_log_file | length > 0
+      - not _alloy_log_dir.stat.exists
   tags: [alloy, install, config]

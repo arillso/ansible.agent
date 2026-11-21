@@ -2,6 +2,12 @@
 # Grafana Alloy service management tasks
 # Handles service lifecycle and health checking
 
+# Restart on the new config before the start below and the readiness check,
+# so a fresh install is not started and then restarted again, and the check
+# tests the new config, not the process still running the old one.
+- name: "Apply pending Grafana Alloy restart before the readiness check"
+  ansible.builtin.meta: flush_handlers
+
 - name: "Enable and start Grafana Alloy service"
   # No daemon_reload here: it always reports changed and breaks
   # idempotence. The `alloy: reload systemd` handler (notified by the service
@@ -14,11 +20,6 @@
   tags:
       - alloy
       - service
-
-# Restart on the new config now, so the readiness check below tests it and
-# not the process still running the old one.
-- name: "Apply pending Grafana Alloy restart before the readiness check"
-  ansible.builtin.meta: flush_handlers
 
 - name: "Wait for Grafana Alloy to be ready"
   ansible.builtin.uri:
@@ -36,9 +37,10 @@
       # a wildcard bind answers on loopback too.
       _alloy_ready_host: >-
           {{ '127.0.0.1'
-             if not alloy_web_server_enabled or alloy_server_http_listen_address in ['', '0.0.0.0', '::']
+             if not alloy_web_server_enabled or alloy_server_http_listen_address in ['', '0.0.0.0', '::', '[::]']
              else ('[' ~ alloy_server_http_listen_address ~ ']'
-                   if ':' in alloy_server_http_listen_address else alloy_server_http_listen_address) }}
+                   if ':' in alloy_server_http_listen_address and not alloy_server_http_listen_address.startswith('[')
+                   else alloy_server_http_listen_address) }}
   tags:
       - alloy
       - health-check

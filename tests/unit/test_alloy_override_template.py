@@ -55,3 +55,15 @@ def test_log_file_redirects_output():
     assert "ReadWritePaths=/var/log/alloy" in output
     assert "StandardOutput=append:/var/log/alloy/alloy.log" in output
     assert "StandardError=append:/var/log/alloy/alloy.log" in output
+
+
+def test_ipv6_listen_address_is_bracketed():
+    output = render(alloy_server_http_listen_address="::")
+
+    assert "--server.http.listen-addr=[::]:12345" in output
+
+
+def test_bracketed_listen_address_is_kept():
+    output = render(alloy_server_http_listen_address="[::1]")
+
+    assert "--server.http.listen-addr=[::1]:12345" in output

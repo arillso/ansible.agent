@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `loki.write` component, which broke startup with Loki disabled. systemd now
   appends Alloy's output to the file (`StandardOutput`/`StandardError=append:`);
   the role does not rotate it. With Loki enabled, logs no longer go to Loki.
+  Its directory is created root-owned when missing and no longer chowned to
+  `alloy` (`/var/log/alloy.log` used to hand `/var/log` to the alloy user).
+- **alloy**: IPv6 `alloy_server_http_listen_address`/`alloy_server_grpc_listen_address`
+  values are bracketed in `ExecStart`, so `::` no longer stops Alloy from starting.
 - **alloy**: `config.alloy` is syntax-checked with `alloy fmt` before it is
   written (unknown components or bad references still only fail the
   readiness check).

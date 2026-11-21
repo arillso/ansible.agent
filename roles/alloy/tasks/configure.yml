@@ -62,12 +62,3 @@
   become: true
   notify: "alloy: restart alloy"
   no_log: "{{ alloy_no_log_env_file | default(true) }}"
-
-- name: Ensure log directory exists with proper permissions
-  ansible.builtin.file:
-      path: "/var/log/alloy"
-      state: directory
-      owner: "{{ alloy_user }}"
-      group: "{{ alloy_group }}"
-      mode: "0755"
-  become: true
