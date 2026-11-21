@@ -22,8 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   such as `.dpkg-dist` or `.rpmnew` stay. **Upgrade note:** the next run
   changes the owner of the config file and directory to `root` and restarts
   alloy once. A custom `alloy_config_file` placed directly in a shared
-  directory (for example `/etc/config.alloy`) sets that directory to
-  `root:{{ alloy_group }}` `0750`.
+  directory (for example `/etc/config.alloy`) now fails the run instead of
+  setting that directory to `root:{{ alloy_group }}` `0750`.
 
 ## [2.1.0] - 2026-11-05
 
