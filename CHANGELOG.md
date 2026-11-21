@@ -27,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **alloy**: `alloy_log_file` no longer renders `write_to` pointing at a
   `loki.write` component, which broke startup with Loki disabled. systemd now
   appends Alloy's output to the file (`StandardOutput`/`StandardError=append:`);
-  the role does not rotate it. With Loki enabled, logs no longer go to Loki.
+  the role does not rotate it. `append:` needs
+  systemd 240 or newer (EL 8 ships 239 and depends on Red Hat's backport). With Loki enabled, logs no longer go to Loki.
   Its directory is created root-owned when missing and no longer chowned to
   `alloy` (`/var/log/alloy.log` used to hand `/var/log` to the alloy user).
 - **alloy**: IPv6 `alloy_server_http_listen_address`/`alloy_server_grpc_listen_address`
@@ -42,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MemoryLimit=`/`CPUQuota=` lines; the memory limit uses `MemoryMax=`.
   Documented examples now use systemd units (`256M`, `50%`).
 - **alloy**: `alloy_package_state: absent` skips configuration, service and
-  directory tasks instead of failing on the removed `alloy` user.
+  directory tasks instead of failing on the removed `alloy` user, and removes
+  `config.alloy`, the environment file and the systemd drop-in.
 - **alloy**: the package-only and generic install tasks run with `become`.
 - **alloy (Debian/Ubuntu)**: the dependency install refreshes the apt cache only
   when it is older than an hour, `software-properties-common` is no longer

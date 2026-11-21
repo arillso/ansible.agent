@@ -73,7 +73,7 @@ argument_specs:
                 type: "str"
                 required: false
                 default: ""
-                description: "File systemd appends Alloy's output to instead of the journal (empty logs to the journal). The role does not rotate it."
+                description: "File systemd appends Alloy's output to instead of the journal (empty logs to the journal). Needs systemd append: support (240+, EL 8 via backport). The role does not rotate it."
 
             # Configuration-specific options
             alloy_config_template: &alloy_config_template

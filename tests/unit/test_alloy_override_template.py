@@ -3,12 +3,16 @@
 import os.path
 from pathlib import Path
 
+import yaml
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 TEMPLATE_DIR = (
     Path(__file__).resolve().parents[2] / "roles" / "alloy" / "templates"
 )
 TEMPLATE_NAME = "etc/systemd/system/alloy.service.d/override.conf.j2"
+ROLE_VARS = yaml.safe_load(
+    (TEMPLATE_DIR.parent / "vars" / "main.yml").read_text()
+)
 
 BASE_VARS = {
     "alloy_user": "alloy",
@@ -17,6 +21,7 @@ BASE_VARS = {
     "alloy_storage_path": "/var/lib/alloy",
     "alloy_web_server_enabled": True,
     "alloy_server_http_listen_address": "0.0.0.0",
+    "alloy_server_grpc_listen_address": "0.0.0.0",
     "alloy_port": 12345,
     "alloy_grpc_server_enabled": False,
     "alloy_env_file": "/etc/default/alloy",
@@ -29,7 +34,11 @@ BASE_VARS = {
 def render(**overrides):
     env = Environment(loader=FileSystemLoader(TEMPLATE_DIR), undefined=StrictUndefined)
     env.filters["dirname"] = os.path.dirname  # Ansible filter, not core Jinja
-    return env.get_template(TEMPLATE_NAME).render(**{**BASE_VARS, **overrides})
+    context = {**BASE_VARS, **overrides}
+    # resolve the listen-host vars from vars/main.yml the way Ansible would
+    for name in ("_alloy_http_listen_host", "_alloy_grpc_listen_host"):
+        context[name] = env.from_string(ROLE_VARS[name]).render(**context)
+    return env.get_template(TEMPLATE_NAME).render(**context)
 
 
 def test_defaults_render_no_empty_limits():

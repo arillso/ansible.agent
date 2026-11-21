@@ -218,6 +218,7 @@
 - name: Check the alloy_log_file directory
   ansible.builtin.stat:
       path: "{{ alloy_log_file | dirname }}"
+  become: true
   register: _alloy_log_dir
   when:
       - alloy_package_state != 'absent'

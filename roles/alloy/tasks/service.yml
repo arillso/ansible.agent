@@ -37,10 +37,8 @@
       # a wildcard bind answers on loopback too.
       _alloy_ready_host: >-
           {{ '127.0.0.1'
-             if not alloy_web_server_enabled or alloy_server_http_listen_address in ['', '0.0.0.0', '::', '[::]']
-             else ('[' ~ alloy_server_http_listen_address ~ ']'
-                   if ':' in alloy_server_http_listen_address and not alloy_server_http_listen_address.startswith('[')
-                   else alloy_server_http_listen_address) }}
+             if not alloy_web_server_enabled or _alloy_http_listen_host in ['', '0.0.0.0', '[::]']
+             else _alloy_http_listen_host }}
   tags:
       - alloy
       - health-check

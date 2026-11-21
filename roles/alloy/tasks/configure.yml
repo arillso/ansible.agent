@@ -8,6 +8,8 @@
       owner: root
       group: "{{ alloy_group }}"
       mode: "0640"
+      # syntax only: unknown components or bad references pass and surface
+      # in the readiness check after the restart
       validate: "alloy fmt %s"
   become: true
   notify: "alloy: restart alloy"
