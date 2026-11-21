@@ -73,7 +73,7 @@ argument_specs:
                 type: "str"
                 required: false
                 default: ""
-                description: "Log file for Grafana Alloy (empty for stdout)"
+                description: "File systemd appends Alloy's output to instead of the journal (empty logs to the journal). Needs systemd append: support (240+, EL 8 via backport). The role does not rotate it."
 
             # Configuration-specific options
             alloy_config_template: &alloy_config_template
@@ -116,13 +116,13 @@ argument_specs:
                 type: "str"
                 required: false
                 default: ""
-                description: "Maximum memory limit for Alloy service (e.g., '256Mi', '1Gi')"
+                description: "systemd MemoryMax= for the Alloy service, K/M/G/T suffixes (e.g., '256M', '1G'); empty for no limit"
 
             alloy_max_cpu: &alloy_max_cpu
                 type: "str"
                 required: false
                 default: ""
-                description: "Maximum CPU limit for Alloy service (e.g., '500m', '1.0')"
+                description: "systemd CPUQuota= for the Alloy service as a percentage of one CPU (e.g., '50%', '200%'); empty for no limit"
 
             alloy_external_labels: &alloy_external_labels
                 type: "dict"
@@ -1338,12 +1338,6 @@ argument_specs:
                                 type: "str"
                                 required: false
                                 description: "Label to set with the extracted value"
-
-            alloy_service_file: &alloy_service_file
-                type: "str"
-                required: false
-                default: "/etc/systemd/system/alloy.service"
-                description: "Path to the systemd service file for Grafana Alloy"
 
             alloy_grafana_cloud_prometheus_user:
                 &alloy_grafana_cloud_prometheus_user

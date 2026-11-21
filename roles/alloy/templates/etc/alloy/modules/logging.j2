@@ -4,9 +4,6 @@
 logging {
   level  = "{{ alloy_log_level | default('info') }}"
   format = "{{ alloy_log_format | default('logfmt') }}"
-  {% if alloy_log_file | default('') | length > 0 %}
-  write_to = [loki.write.{{ alloy_loki_clients[0].name | replace("-", "_") }}.receiver]
-  {% endif %}
 }
 
 {% if alloy_clustering_enabled | default(false) %}

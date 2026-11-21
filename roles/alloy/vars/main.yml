@@ -8,17 +8,24 @@ _alloy_os:
         package_dependencies:
             - curl
             - gnupg
-            - software-properties-common
             - apt-transport-https
         grafana:
             gpg_key_url: "https://apt.grafana.com/gpg.key"
             keyring_path: "/usr/share/keyrings/grafana-archive-keyring.gpg"
-            repository: "deb [signed-by=/usr/share/keyrings/grafana-archive-keyring.gpg] https://apt.grafana.com stable main"
+            repository: "deb [signed-by={{ alloy_grafana_keyring_path }}] https://apt.grafana.com stable main"
 
     RedHat:
-        package_dependencies:
-            - curl
-            - gnupg2
         grafana:
             gpg_key_url: "https://rpm.grafana.com/gpg.key"
             repository: "https://rpm.grafana.com"
+
+# host part of host:port for --server.*.listen-addr and the readiness check;
+# IPv6 needs brackets, already bracketed values are kept
+_alloy_http_listen_host: >-
+    {{ ('[' ~ alloy_server_http_listen_address ~ ']')
+       if ':' in alloy_server_http_listen_address and not alloy_server_http_listen_address.startswith('[')
+       else alloy_server_http_listen_address }}
+_alloy_grpc_listen_host: >-
+    {{ ('[' ~ alloy_server_grpc_listen_address ~ ']')
+       if ':' in alloy_server_grpc_listen_address and not alloy_server_grpc_listen_address.startswith('[')
+       else alloy_server_grpc_listen_address }}

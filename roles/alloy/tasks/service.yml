@@ -2,6 +2,12 @@
 # Grafana Alloy service management tasks
 # Handles service lifecycle and health checking
 
+# Restart on the new config before the start below and the readiness check,
+# so a fresh install is not started and then restarted again, and the check
+# tests the new config, not the process still running the old one.
+- name: "Apply pending Grafana Alloy restart before the readiness check"
+  ansible.builtin.meta: flush_handlers
+
 - name: "Enable and start Grafana Alloy service"
   # No daemon_reload here: it always reports changed and breaks
   # idempotence. The `alloy: reload systemd` handler (notified by the service
@@ -17,8 +23,8 @@
 
 - name: "Wait for Grafana Alloy to be ready"
   ansible.builtin.uri:
-      # kics-scan ignore-line: localhost health check endpoint - no external network traffic
-      url: "http://localhost:{{ alloy_port }}/ready" # checkov:skip=CKV2_ANSIBLE_1: Localhost health check requires HTTP
+      # kics-scan ignore-line: host-local health check endpoint - no external network traffic
+      url: "http://{{ _alloy_ready_host }}:{{ alloy_port if alloy_web_server_enabled else 12345 }}/ready" # checkov:skip=CKV2_ANSIBLE_1: Local health check requires HTTP
       method: GET
       status_code: 200
   register: alloy_ready
@@ -26,6 +32,13 @@
   retries: 10
   delay: 5
   when: alloy_health_check_enabled | default(true)
+  vars:
+      # Without --server.http.listen-addr alloy listens on 127.0.0.1:12345;
+      # a wildcard bind answers on loopback too.
+      _alloy_ready_host: >-
+          {{ '127.0.0.1'
+             if not alloy_web_server_enabled or _alloy_http_listen_host in ['', '0.0.0.0', '[::]']
+             else _alloy_http_listen_host }}
   tags:
       - alloy
       - health-check

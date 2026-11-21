@@ -8,7 +8,7 @@ Group={{ alloy_group }}
 
 # Override configuration file path
 ExecStart=
-ExecStart=/usr/bin/alloy run {{ alloy_config_file }} --storage.path={{ alloy_storage_path }}{% if alloy_web_server_enabled | default(true) %} --server.http.listen-addr={{ alloy_server_http_listen_address | default('0.0.0.0') }}:{{ alloy_port | default('12345') }}{% endif %}{% if alloy_grpc_server_enabled | default(false) %} --server.grpc.listen-addr={{ alloy_server_grpc_listen_address | default('0.0.0.0') }}:{{ alloy_grpc_port | default('12346') }}{% endif %}
+ExecStart=/usr/bin/alloy run {{ alloy_config_file }} --storage.path={{ alloy_storage_path }}{% if alloy_web_server_enabled | default(true) %} --server.http.listen-addr={{ _alloy_http_listen_host }}:{{ alloy_port | default('12345') }}{% endif %}{% if alloy_grpc_server_enabled | default(false) %} --server.grpc.listen-addr={{ _alloy_grpc_listen_host }}:{{ alloy_grpc_port | default('12346') }}{% endif %}
 
 # Override environment file
 EnvironmentFile={{ alloy_env_file }}
@@ -16,15 +16,18 @@ EnvironmentFile={{ alloy_env_file }}
 # Override security settings for custom paths
 ReadWritePaths={{ alloy_storage_path }} /var/log/alloy
 
-{% if alloy_log_file %}
-# Additional log directory access
+{% if alloy_log_file | default('') | length > 0 %}
+# Alloy logs to stderr; systemd appends it to the file instead of the journal.
+# append: needs systemd >= 240 (EL 8 ships 239 and relies on Red Hat's backport)
 ReadWritePaths={{ alloy_log_file | dirname }}
+StandardOutput=append:{{ alloy_log_file }}
+StandardError=append:{{ alloy_log_file }}
 {% endif %}
 
 # Resource limits
-{% if alloy_max_memory is defined %}
-MemoryLimit={{ alloy_max_memory }}
+{% if alloy_max_memory | default('') | length > 0 %}
+MemoryMax={{ alloy_max_memory }}
 {% endif %}
-{% if alloy_max_cpu is defined %}
+{% if alloy_max_cpu | default('') | length > 0 %}
 CPUQuota={{ alloy_max_cpu }}
 {% endif %}

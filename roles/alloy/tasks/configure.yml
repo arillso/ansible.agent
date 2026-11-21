@@ -8,6 +8,9 @@
       owner: root
       group: "{{ alloy_group }}"
       mode: "0640"
+      # syntax only: unknown components or bad references pass and surface
+      # in the readiness check after the restart
+      validate: "alloy fmt %s"
   become: true
   notify: "alloy: restart alloy"
   no_log: "{{ alloy_no_log_config | default(true) }}"
@@ -61,12 +64,3 @@
   become: true
   notify: "alloy: restart alloy"
   no_log: "{{ alloy_no_log_env_file | default(true) }}"
-
-- name: Ensure log directory exists with proper permissions
-  ansible.builtin.file:
-      path: "/var/log/alloy"
-      state: directory
-      owner: "{{ alloy_user }}"
-      group: "{{ alloy_group }}"
-      mode: "0755"
-  become: true
