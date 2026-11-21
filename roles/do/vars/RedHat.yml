@@ -5,6 +5,6 @@ do_package_dependencies:
     - curl
     - gnupg2
 
-# DigitalOcean Repository Konfiguration
+# DigitalOcean repository configuration
 do_gpg_key_url: "https://repos.insights.digitalocean.com/sonar-agent.asc"
 do_repository_rpm: "https://repos.insights.digitalocean.com/yum/do-agent/$basearch"

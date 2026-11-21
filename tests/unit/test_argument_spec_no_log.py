@@ -116,7 +116,6 @@ def test_secret_options_are_actually_present():
     [
         ("alloy", "alloy_no_log_config", "configure.yml"),
         ("alloy", "alloy_no_log_env_file", "configure.yml"),
-        ("do", "do_no_log_api_token", "configure.yml"),
         ("tailscale", "tailscale_no_log_auth_key", "configure.yml"),
     ],
 )

@@ -1,52 +1,74 @@
 ---
-# Configuration tasks for DigitalOcean Agent
+# The agent takes its settings from command-line flags in its packaged unit
+# (ExecStart=/opt/digitalocean/bin/do-agent --syslog) and reads no config or
+# environment file. Earlier role versions created /etc/do-agent and wrote two
+# such files, with the API token in them; the package ships nothing under
+# /etc/do-agent, so remove the directory as a whole.
+# TODO: remove in the first major release after 2.2.0.
 
-- name: Create DigitalOcean Agent configuration directory
+- name: Remove legacy DigitalOcean Agent configuration
   ansible.builtin.file:
-      path: /etc/do-agent
+      path: "{{ item }}"
+      state: absent
+  loop:
+      - /etc/do-agent
+      - /etc/default/do-agent
+  become: true
+
+# do-agent takes settings only as flags, so they go into an ExecStart
+# override. Without any flag the drop-in is removed and the packaged unit
+# runs unchanged.
+- name: Decide whether do-agent needs extra flags
+  ansible.builtin.set_fact:
+      _do_agent_flags_wanted: >-
+          {{ do_prometheus_enabled | bool or do_log_level == 'debug'
+             or do_labels | length > 0 or do_extra_flags | length > 0 }}
+
+- name: Create the DigitalOcean Agent unit drop-in directory
+  ansible.builtin.file:
+      path: /etc/systemd/system/do-agent.service.d
       state: directory
       owner: root
       group: root
       mode: "0755"
   become: true
+  when: _do_agent_flags_wanted | bool
 
-- name: Generate DigitalOcean Agent configuration
+- name: Configure DigitalOcean Agent flags
   ansible.builtin.template:
-      src: etc/do-agent/do-agent.yaml.j2
-      dest: /etc/do-agent/do-agent.yaml
+      src: etc/systemd/system/do-agent.service.d/ansible.conf.j2
+      dest: /etc/systemd/system/do-agent.service.d/ansible.conf
       owner: root
       group: root
-      mode: "0600"
+      mode: "0644"
   become: true
   notify: "do: restart do agent"
-  no_log: "{{ do_no_log_api_token | default(true) }}"
-  when: do_custom_config_enabled | default(false)
+  when: _do_agent_flags_wanted | bool
 
-- name: Find leftover DigitalOcean Agent configuration backups
-  ansible.builtin.find:
-      paths: /etc/do-agent
-      patterns: "do-agent.yaml.*~"
-      file_type: file
-  register: do_config_backups
-  become: true
-
-- name: Remove leftover DigitalOcean Agent configuration backups
+- name: Remove DigitalOcean Agent flags drop-in
   ansible.builtin.file:
-      path: "{{ item.path }}"
+      path: /etc/systemd/system/do-agent.service.d/ansible.conf
       state: absent
-  loop: "{{ do_config_backups.files }}"
-  loop_control:
-      label: "{{ item.path }}"
-  become: true
-
-- name: Create environment file for custom settings
-  ansible.builtin.template:
-      src: etc/default/do-agent.j2
-      dest: /etc/default/do-agent
-      owner: root
-      group: root
-      mode: "0600"
   become: true
   notify: "do: restart do agent"
-  no_log: "{{ do_no_log_api_token | default(true) }}"
-  when: do_api_token != "" or do_custom_config_enabled | default(false)
+  when: not _do_agent_flags_wanted | bool
+
+# ponytail: defaults repeated here; keep in sync with defaults/main.yml.
+- name: Warn about settings do-agent has no flag for
+  ansible.builtin.debug:
+      msg: >-
+          do-agent has no command-line flag for {{ _do_unmapped | join(', ') }},
+          so these settings have no effect. Remove them, or use do_labels,
+          do_prometheus_enabled or do_extra_flags.
+  when: _do_unmapped | length > 0
+  vars:
+      _do_unmapped: >-
+          {{ (['do_api_token'] if do_api_token | length > 0 else [])
+             + (['do_droplet_id'] if do_droplet_id | string | length > 0 else [])
+             + (['do_storage_path'] if do_storage_path != '/var/lib/do-agent' else [])
+             + (['do_port'] if do_port | int != 9090 else [])
+             + (['do_log_format'] if do_log_format != 'json' else [])
+             + (['do_log_level'] if do_log_level in ['warn', 'error'] else [])
+             + (['do_tags'] if do_tags | length > 0 else [])
+             + (['do_custom_config_enabled'] if do_custom_config_enabled | bool else [])
+             + (['do_no_log_api_token'] if not do_no_log_api_token | bool else []) }}

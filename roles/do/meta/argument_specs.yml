@@ -33,7 +33,7 @@ argument_specs:
                 type: "int"
                 required: false
                 default: 9090
-                description: "Port for DigitalOcean Agent server"
+                description: "Kept for compatibility. do-agent has no flag for this; the role warns when it is set and it has no effect. The metrics endpoint port is do_prometheus_port."
 
             do_health_check_enabled:
                 type: "bool"
@@ -50,7 +50,7 @@ argument_specs:
                     - "info"
                     - "warn"
                     - "error"
-                description: "Log level for DigitalOcean Agent"
+                description: 'Log level. "debug" passes --debug to do-agent; the agent has no flag for the other levels.'
 
             do_log_format:
                 type: "str"
@@ -59,68 +59,74 @@ argument_specs:
                 choices:
                     - "json"
                     - "text"
-                description: "Log format for DigitalOcean Agent"
+                description: "Kept for compatibility. do-agent has no flag for this; the role warns when it is set and it has no effect."
 
             do_storage_path:
                 type: "str"
                 required: false
                 default: "/var/lib/do-agent"
-                description: "Storage path for DigitalOcean Agent data"
+                description: "Kept for compatibility. do-agent has no flag for this; the role warns when it is set and it has no effect."
 
             do_listen_address:
                 type: "str"
                 required: false
                 default: "0.0.0.0"
-                description: "Listen address for DigitalOcean Agent server"
+                description: "Listen address of the Prometheus metrics endpoint, passed as --web.listen-address=<address>:<do_prometheus_port> when do_prometheus_enabled is true."
 
             do_api_token:
                 type: "str"
                 required: false
                 default: ""
                 no_log: true
-                description: "DigitalOcean API token for authentication"
+                description: "Kept for compatibility. do-agent has no flag for this; the role warns when it is set and it has no effect. Earlier versions wrote it to files the agent never read; the role now deletes those files."
 
             do_droplet_id:
                 type: "str"
                 required: false
                 default: ""
-                description: "ID of the DigitalOcean Droplet"
+                description: "Kept for compatibility. do-agent has no flag for this; the role warns when it is set and it has no effect. The agent reads the Droplet ID from the metadata service."
 
             do_no_log_api_token:
                 type: "bool"
                 required: false
                 default: true
-                description: >-
-                    no_log toggle for the token-rendering tasks; set false to
-                    surface a template error hidden as 'non-zero return code'.
+                description: "Kept for compatibility. No task renders the token any more, so it has no effect."
 
             do_prometheus_enabled:
                 type: "bool"
                 required: false
                 default: false
-                description: "Enables Prometheus integration"
+                description: "Passes --web.listen to do-agent, which serves its metrics on a local Prometheus endpoint."
 
             do_prometheus_port:
                 type: "int"
                 required: false
                 default: 9091
-                description: "Port for Prometheus metrics endpoint"
+                description: "Port of the Prometheus metrics endpoint (see do_listen_address)."
 
             do_custom_config_enabled:
                 type: "bool"
                 required: false
                 default: false
-                description: "Enable custom configuration for DigitalOcean Agent"
+                description: "Kept for compatibility. do-agent reads no config file; the role warns when it is set and it has no effect."
 
             do_tags:
                 type: "list"
                 required: false
                 default: []
-                description: "List of tags for the agent"
+                description: "Kept for compatibility. do-agent has no flag for this; the role warns when it is set and it has no effect. Use do_labels for key:value labels."
+
                 elements: "str"
 
             do_labels:
                 type: "dict"
                 required: false
                 default: {}
-                description: "Dictionary of labels for the agent"
+                description: "Labels added to all metrics, each passed as --additional-label=<key>:<value>."
+
+            do_extra_flags:
+                type: "list"
+                elements: "str"
+                required: false
+                default: []
+                description: "Raw do-agent flags appended to ExecStart, for flags the role has no variable for (e.g. --process-topk=50, --metrics-path=...)."

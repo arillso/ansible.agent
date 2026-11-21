@@ -33,3 +33,16 @@
       - _do_apt_version | length == 0
       - not ansible_check_mode
   tags: [do, install, package]
+
+- name: Warn that check mode cannot predict the pinned version
+  ansible.builtin.debug:
+      msg: >-
+          Check mode: apt-cache madison does not list do_version {{ do_version }},
+          so the dry run shows an unpinned {{ do_package_name }} install. If the
+          DigitalOcean apt repository is not configured on this host yet, the real
+          run adds it and pins {{ do_version }}; if the repository is configured
+          and lacks that version, the real run fails.
+  when:
+      - _do_apt_version | length == 0
+      - ansible_check_mode
+  tags: [do, install, package]

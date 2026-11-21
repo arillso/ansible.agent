@@ -41,69 +41,43 @@
             fail_msg: "DO Agent service is not properly configured"
             success_msg: "DO Agent service is properly configured"
 
-      - name: Check if DO Agent config directory exists
+      - name: Read the effective DO Agent ExecStart
+        ansible.builtin.command: systemctl show do-agent --property=ExecStart --value
+        register: do_exec_start
+        changed_when: false
+
+      - name: Assert converge settings reach do-agent as flags
+        ansible.builtin.assert:
+            that:
+                - "'--web.listen ' in do_exec_start.stdout"
+                - "'--web.listen-address=0.0.0.0:9091' in do_exec_start.stdout"
+                - "'--additional-label=molecule:true' in do_exec_start.stdout"
+            fail_msg: "do-agent ExecStart lacks the converge flags: {{ do_exec_start.stdout }}"
+            success_msg: "do-agent runs with the converge flags"
+
+      - name: Check legacy DO Agent configuration paths
         ansible.builtin.stat:
-            path: /etc/do-agent
-        register: do_config_dir
+            path: "{{ item }}"
+        register: do_legacy_paths
+        loop:
+            - /etc/do-agent
+            - /etc/default/do-agent
 
-      - name: Assert DO Agent config directory exists
+      - name: Assert no legacy DO Agent configuration remains
         ansible.builtin.assert:
             that:
-                - do_config_dir.stat.exists
-                - do_config_dir.stat.isdir
-            fail_msg: "DO Agent config directory does not exist"
-            success_msg: "DO Agent config directory exists"
-
-      - name: Check if DO Agent config file exists (when custom config enabled)
-        ansible.builtin.stat:
-            path: /etc/do-agent/do-agent.yaml
-        register: do_config_file
-        when: do_custom_config_enabled | default(false)
-
-      - name: Assert config file exists when custom config is enabled
-        ansible.builtin.assert:
-            that:
-                - do_config_file.stat.exists
-                - do_config_file.stat.isreg
-                - do_config_file.stat.mode == '0600'
-            fail_msg: "DO Agent config file missing or not mode 0600"
-            success_msg: "DO Agent config file exists with mode 0600"
-        when: do_custom_config_enabled | default(false)
-
-      - name: Find DO Agent configuration backup leftovers
-        ansible.builtin.find:
-            paths: /etc/do-agent
-            patterns: "do-agent.yaml.*~"
-            file_type: file
-        register: do_config_backup_leftovers
-
-      - name: Assert no DO Agent configuration backups remain
-        ansible.builtin.assert:
-            that:
-                - do_config_backup_leftovers.files | length == 0
-            fail_msg: >-
-                Leftover DO Agent config backups found:
-                {{ do_config_backup_leftovers.files | map(attribute='path') | list }}
-            success_msg: "No DO Agent config backups remain in /etc/do-agent"
-
-      - name: Check the package-manager artifact planted by side_effect
-        ansible.builtin.stat:
-            path: /etc/do-agent/do-agent.yaml.dpkg-dist
-        register: do_config_pkg_artifact
-
-      - name: Assert the cleanup left the package-manager artifact in place
-        ansible.builtin.assert:
-            that:
-                - do_config_pkg_artifact.stat.exists
-            fail_msg: "Cleanup removed do-agent.yaml.dpkg-dist, which is not an Ansible backup"
-            success_msg: "Cleanup left the package-manager artifact untouched"
+                - not item.stat.exists
+            fail_msg: "Legacy DO Agent path {{ item.item }} is still on the host"
+            success_msg: "Legacy DO Agent path {{ item.item }} is gone"
+        loop: "{{ do_legacy_paths.results }}"
+        loop_control:
+            label: "{{ item.item }}"
 
       - name: Verify required directories exist
         ansible.builtin.stat:
             path: "{{ item }}"
         register: do_directories
         loop:
-            - /etc/do-agent
             - /var/lib/do-agent
             - /var/log/do-agent
 

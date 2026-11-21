@@ -4,9 +4,10 @@
 do_package_dependencies:
     - curl
     - gnupg
-    - software-properties-common
-    - apt-transport-https
+    # apt_repository imports apt from the target interpreter
+    - python3-apt
 
-# DigitalOcean Repository Konfiguration
+# DigitalOcean repository configuration
 do_gpg_key_url: "https://repos.insights.digitalocean.com/sonar-agent.asc"
-do_repository: "deb https://repos.insights.digitalocean.com/apt/do-agent/ main main"
+do_gpg_key_path: "/usr/share/keyrings/digitalocean-agent.asc"
+do_repository: "deb [signed-by={{ do_gpg_key_path }}] https://repos.insights.digitalocean.com/apt/do-agent/ main main"
