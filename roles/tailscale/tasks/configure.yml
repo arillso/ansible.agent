@@ -44,7 +44,7 @@
             (tailscale_stateful_filtering | default('') | string | length > 0) or
             (tailscale_static_endpoints | default([]) | length > 0)
           }}
-  tags: [tailscale, config, daemon]
+  tags: [tailscale, config]
 
 - name: Decide whether config.json is written
   ansible.builtin.set_fact:
@@ -53,7 +53,34 @@
       _tailscale_write_config: >-
           {{ (tailscale_config_enabled | default(true) | bool) and (_tailscale_has_config | bool)
              and ansible_facts['service_mgr'] == 'systemd' }}
-  tags: [tailscale, config, daemon]
+  tags: [tailscale, config]
+
+# With --config, tailscaled refuses `tailscale up` while the config file is
+# locked (the default) and logs in with authKey from config.json when it
+# starts. The file stays: tailscaled reads it on every start until the node
+# is logged in and fails to start if it is missing.
+- name: Write Tailscale auth key file for config-file mode
+  ansible.builtin.copy:
+      content: "{{ tailscale_auth_key }}"
+      dest: "{{ tailscale_auth_key_file }}"
+      mode: "0600"
+      owner: root
+      group: root
+  become: true
+  no_log: true
+  when:
+      - _tailscale_write_config | bool
+      - tailscale_auth_key | length > 0
+  notify: "tailscale: restart tailscaled"
+  tags: [tailscale, config, auth]
+
+- name: Remove Tailscale auth key file
+  ansible.builtin.file:
+      path: "{{ tailscale_auth_key_file }}"
+      state: absent
+  become: true
+  when: not (_tailscale_write_config | bool) or tailscale_auth_key | length == 0
+  tags: [tailscale, config, auth]
 
 - name: Configure Tailscale daemon configuration file
   ansible.builtin.template:
@@ -105,6 +132,29 @@
   when: tailscale_reset_authentication | default(false) | bool
   tags: [tailscale, config, auth, reset]
 
+- name: Fail on a reset in config-file mode
+  ansible.builtin.assert:
+      that: not (_tailscale_write_config | bool)
+      fail_msg: >-
+          tailscale_reset_authentication uses `tailscale up --reset`, which
+          tailscaled refuses while it runs with a locked config file. Set
+          tailscale_config_enabled: false for the reset.
+  when: tailscale_reset_authentication | default(false) | bool
+  tags: [tailscale, config, auth, reset]
+
+# config.json has no field for tags, so a config-file-mode node is tagged
+# by its auth key alone.
+- name: Note that config-file mode takes tags from the auth key
+  ansible.builtin.debug:
+      msg: >-
+          tailscale_tags ({{ tailscale_tags | join(',') }}) are not applied in
+          config-file mode. Use an auth key created with these tags.
+  when:
+      - _tailscale_write_config | bool
+      - tailscale_tags | default([]) | length > 0
+      - not ansible_local.tailscale.authenticated | default(false)
+  tags: [tailscale, config, auth]
+
 # Decided once up front: a block `when` is re-evaluated for every task,
 # including `always`, so testing ansible_local there would skip the key
 # file cleanup once the refresh below reports the host as authenticated.
@@ -114,6 +164,7 @@
       _tailscale_authenticate: >-
           {{
             (tailscale_auth_key | length > 0) and (not ansible_check_mode) and
+            (not _tailscale_write_config | bool) and
             ((not ansible_local.tailscale.authenticated | default(false)) or
              (tailscale_reset_authentication | default(false) | bool))
           }}
