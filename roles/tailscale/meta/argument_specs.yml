@@ -38,6 +38,32 @@ argument_specs:
                 default: "1.104.7"
                 description: "Version of the Tailscale package to pin on apt and dnf hosts. Every run moves the host to exactly this version, downgrades included. An empty string installs whatever the repository offers and leaves later upgrades to the host."
 
+            tailscale_package_only:
+                type: "bool"
+                required: false
+                description: "Install from the distribution's own package without adding the Tailscale repository. Derived per distribution (true on Alpine and Arch)"
+
+            tailscale_repo_url:
+                type: "str"
+                required: false
+                description: "Tailscale repository URL: apt base URL on Debian/Ubuntu, yum baseurl on the Red Hat family. Derived per distribution; override for a mirror"
+
+            tailscale_repo_codename:
+                type: "str"
+                required: false
+                description: "apt suite of the Tailscale repository (e.g. bookworm, noble). Derived per distribution, falls back to distribution_release"
+
+            tailscale_gpg_key_url:
+                type: "str"
+                required: false
+                description: "URL of the repository signing key. Derived per distribution"
+
+            tailscale_gpg_key_path:
+                type: "str"
+                required: false
+                default: "/usr/share/keyrings/tailscale-archive-keyring.gpg"
+                description: "Keyring path for the apt repository signing key"
+
             tailscale_service_state:
                 type: "str"
                 required: false
@@ -68,10 +94,13 @@ argument_specs:
                             --state=/var/lib/tailscale/tailscaled.state
                             --socket=/run/tailscale/tailscaled.sock
                             --port=${PORT}
-                            --config={{ tailscale_config_file }}
+                            $FLAGS{{ (' --config=' ~ tailscale_config_file) if _tailscale_write_config | default(false) | bool else '' }}
                 description: |
                     Dictionary of systemd service override parameters for tailscaled.service.
-                    Default includes ExecStart override to enable daemon config file support.
+                    Default keeps the upstream ExecStart (including $FLAGS from
+                    /etc/default/tailscaled) and adds --config only when config.json is
+                    written (tailscale_config_enabled and at least one daemon option set).
+                    Only written on systemd hosts.
 
                     Supports both Unit and Service section directives:
                     - Unit directives: After, Before, Wants, Requires, PartOf, Conflicts, etc.

@@ -85,8 +85,10 @@
       baseurl: "{{ tailscale_repo_url }}"
       gpgkey: "{{ tailscale_gpg_key_url }}"
       gpgcheck: true
+      repo_gpgcheck: true
       enabled: true
       state: present
+  become: true
   when:
       - ansible_facts['os_family'] == "RedHat"
       - not tailscale_package_only
@@ -119,6 +121,7 @@
   ansible.builtin.package:
       name: "{{ tailscale_package_name }}"
       state: "{{ tailscale_package_state }}"
+  become: true
   register: _tailscale_package_installed_simple
   retries: 3
   delay: 10
@@ -131,6 +134,7 @@
   ansible.builtin.package:
       name: "{{ tailscale_package_name }}"
       state: "{{ tailscale_package_state }}"
+  become: true
   register: _tailscale_package_installed_generic
   retries: 3
   delay: 10
@@ -148,4 +152,5 @@
       owner: root
       group: root
   become: true
+  when: tailscale_package_state != 'absent'
   tags: [tailscale, install, config]

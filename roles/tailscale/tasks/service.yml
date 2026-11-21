@@ -2,13 +2,24 @@
 # Tailscale Service Management Tasks
 # Manage tailscaled service state
 
-- name: Enable and start tailscaled service
+- name: Enable and start tailscaled service (systemd)
   ansible.builtin.systemd_service:
       name: tailscaled
       state: "{{ tailscale_service_state }}"
       enabled: "{{ tailscale_service_enabled }}"
       daemon_reload: true
   become: true
+  when: ansible_facts['service_mgr'] == 'systemd'
+  tags: [tailscale, service]
+
+# Alpine ships an OpenRC script, not a systemd unit.
+- name: Enable and start tailscaled service (other init systems)
+  ansible.builtin.service:
+      name: tailscaled
+      state: "{{ tailscale_service_state }}"
+      enabled: "{{ tailscale_service_enabled }}"
+  become: true
+  when: ansible_facts['service_mgr'] != 'systemd'
   tags: [tailscale, service]
 
 # Wait on the control socket rather than a bare `timeout:` — the latter
@@ -27,9 +38,11 @@
       name: tailscaled
   register: tailscale_service_status
   become: true
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags: [tailscale, service, status]
 
 - name: Display service status
   ansible.builtin.debug:
       msg: "Tailscaled service is {{ tailscale_service_status.status.ActiveState }}"
+  when: ansible_facts['service_mgr'] == 'systemd'
   tags: [tailscale, service, status]

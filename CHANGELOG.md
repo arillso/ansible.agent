@@ -54,6 +54,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **alloy**: unused `alloy_service_file` and the never-installed RedHat
   `package_dependencies`.
+- **tailscale**: Red Hat family installs pointed `baseurl` at the
+  `tailscale.repo` file instead of the repository, so dnf failed with a 404.
+  The repository is now `stable/<rhel|centos>/<major>/$basearch`, Fedora uses
+  `stable/fedora/$basearch`, with `repo_gpgcheck` on.
+- **tailscale**: the default `tailscale_service_override` passed
+  `--config=/etc/tailscale/config.json` even when no config.json was written
+  (no daemon option set, or `tailscale_config_enabled: false`). `--config` is
+  now only passed together with the file, and `$FLAGS` from
+  `/etc/default/tailscaled` is kept as in the upstream unit.
+- **tailscale**: `tailscale_repo_url`, `tailscale_repo_codename`,
+  `tailscale_gpg_key_url`, `tailscale_gpg_key_path` and
+  `tailscale_package_only` moved from `vars/` to `defaults/`, and the
+  duplicate `tailscale_package_name`/`tailscale_package_state` were removed
+  from `vars/`, so inventory and group_vars can override them. The unused
+  `vars/Debian.yml` is gone.
+- **tailscale**: the auth key is passed as `--auth-key=file:<0600 tempfile>`
+  instead of on the command line, where local users could read it from `ps`.
+- **tailscale**: `tailscale_reset_authentication` fails early without an auth
+  key instead of logging the host out, and re-authenticates with `--reset`.
+- **tailscale**: `tailscale_preferences` apply on the first run (local facts
+  are installed before configuration, and the fact cache is dropped and
+  refreshed after `tailscale up`) and report changed only when the prefs
+  actually change. Verification waits for a restarted tailscaled.
+- **tailscale**: `tailscale_package_state: absent` removes the package and
+  skips service, configuration and verification.
+- **tailscale**: restart and reload-config handlers no longer start a daemon
+  set to `tailscale_service_state: stopped`.
+- **tailscale**: package-only and generic installs run with `become`, and
+  hosts without systemd (Alpine/OpenRC) use `ansible.builtin.service` instead
+  of failing on `systemd_service`. They get no systemd override and no
+  config.json; the local facts script still relies on `systemctl`, so daemon
+  options and verification remain systemd-only.
 
 ## [2.1.0] - 2026-11-05
 

@@ -20,9 +20,19 @@
       owner: root
       group: root
   become: true
-  notify: "tailscale: refresh ansible facts"
   tags: [tailscale, facts]
 
-- name: Flush handlers to refresh facts immediately
-  ansible.builtin.meta: flush_handlers
+# The fact script caches its output for facts_tailscale_cache_duration;
+# drop it so the auth decision in configure.yml sees the current state.
+- name: Drop cached Tailscale facts
+  ansible.builtin.file:
+      path: "{{ _tailscale_facts_cache_file }}"
+      state: absent
+  changed_when: false
+  become: true
+  tags: [tailscale, facts]
+
+- name: Refresh Tailscale local facts
+  ansible.builtin.setup:
+      filter: ansible_local
   tags: [tailscale, facts]
