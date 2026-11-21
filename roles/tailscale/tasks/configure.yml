@@ -46,6 +46,15 @@
           }}
   tags: [tailscale, config, daemon]
 
+- name: Decide whether config.json is written
+  ansible.builtin.set_fact:
+      # Only systemd hosts get the override that passes --config; elsewhere
+      # (Alpine/OpenRC) the file would never be read.
+      _tailscale_write_config: >-
+          {{ (tailscale_config_enabled | default(true) | bool) and (_tailscale_has_config | bool)
+             and ansible_facts['service_mgr'] == 'systemd' }}
+  tags: [tailscale, config, daemon]
+
 - name: Configure Tailscale daemon configuration file
   ansible.builtin.template:
       src: etc/tailscale/config.json.j2
@@ -54,9 +63,7 @@
       owner: root
       group: root
   become: true
-  when:
-      - tailscale_config_enabled | default(true) | bool
-      - _tailscale_has_config | bool
+  when: _tailscale_write_config | bool
   notify: "tailscale: reload tailscale config"
   tags: [tailscale, config, daemon]
 
@@ -68,9 +75,9 @@
       owner: root
       group: root
   become: true
-  when: >
-      (tailscale_config_enabled | default(true) | bool and _tailscale_has_config | bool) or
-      (tailscale_service_override | length > 0)
+  when:
+      - ansible_facts['service_mgr'] == 'systemd'
+      - _tailscale_write_config | bool or tailscale_service_override | length > 0
   tags: [tailscale, config, systemd]
 
 - name: Configure Tailscale systemd service override
@@ -81,61 +88,109 @@
       owner: root
       group: root
   become: true
-  when: >
-      (tailscale_config_enabled | default(true) | bool and _tailscale_has_config | bool) or
-      (tailscale_service_override | length > 0)
+  when:
+      - ansible_facts['service_mgr'] == 'systemd'
+      - _tailscale_write_config | bool or tailscale_service_override | length > 0
   notify:
       - "tailscale: reload systemd"
       - "tailscale: restart tailscaled"
   tags: [tailscale, config, daemon, systemd]
 
-- name: Initial authentication with auth key
-  ansible.builtin.command:
-      cmd: >
-          tailscale up
-          --auth-key={{ tailscale_auth_key }}
-          {% if tailscale_tags | default([]) | length > 0 %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
-          --reset
-  become: true
-  changed_when: true
-  when:
-      - tailscale_auth_key | length > 0
-      - not ansible_local.tailscale.authenticated | default(false)
-  notify: "tailscale: restart tailscaled"
-  no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
-  tags: [tailscale, config, auth]
-
-# Reset authentication if requested
-- name: Reset Tailscale configuration (logout and re-authenticate)
+- name: Fail on a reset without an auth key
+  ansible.builtin.assert:
+      that: tailscale_auth_key | length > 0
+      fail_msg: >-
+          tailscale_reset_authentication needs tailscale_auth_key: without it the
+          host would be logged out and left waiting for an interactive login.
   when: tailscale_reset_authentication | default(false) | bool
-  tags: [tailscale, config, reset]
+  tags: [tailscale, config, auth, reset]
+
+# Decided once up front: a block `when` is re-evaluated for every task,
+# including `always`, so testing ansible_local there would skip the key
+# file cleanup once the refresh below reports the host as authenticated.
+# tempfile has no check mode, so a check run skips authentication.
+- name: Decide whether to authenticate
+  ansible.builtin.set_fact:
+      _tailscale_authenticate: >-
+          {{
+            (tailscale_auth_key | length > 0) and (not ansible_check_mode) and
+            ((not ansible_local.tailscale.authenticated | default(false)) or
+             (tailscale_reset_authentication | default(false) | bool))
+          }}
+  tags: [tailscale, config, auth, reset]
+
+# The key goes through a 0600 file (`--auth-key=file:`), not the command
+# line, where any local user could read it from ps or /proc.
+- name: Authenticate Tailscale
+  when: _tailscale_authenticate | bool
+  tags: [tailscale, config, auth, reset]
   block:
+      - name: Create temporary auth key file
+        ansible.builtin.tempfile:
+            state: file
+            suffix: .tailscale-authkey
+        become: true
+        register: _tailscale_auth_key_file
+
+      - name: Write auth key to temporary file
+        ansible.builtin.copy:
+            content: "{{ tailscale_auth_key }}"
+            dest: "{{ _tailscale_auth_key_file.path }}"
+            mode: "0600"
+            owner: root
+            group: root
+        become: true
+        no_log: true
+
       - name: Logout from Tailscale
         ansible.builtin.command:
             cmd: tailscale logout
         become: true
         changed_when: true
+        when: tailscale_reset_authentication | default(false) | bool
 
-      - name: Re-authenticate with minimal setup only
+      - name: Authenticate with auth key
         ansible.builtin.command:
             cmd: >
                 tailscale up
-                --auth-key={{ tailscale_auth_key }}
-                {% if tailscale_tags %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
+                --auth-key=file:{{ _tailscale_auth_key_file.path }}
+                {% if tailscale_tags | default([]) | length > 0 %}--advertise-tags={{ tailscale_tags | join(',') }}{% endif %}
+                --reset
         become: true
         changed_when: true
-        no_log: true
+        notify: "tailscale: restart tailscaled"
+        no_log: "{{ tailscale_no_log_auth_key | default(true) }}"
 
-# Handle custom preferences if defined
+      # Preferences below need the authenticated state on this run.
+      - name: Refresh Tailscale facts after authentication
+        ansible.builtin.include_tasks: refresh_facts.yml
+  always:
+      - name: Remove temporary auth key file
+        ansible.builtin.file:
+            path: "{{ _tailscale_auth_key_file.path }}"
+            state: absent
+        become: true
+        when: _tailscale_auth_key_file.path is defined
+
+# One `tailscale set` call; changed only when the prefs actually moved.
 - name: Set custom Tailscale preferences
-  ansible.builtin.command:
-      cmd: "tailscale set --{{ item.key }}={{ item.value }}"
+  ansible.builtin.shell:
+      cmd: |
+          set -e
+          before=$(tailscale debug prefs)
+          tailscale set {% for key, value in tailscale_preferences.items() %}--{{ key }}={{ value | string | quote }} {% endfor %}
+
+          after=$(tailscale debug prefs)
+          [ "$before" = "$after" ] || echo CHANGED
   become: true
   register: _tailscale_custom_prefs
-  changed_when: _tailscale_custom_prefs.rc == 0
-  loop: "{{ tailscale_preferences | dict2items }}"
+  changed_when: "'CHANGED' in _tailscale_custom_prefs.stdout"
   when:
-      - tailscale_preferences is defined
-      - tailscale_preferences | length > 0
+      - tailscale_preferences | default({}) | length > 0
       - ansible_local.tailscale.authenticated | default(false)
   tags: [tailscale, config, preferences]
+
+# Restart and reload now, so verify.yml sees the configured daemon.
+- name: Apply pending Tailscale restarts and reloads
+  ansible.builtin.meta: flush_handlers
+  tags: [tailscale, config]

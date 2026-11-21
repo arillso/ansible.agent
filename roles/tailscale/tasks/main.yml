@@ -29,19 +29,35 @@
         ansible.builtin.include_tasks: install.yml
         tags: [tailscale, install]
 
+      - name: Remove files the role wrote
+        ansible.builtin.include_tasks: uninstall.yml
+        when: tailscale_package_state == 'absent'
+        tags: [tailscale, install]
+
       - name: Manage Tailscale service state
         ansible.builtin.include_tasks: service.yml
+        when: tailscale_package_state != 'absent'
         tags: [tailscale, service]
 
-      - name: Configure Tailscale service
-        ansible.builtin.include_tasks: configure.yml
-        tags: [tailscale, config]
+      # The fact script needs systemctl, bash and jq, so authentication,
+      # preferences and verification are systemd-only; other hosts (Alpine)
+      # get the package and a running service.
+      - name: Configure and verify Tailscale
+        when:
+            - tailscale_package_state != 'absent'
+            - ansible_facts['service_mgr'] == 'systemd'
+        block:
+            # Before configure.yml: the auth and preference tasks read
+            # ansible_local.tailscale on the first run too.
+            - name: Setup Tailscale local facts
+              ansible.builtin.include_tasks: facts.yml
+              tags: [tailscale, facts]
 
-      - name: Setup Tailscale local facts
-        ansible.builtin.include_tasks: facts.yml
-        tags: [tailscale, facts]
+            - name: Configure Tailscale service
+              ansible.builtin.include_tasks: configure.yml
+              tags: [tailscale, config]
 
-      - name: Verify Tailscale connectivity
-        ansible.builtin.include_tasks: verify.yml
-        when: tailscale_verify_connectivity | default(true) | bool
-        tags: [tailscale, verify]
+            - name: Verify Tailscale connectivity
+              ansible.builtin.include_tasks: verify.yml
+              when: tailscale_verify_connectivity | default(true) | bool
+              tags: [tailscale, verify]

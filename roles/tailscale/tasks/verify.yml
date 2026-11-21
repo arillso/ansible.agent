@@ -2,9 +2,10 @@
 # Tailscale Connectivity Verification Tasks
 # Verify Tailscale connectivity and status using local facts
 
+# configure.yml flushes handlers right before this file, so tailscaled may
+# have just been restarted.
 - name: Gather Tailscale facts before verification
-  ansible.builtin.setup:
-      filter: ansible_local
+  ansible.builtin.include_tasks: refresh_facts.yml
   tags: [tailscale, verify, facts]
 
 - name: Check if Tailscale facts are available

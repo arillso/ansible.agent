@@ -2,9 +2,6 @@
 # Tailscale configuration for all supported distributions
 # Clean YAML structure without complex Jinja2 templates
 
-tailscale_package_name: tailscale
-tailscale_package_state: present
-
 # Distribution-specific configurations
 tailscale_distributions:
     Ubuntu:
@@ -49,28 +46,28 @@ tailscale_distributions:
 
     RedHat:
         default:
-            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
-            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+            repo_url: https://pkgs.tailscale.com/stable/rhel/{{ ansible_facts['distribution_major_version'] }}/$basearch
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/{{ ansible_facts['distribution_major_version'] }}/repo.gpg
 
     CentOS:
         default:
-            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
-            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+            repo_url: https://pkgs.tailscale.com/stable/centos/{{ ansible_facts['distribution_major_version'] }}/$basearch
+            gpg_key_url: https://pkgs.tailscale.com/stable/centos/{{ ansible_facts['distribution_major_version'] }}/repo.gpg
 
     Rocky:
         default:
-            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
-            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+            repo_url: https://pkgs.tailscale.com/stable/rhel/{{ ansible_facts['distribution_major_version'] }}/$basearch
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/{{ ansible_facts['distribution_major_version'] }}/repo.gpg
 
     AlmaLinux:
         default:
-            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
-            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+            repo_url: https://pkgs.tailscale.com/stable/rhel/{{ ansible_facts['distribution_major_version'] }}/$basearch
+            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/{{ ansible_facts['distribution_major_version'] }}/repo.gpg
 
     Fedora:
         default:
-            repo_url: https://pkgs.tailscale.com/stable/rhel/tailscale.repo
-            gpg_key_url: https://pkgs.tailscale.com/stable/rhel/repo.gpg
+            repo_url: https://pkgs.tailscale.com/stable/fedora/$basearch
+            gpg_key_url: https://pkgs.tailscale.com/stable/fedora/repo.gpg
 
     Alpine:
         default:
@@ -80,7 +77,8 @@ tailscale_distributions:
         default:
             package_only: true
 
-# Fallback configuration
+# Fallback for distributions unknown by name and by os_family (via the
+# RedHat/Debian entries above, e.g. OracleLinux, Linux Mint)
 tailscale_fallback:
     codename: jammy
     gpg_key_url: https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg
@@ -96,11 +94,8 @@ tailscale_version_key: >-
 tailscale_distro_config: >-
     {{- tailscale_distributions.get(ansible_facts['distribution'], {}).get(tailscale_version_key) or
         tailscale_distributions.get(ansible_facts['distribution'], {}).get('default') or
+        tailscale_distributions.get(ansible_facts['os_family'], {}).get('default') or
         tailscale_fallback -}}
 
-# Final variables used by the role
-tailscale_gpg_key_url: "{{ tailscale_distro_config.gpg_key_url | default('') }}"
-tailscale_gpg_key_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
-tailscale_repo_url: "{{ tailscale_distro_config.repo_url | default('') }}"
-tailscale_repo_codename: "{{ tailscale_distro_config.codename | default(ansible_facts['distribution_release']) }}"
-tailscale_package_only: "{{ tailscale_distro_config.package_only | default(false) }}"
+# Cache written by the tailscale.fact script (templates/etc/ansible/facts.d)
+_tailscale_facts_cache_file: "{{ facts_cache_dir | default('/var/cache/ansible-facts') }}/tailscale_facts.json"

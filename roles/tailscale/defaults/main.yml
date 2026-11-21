@@ -8,6 +8,14 @@ tailscale_version: "1.104.7"
 # Master switch: set to false to skip the role entirely
 tailscale_enabled: true
 
+# Derived per distribution from tailscale_distro_config (vars/main.yml);
+# override for a mirror or an unlisted release
+tailscale_gpg_key_url: "{{ tailscale_distro_config.gpg_key_url | default('') }}"
+tailscale_gpg_key_path: /usr/share/keyrings/tailscale-archive-keyring.gpg
+tailscale_repo_url: "{{ tailscale_distro_config.repo_url | default('') }}"
+tailscale_repo_codename: "{{ tailscale_distro_config.codename | default(ansible_facts['distribution_release']) }}"
+tailscale_package_only: "{{ tailscale_distro_config.package_only | default(false) }}"
+
 tailscale_service_state: started
 tailscale_service_enabled: true
 
@@ -37,7 +45,7 @@ tailscale_service_override:
             --state=/var/lib/tailscale/tailscaled.state
             --socket=/run/tailscale/tailscaled.sock
             --port=${PORT}
-            --config={{ tailscale_config_file }}
+            $FLAGS{{ (' --config=' ~ tailscale_config_file) if _tailscale_write_config | default(false) | bool else '' }}
 
 tailscale_server_url: ""
 tailscale_locked: ""

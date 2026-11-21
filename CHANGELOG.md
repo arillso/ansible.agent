@@ -49,6 +49,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **alloy (Debian/Ubuntu)**: the dependency install refreshes the apt cache only
   when it is older than an hour, `software-properties-common` is no longer
   installed, and the repository line comes from `alloy_grafana_repository`.
+- **tailscale**: Red Hat family installs pointed `baseurl` at the
+  `tailscale.repo` file instead of the repository, so dnf failed with a 404.
+  The repository is now `stable/<rhel|centos>/<major>/$basearch`, Fedora uses
+  `stable/fedora/$basearch`, with `repo_gpgcheck` on.
+- **tailscale**: the default `tailscale_service_override` passed
+  `--config=/etc/tailscale/config.json` even when no config.json was written
+  (no daemon option set, or `tailscale_config_enabled: false`). `--config` is
+  now only passed together with the file, and `$FLAGS` from
+  `/etc/default/tailscaled` is kept as in the upstream unit.
+- **tailscale**: `tailscale_repo_url`, `tailscale_repo_codename`,
+  `tailscale_gpg_key_url`, `tailscale_gpg_key_path` and
+  `tailscale_package_only` moved from `vars/` to `defaults/`, and the
+  duplicate `tailscale_package_name`/`tailscale_package_state` were removed
+  from `vars/`, so inventory and group_vars can override them. The unused
+  `vars/Debian.yml` is gone.
+- **tailscale**: the auth key is passed as `--auth-key=file:<0600 tempfile>`
+  instead of on the command line, where local users could read it from `ps`.
+- **tailscale**: `tailscale_reset_authentication` fails early without an auth
+  key instead of logging the host out, and re-authenticates with `--reset`.
+- **tailscale**: `tailscale_preferences` apply on the first run (local facts
+  are installed before configuration, and the fact cache is dropped and
+  refreshed after `tailscale up`) and report changed only when the prefs
+  actually change. Verification waits for a restarted tailscaled.
+- **tailscale**: `tailscale_package_state: absent` removes the package and
+  the files the role wrote (systemd override, config.json, local facts script
+  and cache) and skips service, configuration and verification.
+- **tailscale**: restart and reload-config handlers no longer start a daemon
+  set to `tailscale_service_state: stopped`.
+- **tailscale**: package-only and generic installs run with `become`, and
+  hosts without systemd (Alpine/OpenRC) use `ansible.builtin.service` instead
+  of failing on `systemd_service`. Authentication, daemon options,
+  preferences and verification stay systemd-only (the local facts script
+  needs `systemctl`, bash and jq) and are skipped on those hosts.
+- **tailscale**: distributions not listed by name fall back by `os_family`
+  (e.g. OracleLinux to the RHEL repository) instead of the Ubuntu apt repo.
+- **tailscale**: the auth decision waits for tailscaled to leave its start-up
+  states and refreshes local facts with `become`, so an already-joined node
+  is not re-authenticated. reload-config is skipped when the running unit
+  does not pass `--config`.
 
 ### Removed
 

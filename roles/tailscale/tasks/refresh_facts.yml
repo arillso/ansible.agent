@@ -1,0 +1,41 @@
+---
+# Re-read ansible_local.tailscale with current data. Used before the auth
+# decision, after `tailscale up` and before verification.
+
+# Right after a (re)start BackendState is NoState/Starting, which the fact
+# script reports as unauthenticated, so an already-joined node would be
+# re-authenticated.
+- name: Wait for tailscaled to leave its start-up states
+  ansible.builtin.command:
+      cmd: tailscale status --json
+  register: _tailscale_backend_status
+  changed_when: false
+  check_mode: false
+  retries: 10
+  delay: 3
+  until: >-
+      _tailscale_backend_status.rc == 0 and
+      (_tailscale_backend_status.stdout | from_json).BackendState | default('') not in ['', 'NoState', 'Starting']
+  # Exhausted retries fail regardless of failed_when; the asserts in
+  # verify.yml report a daemon that never came up.
+  ignore_errors: true
+  become: true
+  when: tailscale_service_state != 'stopped'
+  tags: [tailscale, facts]
+
+# The fact script caches its output for facts_tailscale_cache_duration.
+- name: Drop cached Tailscale facts
+  ansible.builtin.file:
+      path: "{{ _tailscale_facts_cache_file }}"
+      state: absent
+  # Cache housekeeping, not a host change.
+  changed_when: false
+  become: true
+  tags: [tailscale, facts]
+
+# become: the script writes its cache under /var/cache as root.
+- name: Refresh Tailscale local facts
+  ansible.builtin.setup:
+      filter: ansible_local
+  become: true
+  tags: [tailscale, facts]
