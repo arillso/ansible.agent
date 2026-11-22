@@ -5,7 +5,7 @@
 In scope:
 
 - Role changes (`roles/`)
-- Lookup/module plugin changes (`plugins/`)
+- Lookup/module/filter plugin changes (`plugins/`)
 - Test changes (`tests/`, `roles/*/molecule/`)
 - CI/CD workflow changes
 - Renovate configuration updates
