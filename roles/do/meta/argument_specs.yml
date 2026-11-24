@@ -9,6 +9,21 @@ argument_specs:
             This role installs and configures the DigitalOcean Agent via official package sources
             for monitoring and observability of DigitalOcean Droplets.
         author: "Simon Bärlocher"
+        examples: |
+            - name: Install the DigitalOcean Agent
+              hosts: digitalocean_droplets
+              roles:
+                - role: arillso.agent.do
+
+            - name: Expose do-agent metrics on a local Prometheus endpoint
+              hosts: digitalocean_droplets
+              roles:
+                - role: arillso.agent.do
+                  vars:
+                    do_prometheus_enabled: true
+                    do_prometheus_port: 9091
+                    do_labels:
+                      environment: "production"
         options:
             do_enabled:
                 type: "bool"

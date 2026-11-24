@@ -93,3 +93,17 @@ def test_required_options_have_no_default(role):
 
     assert not both, "required options with a default: " + ", ".join(both)
 
+
+@pytest.mark.parametrize("role", ROLES)
+def test_main_entry_point_has_examples(role):
+    """The main entry point carries a parsable playbook example using the role."""
+    examples = load_spec(role)["main"].get("examples")
+
+    assert isinstance(examples, str) and examples.strip()
+    plays = yaml.safe_load(examples)
+    assert isinstance(plays, list) and plays
+    for play in plays:
+        assert "hosts" in play and "roles" in play
+    assert any(
+        f"arillso.agent.{role}" in str(play["roles"]) for play in plays
+    ), f"no play applies arillso.agent.{role}"
