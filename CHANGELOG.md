@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **alloy**, **do**, **tailscale**: the `main` entry point of each role's
+  `meta/argument_specs.yml` carries usage examples, which the role pages on
+  guide.arillso.io render.
+
+### Changed
+
+- **alloy**: the sub-options of `alloy_node_exporter_config` and
+  `alloy_journal_config.relabel_rules` document their defaults in
+  `meta/argument_specs.yml`. Documentation only, no change in behaviour.
+
 ## [2.2.1] - 2026-11-21
 
 ### Fixed
