@@ -10,6 +10,32 @@ argument_specs:
             for creating secure mesh networks between devices and infrastructure.
             All configuration is persistent via /etc/tailscale/config.json daemon config file.
         author: "Simon Bärlocher"
+        examples: |
+            - name: Join the tailnet
+              hosts: servers
+              roles:
+                - role: arillso.agent.tailscale
+                  vars:
+                    tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
+                    tailscale_accept_routes: "true"
+
+            - name: Run a subnet router and exit node
+              hosts: gateways
+              roles:
+                - role: arillso.agent.tailscale
+                  vars:
+                    tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
+                    tailscale_advertise_routes:
+                      - "192.168.1.0/24"
+                    tailscale_advertise_exit_node: "true"
+
+            - name: Route traffic through an exit node
+              hosts: workstations
+              roles:
+                - role: arillso.agent.tailscale
+                  vars:
+                    tailscale_auth_key: "{{ vault_tailscale_auth_key }}"
+                    tailscale_exit_node: "gateway-1"
         options:
             tailscale_enabled:
                 type: "bool"

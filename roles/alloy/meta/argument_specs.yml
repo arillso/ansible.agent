@@ -9,6 +9,32 @@ argument_specs:
             This role installs and configures Grafana Alloy via official package sources
             for collecting, transforming, and forwarding telemetry data.
         author: "Simon Bärlocher"
+        examples: |
+            - name: Collect host metrics and logs
+              hosts: servers
+              roles:
+                - role: arillso.agent.alloy
+                  vars:
+                    alloy_prometheus_enabled: true
+                    alloy_advanced_node_exporter_enabled: true
+                    alloy_loki_enabled: true
+
+            - name: Ship metrics to Grafana Cloud
+              hosts: servers
+              roles:
+                - role: arillso.agent.alloy
+                  vars:
+                    alloy_prometheus_enabled: true
+                    alloy_advanced_node_exporter_enabled: true
+                    # Written to the environment file, read by the config via env:
+                    alloy_grafana_cloud_prometheus_user: "{{ vault_grafana_cloud_prometheus_user }}"
+                    alloy_grafana_cloud_prometheus_token: "{{ vault_grafana_cloud_prometheus_token }}"
+                    alloy_prometheus_remote_write:
+                      - name: "grafana_cloud"
+                        url: "https://prometheus-<stack-region>.grafana.net/api/prom/push"
+                        basic_auth:
+                          username: "env:GRAFANA_CLOUD_PROMETHEUS_USER"
+                          password: "env:GRAFANA_CLOUD_PROMETHEUS_TOKEN"
         options:
             alloy_enabled:
                 type: "bool"
@@ -937,45 +963,69 @@ argument_specs:
                         type: "list"
                         elements: "str"
                         required: false
+                        default:
+                            - "ipvs"
+                            - "btrfs"
+                            - "infiniband"
+                            - "xfs"
+                            - "zfs"
                         description: "List of Node Exporter collectors to disable"
                     filesystem:
                         type: "dict"
                         required: false
+                        default:
+                            fs_types_exclude: >-
+                                ^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|
+                                rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
+                            mount_points_exclude: "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
+                            mount_timeout: "5s"
                         description: "Configuration for filesystem collector"
                         options:
                             fs_types_exclude:
                                 type: "str"
                                 required: false
+                                default: >-
+                                    ^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|
+                                    rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$
                                 description: "Regexp of filesystem types to exclude from collection"
                             mount_points_exclude:
                                 type: "str"
                                 required: false
+                                default: "^/(dev|proc|run/credentials/.+|sys|var/lib/docker/.+)($|/)"
                                 description: "Regexp of mount points to exclude from collection"
                             mount_timeout:
                                 type: "str"
                                 required: false
+                                default: "5s"
                                 description: "Timeout for collecting filesystem metrics"
                     netclass:
                         type: "dict"
                         required: false
+                        default:
+                            ignored_devices: "^(veth.*|cali.*|[a-f0-9]{15})$"
                         description: "Configuration for netclass collector"
                         options:
                             ignored_devices:
                                 type: "str"
                                 required: false
+                                default: "^(veth.*|cali.*|[a-f0-9]{15})$"
                                 description: "Regexp of net devices to ignore for netclass collector"
                     netdev:
                         type: "dict"
                         required: false
+                        default:
+                            device_exclude: "^(veth.*|cali.*|[a-f0-9]{15})$"
                         description: "Configuration for netdev collector"
                         options:
                             device_exclude:
                                 type: "str"
                                 required: false
+                                default: "^(veth.*|cali.*|[a-f0-9]{15})$"
                                 description: "Regexp of net devices to exclude from collection"
                     textfile_directory:
                         type: "str"
                         required: false
+                        default: "/var/lib/node_exporter/textfile_collector"
                         description: "Directory to read custom metrics files from"
                     textfile_directory_pattern:
                         type: "str"
@@ -984,37 +1034,50 @@ argument_specs:
                     systemd:
                         type: "dict"
                         required: false
+                        default:
+                            unit_include: []
+                            unit_exclude: []
+                            enable_start_time_metrics: true
+                            enable_task_metrics: false
+                            enable_restarts_metrics: true
                         description: "Configuration for systemd collector"
                         options:
                             unit_include:
                                 type: "list"
                                 elements: "str"
                                 required: false
+                                default: []
                                 description: "List of systemd units to include in metrics collection"
                             unit_exclude:
                                 type: "list"
                                 elements: "str"
                                 required: false
+                                default: []
                                 description: "List of systemd units to exclude from metrics collection"
                             enable_start_time_metrics:
                                 type: "bool"
                                 required: false
+                                default: true
                                 description: "Enable start time metrics for systemd units"
                             enable_task_metrics:
                                 type: "bool"
                                 required: false
+                                default: false
                                 description: "Enable task metrics for systemd units"
                             enable_restarts_metrics:
                                 type: "bool"
                                 required: false
+                                default: true
                                 description: "Enable restart metrics for systemd units"
                     procfs_path:
                         type: "str"
                         required: false
+                        default: ""
                         description: "Path to procfs filesystem (used in container environments)"
                     sysfs_path:
                         type: "str"
                         required: false
+                        default: ""
                         description: "Path to sysfs filesystem (used in container environments)"
                     environment:
                         type: "str"
@@ -1327,6 +1390,15 @@ argument_specs:
                         type: "list"
                         required: false
                         elements: "dict"
+                        default:
+                            - source_labels: ["__journal__systemd_unit"]
+                              target_label: "unit"
+                            - source_labels: ["__journal__boot_id"]
+                              target_label: "boot_id"
+                            - source_labels: ["__journal__transport"]
+                              target_label: "transport"
+                            - source_labels: ["__journal_priority_keyword"]
+                              target_label: "level"
                         description: "Relabel rules for journal entries"
                         options:
                             source_labels:
