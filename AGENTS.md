@@ -37,28 +37,17 @@ Ansible Galaxy as `arillso.agent`.
   uses.
 - **Tasks are split by function** (`install.yml`, `configure.yml`,
   `service.yml`, `resolve_version.yml`), included from `tasks/main.yml`.
-- **Every user-visible change gets an entry** under `## [Unreleased]` in
-  `CHANGELOG.md` (Keep a Changelog). Deprecations are announced there.
+- **Changelog:** see the [Arillso organization
+  guidance](https://github.com/arillso/.github/blob/main/AGENTS.md).
 - **Each role ships two molecule scenarios**: `default` and `disabled`. The
   latter sets the master switch (`<role>_enabled: false`) and verifies the role
   leaves the host untouched.
 
 ## Automation
 
-- **Git hooks** (`lefthook.yml`, enable with `lefthook install`): pre-commit runs
-  prettier, yamllint, markdownlint, `ansible-lint --profile=production`,
-  actionlint and gitleaks on staged files; pre-push runs a full gitleaks scan.
-- **`pull-request.yml`**: lint and unit tests (`ci-ansible-collection`), one
-  `molecule-<role>` job per role plus `molecule-multi-role`, secret scan and
-  Claude review. All reusables come from `arillso/.github`, pinned to a date tag.
-- **`merge.yml`**: `ci-ansible-collection` and secret scan on push to `main`;
-  molecule runs on pull requests only.
-- **`nightly-security.yml`**: secret scan daily at 02:00 UTC.
-- **`tag.yml`**: publishes to Galaxy and creates the GitHub release. It only
-  triggers on tags matching `[0-9]+.[0-9]+.[0-9]+`, so a `v`-prefixed tag
-  publishes nothing.
-- No further workflow files: new CI steps go into the reusables called from
-  `pull-request.yml` and `merge.yml`.
+- **CI, Git hooks and reusable workflows:** see the [Arillso organization
+  guidance](https://github.com/arillso/.github/blob/main/AGENTS.md) and the
+  `development:repo-standard` skill.
 - **Renovate** (`.github/renovate.json`): `ansible-core` and `molecule-qemu` are
   disabled on purpose. `molecule-qemu` carries its reason in the rule's
   `description`; `ansible-core` is held for compatibility (`CHANGELOG.md`, 1.1.0).

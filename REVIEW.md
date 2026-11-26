@@ -19,7 +19,9 @@ Out of scope:
 
 ## Required checks
 
-- No secrets committed — no credentials, tokens, or keys in defaults/vars/templates
+- Secret handling and scanning: see the [Arillso organization
+  guidance](https://github.com/arillso/.github/blob/main/AGENTS.md) and the
+  `security-secrets` workflow in `.github/workflows/pull-request.yml`.
 - `ansible-lint --profile=production` passes
 - yamllint passes
 - Unit tests (pytest) pass for plugins
