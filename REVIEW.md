@@ -19,7 +19,9 @@ Out of scope:
 
 ## Required checks
 
-- No secrets committed — no credentials, tokens, or keys in defaults/vars/templates
+- No secrets committed — no credentials, tokens, or keys in
+  defaults/vars/templates; see `arillso/.github/AGENTS.md` and the
+  `security-secrets` workflow in `.github/workflows/pull-request.yml`.
 - `ansible-lint --profile=production` passes
 - yamllint passes
 - Unit tests (pytest) pass for plugins

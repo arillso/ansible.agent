@@ -50,7 +50,8 @@ Ansible Galaxy as `arillso.agent`.
   actionlint and gitleaks on staged files; pre-push runs a full gitleaks scan.
 - **`pull-request.yml`**: lint and unit tests (`ci-ansible-collection`), one
   `molecule-<role>` job per role plus `molecule-multi-role`, secret scan and
-  Claude review. All reusables come from `arillso/.github`, pinned to a date tag.
+  Claude review. Reusable workflow source and date-tag pinning: see the
+  organization guidance in `arillso/.github/AGENTS.md`.
 - **`merge.yml`**: `ci-ansible-collection` and secret scan on push to `main`;
   molecule runs on pull requests only.
 - **`nightly-security.yml`**: secret scan daily at 02:00 UTC.
